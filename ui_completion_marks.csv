@@ -1,0 +1,409 @@
+CharacterIndex,CharacterName,MarkIndex,MarkName,Value(0/2)
+0,Isaac,0,Isaac's Heart,22
+0,Isaac,1,Isaac,22
+0,Isaac,2,Satan,4
+0,Isaac,3,Boss Rush,4
+0,Isaac,4,Chest,4
+0,Isaac,5,Dark Room,4
+0,Isaac,6,Mega Satan,4
+0,Isaac,7,Hush,4
+0,Isaac,8,Greed,4
+0,Isaac,9,Delirium,4
+0,Isaac,10,Mother,4
+0,Isaac,11,Beast,4
+1,Maggy,0,Isaac's Heart,4
+1,Maggy,1,Isaac,4
+1,Maggy,2,Satan,4
+1,Maggy,3,Boss Rush,4
+1,Maggy,4,Chest,4
+1,Maggy,5,Dark Room,26
+1,Maggy,6,Mega Satan,4
+1,Maggy,7,Hush,7
+1,Maggy,8,Greed,4
+1,Maggy,9,Delirium,4
+1,Maggy,10,Mother,4
+1,Maggy,11,Beast,4
+2,Cain,0,Isaac's Heart,4
+2,Cain,1,Isaac,4
+2,Cain,2,Satan,4
+2,Cain,3,Boss Rush,4
+2,Cain,4,Chest,4
+2,Cain,5,Dark Room,4
+2,Cain,6,Mega Satan,4
+2,Cain,7,Hush,4
+2,Cain,8,Greed,4
+2,Cain,9,Delirium,4
+2,Cain,10,Mother,4
+2,Cain,11,Beast,4
+3,Judas,0,Isaac's Heart,4
+3,Judas,1,Isaac,4
+3,Judas,2,Satan,4
+3,Judas,3,Boss Rush,4
+3,Judas,4,Chest,4
+3,Judas,5,Dark Room,4
+3,Judas,6,Mega Satan,4
+3,Judas,7,Hush,15
+3,Judas,8,Greed,4
+3,Judas,9,Delirium,4
+3,Judas,10,Mother,4
+3,Judas,11,Beast,4
+4,???,0,Isaac's Heart,4
+4,???,1,Isaac,4
+4,???,2,Satan,4
+4,???,3,Boss Rush,4
+4,???,4,Chest,4
+4,???,5,Dark Room,4
+4,???,6,Mega Satan,4
+4,???,7,Hush,3
+4,???,8,Greed,4
+4,???,9,Delirium,4
+4,???,10,Mother,4
+4,???,11,Beast,4
+5,Eve,0,Isaac's Heart,2
+5,Eve,1,Isaac,2
+5,Eve,2,Satan,2
+5,Eve,3,Boss Rush,2
+5,Eve,4,Chest,2
+5,Eve,5,Dark Room,4
+5,Eve,6,Mega Satan,2
+5,Eve,7,Hush,3
+5,Eve,8,Greed,2
+5,Eve,9,Delirium,2
+5,Eve,10,Mother,2
+5,Eve,11,Beast,2
+6,Samson,0,Isaac's Heart,2
+6,Samson,1,Isaac,2
+6,Samson,2,Satan,2
+6,Samson,3,Boss Rush,2
+6,Samson,4,Chest,2
+6,Samson,5,Dark Room,2
+6,Samson,6,Mega Satan,2
+6,Samson,7,Hush,3
+6,Samson,8,Greed,2
+6,Samson,9,Delirium,2
+6,Samson,10,Mother,2
+6,Samson,11,Beast,2
+7,Azazel,0,Isaac's Heart,15
+7,Azazel,1,Isaac,15
+7,Azazel,2,Satan,3
+7,Azazel,3,Boss Rush,4
+7,Azazel,4,Chest,15
+7,Azazel,5,Dark Room,3
+7,Azazel,6,Mega Satan,2
+7,Azazel,7,Hush,3
+7,Azazel,8,Greed,15
+7,Azazel,9,Delirium,15
+7,Azazel,10,Mother,15
+7,Azazel,11,Beast,2
+8,Lazarus,0,Isaac's Heart,4
+8,Lazarus,1,Isaac,4
+8,Lazarus,2,Satan,4
+8,Lazarus,3,Boss Rush,2
+8,Lazarus,4,Chest,4
+8,Lazarus,5,Dark Room,4
+8,Lazarus,6,Mega Satan,2
+8,Lazarus,7,Hush,3
+8,Lazarus,8,Greed,2
+8,Lazarus,9,Delirium,2
+8,Lazarus,10,Mother,2
+8,Lazarus,11,Beast,7
+9,Eden,0,Isaac's Heart,4
+9,Eden,1,Isaac,2
+9,Eden,2,Satan,2
+9,Eden,3,Boss Rush,2
+9,Eden,4,Chest,2
+9,Eden,5,Dark Room,2
+9,Eden,6,Mega Satan,2
+9,Eden,7,Hush,3
+9,Eden,8,Greed,2
+9,Eden,9,Delirium,2
+9,Eden,10,Mother,4
+9,Eden,11,Beast,2
+10,The Lost,0,Isaac's Heart,7
+10,The Lost,1,Isaac,4
+10,The Lost,2,Satan,4
+10,The Lost,3,Boss Rush,4
+10,The Lost,4,Chest,4
+10,The Lost,5,Dark Room,4
+10,The Lost,6,Mega Satan,4
+10,The Lost,7,Hush,4
+10,The Lost,8,Greed,4
+10,The Lost,9,Delirium,4
+10,The Lost,10,Mother,4
+10,The Lost,11,Beast,4
+11,Lilith,0,Isaac's Heart,4
+11,Lilith,1,Isaac,4
+11,Lilith,2,Satan,2
+11,Lilith,3,Boss Rush,2
+11,Lilith,4,Chest,4
+11,Lilith,5,Dark Room,2
+11,Lilith,6,Mega Satan,2
+11,Lilith,7,Hush,3
+11,Lilith,8,Greed,2
+11,Lilith,9,Delirium,4
+11,Lilith,10,Mother,2
+11,Lilith,11,Beast,2
+12,Keeper,0,Isaac's Heart,4
+12,Keeper,1,Isaac,4
+12,Keeper,2,Satan,4
+12,Keeper,3,Boss Rush,4
+12,Keeper,4,Chest,4
+12,Keeper,5,Dark Room,4
+12,Keeper,6,Mega Satan,4
+12,Keeper,7,Hush,4
+12,Keeper,8,Greed,4
+12,Keeper,9,Delirium,4
+12,Keeper,10,Mother,4
+12,Keeper,11,Beast,4
+13,Apollyon,0,Isaac's Heart,15
+13,Apollyon,1,Isaac,2
+13,Apollyon,2,Satan,15
+13,Apollyon,3,Boss Rush,2
+13,Apollyon,4,Chest,2
+13,Apollyon,5,Dark Room,15
+13,Apollyon,6,Mega Satan,2
+13,Apollyon,7,Hush,15
+13,Apollyon,8,Greed,2
+13,Apollyon,9,Delirium,2
+13,Apollyon,10,Mother,2
+13,Apollyon,11,Beast,2
+14,Forgotten,0,Isaac's Heart,15
+14,Forgotten,1,Isaac,15
+14,Forgotten,2,Satan,15
+14,Forgotten,3,Boss Rush,2
+14,Forgotten,4,Chest,15
+14,Forgotten,5,Dark Room,15
+14,Forgotten,6,Mega Satan,15
+14,Forgotten,7,Hush,15
+14,Forgotten,8,Greed,4
+14,Forgotten,9,Delirium,15
+14,Forgotten,10,Mother,15
+14,Forgotten,11,Beast,15
+15,Bethany,0,Isaac's Heart,4
+15,Bethany,1,Isaac,4
+15,Bethany,2,Satan,4
+15,Bethany,3,Boss Rush,2
+15,Bethany,4,Chest,4
+15,Bethany,5,Dark Room,4
+15,Bethany,6,Mega Satan,4
+15,Bethany,7,Hush,2
+15,Bethany,8,Greed,2
+15,Bethany,9,Delirium,4
+15,Bethany,10,Mother,2
+15,Bethany,11,Beast,2
+16,Jacob & Esau,0,Isaac's Heart,15
+16,Jacob & Esau,1,Isaac,15
+16,Jacob & Esau,2,Satan,2
+16,Jacob & Esau,3,Boss Rush,15
+16,Jacob & Esau,4,Chest,15
+16,Jacob & Esau,5,Dark Room,2
+16,Jacob & Esau,6,Mega Satan,2
+16,Jacob & Esau,7,Hush,15
+16,Jacob & Esau,8,Greed,15
+16,Jacob & Esau,9,Delirium,15
+16,Jacob & Esau,10,Mother,2
+16,Jacob & Esau,11,Beast,2
+17,T Isaac,0,Isaac's Heart,15
+17,T Isaac,1,Isaac,15
+17,T Isaac,2,Satan,15
+17,T Isaac,3,Boss Rush,2
+17,T Isaac,4,Chest,15
+17,T Isaac,5,Dark Room,15
+17,T Isaac,6,Mega Satan,2
+17,T Isaac,7,Hush,15
+17,T Isaac,8,Greed,2
+17,T Isaac,9,Delirium,15
+17,T Isaac,10,Mother,15
+17,T Isaac,11,Beast,2
+18,T Maggy,0,Isaac's Heart,15
+18,T Maggy,1,Isaac,15
+18,T Maggy,2,Satan,15
+18,T Maggy,3,Boss Rush,7
+18,T Maggy,4,Chest,15
+18,T Maggy,5,Dark Room,15
+18,T Maggy,6,Mega Satan,15
+18,T Maggy,7,Hush,15
+18,T Maggy,8,Greed,15
+18,T Maggy,9,Delirium,15
+18,T Maggy,10,Mother,15
+18,T Maggy,11,Beast,15
+19,T Cain,0,Isaac's Heart,15
+19,T Cain,1,Isaac,15
+19,T Cain,2,Satan,15
+19,T Cain,3,Boss Rush,15
+19,T Cain,4,Chest,15
+19,T Cain,5,Dark Room,15
+19,T Cain,6,Mega Satan,15
+19,T Cain,7,Hush,15
+19,T Cain,8,Greed,15
+19,T Cain,9,Delirium,15
+19,T Cain,10,Mother,15
+19,T Cain,11,Beast,15
+20,T Judas,0,Isaac's Heart,2
+20,T Judas,1,Isaac,2
+20,T Judas,2,Satan,2
+20,T Judas,3,Boss Rush,2
+20,T Judas,4,Chest,2
+20,T Judas,5,Dark Room,2
+20,T Judas,6,Mega Satan,2
+20,T Judas,7,Hush,2
+20,T Judas,8,Greed,2
+20,T Judas,9,Delirium,2
+20,T Judas,10,Mother,2
+20,T Judas,11,Beast,2
+21,T ???,0,Isaac's Heart,15
+21,T ???,1,Isaac,15
+21,T ???,2,Satan,15
+21,T ???,3,Boss Rush,15
+21,T ???,4,Chest,15
+21,T ???,5,Dark Room,15
+21,T ???,6,Mega Satan,15
+21,T ???,7,Hush,15
+21,T ???,8,Greed,15
+21,T ???,9,Delirium,15
+21,T ???,10,Mother,15
+21,T ???,11,Beast,2
+22,T Eve,0,Isaac's Heart,15
+22,T Eve,1,Isaac,15
+22,T Eve,2,Satan,2
+22,T Eve,3,Boss Rush,2
+22,T Eve,4,Chest,15
+22,T Eve,5,Dark Room,2
+22,T Eve,6,Mega Satan,2
+22,T Eve,7,Hush,15
+22,T Eve,8,Greed,2
+22,T Eve,9,Delirium,2
+22,T Eve,10,Mother,2
+22,T Eve,11,Beast,2
+23,T Samson,0,Isaac's Heart,2
+23,T Samson,1,Isaac,2
+23,T Samson,2,Satan,2
+23,T Samson,3,Boss Rush,2
+23,T Samson,4,Chest,2
+23,T Samson,5,Dark Room,2
+23,T Samson,6,Mega Satan,2
+23,T Samson,7,Hush,2
+23,T Samson,8,Greed,2
+23,T Samson,9,Delirium,2
+23,T Samson,10,Mother,2
+23,T Samson,11,Beast,2
+24,T Azazel,0,Isaac's Heart,2
+24,T Azazel,1,Isaac,2
+24,T Azazel,2,Satan,2
+24,T Azazel,3,Boss Rush,2
+24,T Azazel,4,Chest,2
+24,T Azazel,5,Dark Room,2
+24,T Azazel,6,Mega Satan,2
+24,T Azazel,7,Hush,2
+24,T Azazel,8,Greed,2
+24,T Azazel,9,Delirium,2
+24,T Azazel,10,Mother,2
+24,T Azazel,11,Beast,2
+25,T Lazarus,0,Isaac's Heart,2
+25,T Lazarus,1,Isaac,2
+25,T Lazarus,2,Satan,2
+25,T Lazarus,3,Boss Rush,2
+25,T Lazarus,4,Chest,2
+25,T Lazarus,5,Dark Room,2
+25,T Lazarus,6,Mega Satan,2
+25,T Lazarus,7,Hush,2
+25,T Lazarus,8,Greed,2
+25,T Lazarus,9,Delirium,2
+25,T Lazarus,10,Mother,2
+25,T Lazarus,11,Beast,2
+26,T Eden,0,Isaac's Heart,2
+26,T Eden,1,Isaac,2
+26,T Eden,2,Satan,2
+26,T Eden,3,Boss Rush,2
+26,T Eden,4,Chest,2
+26,T Eden,5,Dark Room,2
+26,T Eden,6,Mega Satan,2
+26,T Eden,7,Hush,2
+26,T Eden,8,Greed,2
+26,T Eden,9,Delirium,2
+26,T Eden,10,Mother,2
+26,T Eden,11,Beast,2
+27,T Lost,0,Isaac's Heart,2
+27,T Lost,1,Isaac,2
+27,T Lost,2,Satan,2
+27,T Lost,3,Boss Rush,2
+27,T Lost,4,Chest,2
+27,T Lost,5,Dark Room,2
+27,T Lost,6,Mega Satan,2
+27,T Lost,7,Hush,2
+27,T Lost,8,Greed,2
+27,T Lost,9,Delirium,2
+27,T Lost,10,Mother,2
+27,T Lost,11,Beast,2
+28,T Lilith,0,Isaac's Heart,15
+28,T Lilith,1,Isaac,15
+28,T Lilith,2,Satan,15
+28,T Lilith,3,Boss Rush,2
+28,T Lilith,4,Chest,15
+28,T Lilith,5,Dark Room,15
+28,T Lilith,6,Mega Satan,2
+28,T Lilith,7,Hush,2
+28,T Lilith,8,Greed,2
+28,T Lilith,9,Delirium,15
+28,T Lilith,10,Mother,2
+28,T Lilith,11,Beast,2
+29,T Keeper,0,Isaac's Heart,15
+29,T Keeper,1,Isaac,3
+29,T Keeper,2,Satan,15
+29,T Keeper,3,Boss Rush,4
+29,T Keeper,4,Chest,3
+29,T Keeper,5,Dark Room,15
+29,T Keeper,6,Mega Satan,3
+29,T Keeper,7,Hush,15
+29,T Keeper,8,Greed,4
+29,T Keeper,9,Delirium,3
+29,T Keeper,10,Mother,2
+29,T Keeper,11,Beast,2
+30,T Apollyon,0,Isaac's Heart,15
+30,T Apollyon,1,Isaac,2
+30,T Apollyon,2,Satan,15
+30,T Apollyon,3,Boss Rush,2
+30,T Apollyon,4,Chest,2
+30,T Apollyon,5,Dark Room,15
+30,T Apollyon,6,Mega Satan,2
+30,T Apollyon,7,Hush,2
+30,T Apollyon,8,Greed,2
+30,T Apollyon,9,Delirium,15
+30,T Apollyon,10,Mother,2
+30,T Apollyon,11,Beast,2
+31,T Forgotten,0,Isaac's Heart,15
+31,T Forgotten,1,Isaac,15
+31,T Forgotten,2,Satan,15
+31,T Forgotten,3,Boss Rush,15
+31,T Forgotten,4,Chest,15
+31,T Forgotten,5,Dark Room,15
+31,T Forgotten,6,Mega Satan,15
+31,T Forgotten,7,Hush,15
+31,T Forgotten,8,Greed,15
+31,T Forgotten,9,Delirium,15
+31,T Forgotten,10,Mother,15
+31,T Forgotten,11,Beast,15
+32,T Bethany,0,Isaac's Heart,15
+32,T Bethany,1,Isaac,15
+32,T Bethany,2,Satan,15
+32,T Bethany,3,Boss Rush,2
+32,T Bethany,4,Chest,15
+32,T Bethany,5,Dark Room,15
+32,T Bethany,6,Mega Satan,15
+32,T Bethany,7,Hush,15
+32,T Bethany,8,Greed,15
+32,T Bethany,9,Delirium,15
+32,T Bethany,10,Mother,15
+32,T Bethany,11,Beast,2
+33,T Jacob,0,Isaac's Heart,2
+33,T Jacob,1,Isaac,2
+33,T Jacob,2,Satan,2
+33,T Jacob,3,Boss Rush,2
+33,T Jacob,4,Chest,2
+33,T Jacob,5,Dark Room,2
+33,T Jacob,6,Mega Satan,2
+33,T Jacob,7,Hush,2
+33,T Jacob,8,Greed,2
+33,T Jacob,9,Delirium,2
+33,T Jacob,10,Mother,2
+33,T Jacob,11,Beast,2
