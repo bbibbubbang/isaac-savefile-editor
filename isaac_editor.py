@@ -151,12 +151,15 @@ class IsaacSaveEditor(tk.Tk):
         notebook.add(main_tab, text="메인")
         self._build_main_tab(main_tab)
 
+        item_tab_info: Optional[tuple[str, str]] = None
         for secret_type, tab_label in self.SECRET_TAB_INFO:
+            if secret_type == "Item":
+                item_tab_info = (secret_type, tab_label)
+                continue
             if not self._secret_ids_by_type.get(secret_type):
                 continue
             secrets_tab = ttk.Frame(notebook, padding=12)
             secrets_tab.columnconfigure(0, weight=1)
-            secrets_tab.rowconfigure(1, weight=1)
             notebook.add(secrets_tab, text=tab_label)
             self._build_secrets_tab(secrets_tab, secret_type)
 
@@ -177,6 +180,13 @@ class IsaacSaveEditor(tk.Tk):
         challenge_tab.rowconfigure(1, weight=1)
         notebook.add(challenge_tab, text="도전과제")
         self._build_challenges_tab(challenge_tab)
+
+        if item_tab_info and self._secret_ids_by_type.get(item_tab_info[0]):
+            secret_type, tab_label = item_tab_info
+            achievements_tab = ttk.Frame(notebook, padding=12)
+            achievements_tab.columnconfigure(0, weight=1)
+            notebook.add(achievements_tab, text=tab_label)
+            self._build_secrets_tab(achievements_tab, secret_type)
 
     def _build_main_tab(self, container: ttk.Frame) -> None:
         top_frame = ttk.Frame(container)
@@ -242,8 +252,20 @@ class IsaacSaveEditor(tk.Tk):
             command=lambda t=secret_type: self._lock_selected_secrets(t),
         ).pack(side="left")
 
+        tree_row = 1
+        if secret_type == "Item":
+            ttk.Label(
+                container,
+                text="업적아이템은 모두 해금하고, 패시브/액티브 아이템에서 해금 여부를 변경하세요.",
+                wraplength=520,
+                justify="left",
+            ).grid(column=0, row=1, sticky="w", pady=(8, 0))
+            tree_row = 2
+
+        container.rowconfigure(tree_row, weight=1)
+
         tree_container = ttk.Frame(container)
-        tree_container.grid(column=0, row=1, sticky="nsew", pady=(12, 0))
+        tree_container.grid(column=0, row=tree_row, sticky="nsew", pady=(12, 0))
         tree_container.columnconfigure(0, weight=1)
         tree_container.rowconfigure(0, weight=1)
         tree = self._create_tree(tree_container, ("unlock",))
