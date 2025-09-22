@@ -1,46 +1,46 @@
-ChallengeID,ChallengeName,CompletedFlag
-1,Pitch Black,1
-2,High Brow,1
-3,Head Trauma,1
-4,Darkness Falls,1
-5,The Tank,1
-6,Solar System,1
-7,Suicide King,1
-8,Cat Got Your Tongue,1
-9,Demo Man,1
-10,Cursed!,1
-11,Glass Cannon,1
-12,When Life Gives You Lemons,1
-13,BEANS!,1
-14,Its In The Cards,1
-15,Slow Roll,1
-16,Computer Savy,1
-17,WAKA WAKA,1
-18,The Host,1
-19,The Family Man,1
-20,Purist,1
-21,XXXXXXXXL,1
-22,SPEED!,1
-23,Blue Bomber,1
-24,PAY TO PLAY,1
-25,Have A Heart,1
-26,I RULE!,1
-27,BRAINS!,1
-28,PRIDE DAY!,1
-29,Onan's Streak,1
-30,The Guardian,1
-31,Backasswards,1
-32,Aprils Fool,1
-33,Pokey Mans,1
-34,Ultra Hard,1
-35,Pong,1
-36,Scat Man,1
-37,Bloody Mary,1
-38,Baptism by Fire,1
-39,Isaac's Awakening,1
-40,Seeing Double,1
-41,Pica Run,1
-42,Hot Potato,1
-43,Cantripped!,1
-44,Red Redemption,1
-45,DELETE THIS,1
+﻿ChallengeID,ChallengeName,Korean,CompletedFlag
+1,Pitch Black,,1
+2,High Brow,,1
+3,Head Trauma,,1
+4,Darkness Falls,,1
+5,The Tank,,1
+6,Solar System,,1
+7,Suicide King,자살 왕,1
+8,Cat Got Your Tongue,,1
+9,Demo Man,,1
+10,Cursed!,,1
+11,Glass Cannon,유리 대포,1
+12,When Life Gives You Lemons,,1
+13,BEANS!,,1
+14,Its In The Cards,,1
+15,Slow Roll,,1
+16,Computer Savy,,1
+17,WAKA WAKA,,1
+18,The Host,,1
+19,The Family Man,,1
+20,Purist,,1
+21,XXXXXXXXL,,1
+22,SPEED!,,1
+23,Blue Bomber,,1
+24,PAY TO PLAY,,1
+25,Have A Heart,,1
+26,I RULE!,,1
+27,BRAINS!,,1
+28,PRIDE DAY!,,1
+29,Onan's Streak,,1
+30,The Guardian,,1
+31,Backasswards,,1
+32,Aprils Fool,,1
+33,Pokey Mans,,1
+34,Ultra Hard,,1
+35,Pong,,1
+36,Scat Man,,1
+37,Bloody Mary,,1
+38,Baptism by Fire,,1
+39,Isaac's Awakening,,1
+40,Seeing Double,,1
+41,Pica Run,,1
+42,Hot Potato,,1
+43,Cantripped!,,1
+44,Red Redemption,,1
+45,DELETE THIS,,1

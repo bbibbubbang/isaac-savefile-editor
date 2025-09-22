@@ -1,720 +1,720 @@
-ItemID,ItemName,UnlockedFlag,Type(Optional)
-1,The Sad Onion,1,
-2,The Inner Eye,1,
-3,Spoon Bender,1,
-4,Cricket's Head,1,
-5,My Reflection,1,
-6,Number One,1,
-7,Blood of the Martyr,1,
-8,Brother Bobby,1,
-9,Skatole,1,
-10,Halo of Flies,1,
-11,1up!,1,
-12,Magic Mushroom,1,
-13,The Virus,1,
-14,Roid Rage,1,
-15,<3,1,
-16,Raw Liver,1,
-17,Skeleton Key,1,
-18,A Dollar,1,
-19,Boom!,1,
-20,Transcendence,1,
-21,The Compass,1,
-22,Lunch,1,
-23,Dinner,1,
-24,Dessert,1,
-25,Breakfast,1,
-26,Rotten Meat,1,
-27,Wooden Spoon,1,
-28,The Belt,1,
-29,Mom's Underwear,1,
-30,Mom's Heels,1,
-31,Mom's Lipstick,1,
-32,Wire Coat Hanger,1,
-33,The Bible,1,
-34,The Book of Belial,1,
-35,The Necronomicon,1,
-36,The Poop,1,
-37,Mr. Boom,1,
-38,Tammy's Head,1,
-39,Mom's Bra,1,
-40,Kamikaze!,1,
-41,Mom's Pad,1,
-42,Bob's Rotten Head,1,
-44,Teleport!,1,
-45,Yum Heart,1,
-46,Lucky Foot,1,
-47,Doctor's Remote,1,
-48,Cupid's Arrow,1,
-49,Shoop Da Whoop!,1,
-50,Steven,1,
-51,Pentagram,1,
-52,Dr. Fetus,1,
-53,Magneto,1,
-54,Treasure Map,1,
-55,Mom's Eye,1,
-56,Lemon Mishap,1,
-57,Distant Admiration,1,
-58,Book of Shadows,1,
-60,The Ladder,1,
-62,Charm of the Vampire,1,
-63,The Battery,1,
-64,Steam Sale,1,
-65,Anarchist Cookbook,1,
-66,The Hourglass,1,
-67,Sister Maggy,1,
-68,Technology,1,
-69,Chocolate Milk,1,
-70,Growth Hormones,1,
-71,Mini Mush,1,
-72,Rosary,1,
-73,Cube of Meat,1,
-74,A Quarter,1,
-75,PHD,1,
-76,X-Ray Vision,1,
-77,My Little Unicorn,1,
-78,Book of Revelations,1,
-79,The Mark,1,
-80,The Pact,1,
-81,Dead Cat,1,
-82,Lord of the Pit,1,
-83,The Nail,1,
-84,We Need to Go Deeper!,1,
-85,Deck of Cards,1,
-86,Monstro's Tooth,1,
-87,Loki's Horns,1,
-88,Little Chubby,1,
-89,Spider Bite,1,
-90,The Small Rock,1,
-91,Spelunker Hat,1,
-92,Super Bandage,1,
-93,The Gamekid,1,
-94,Sack of Pennies,1,
-95,Robo-Baby,1,
-96,Little C.H.A.D.,1,
-97,The Book of Sin,1,
-98,The Relic,1,
-99,Little Gish,1,
-100,Little Steven,1,
-101,The Halo,1,
-102,Mom's Bottle of Pills,1,
-103,The Common Cold,1,
-104,The Parasite,1,
-105,The D6,1,
-106,Mr. Mega,1,
-107,The Pinking Shears,1,
-108,The Wafer,1,
-109,Money = Power,1,
-110,Mom's Contacts,1,
-111,The Bean,1,
-112,Guardian Angel,1,
-113,Demon Baby,1,
-114,Mom's Knife,1,
-115,Ouija Board,1,
-116,9 Volt,1,
-117,Dead Bird,1,
-118,Brimstone,1,
-119,Blood Bag,1,
-120,Odd Mushroom,1,
-121,Odd Mushroom,1,
-122,Whore of Babylon,1,
-123,Monster Manual,1,
-124,Dead Sea Scrolls,1,
-125,Bobby-Bomb,1,
-126,Razor Blade,1,
-127,Forget Me Now,1,
-128,Forever Alone,1,
-129,Bucket of Lard,1,
-130,A Pony,1,
-131,Bomb Bag,1,
-132,A Lump of Coal,1,
-133,Guppy's Paw,1,
-134,Guppy's Tail,1,
-135,IV Bag,1,
-136,Best Friend,1,
-137,Remote Detonator,1,
-138,Stigmata,1,
-139,Mom's Purse,1,
-140,Bob's Curse,1,
-141,Pageant Boy,1,
-142,Scapular,1,
-143,Speed Ball,1,
-144,Bum Friend,1,
-145,Guppy's Head,1,
-146,Prayer Card,1,
-147,Notched Axe,1,
-148,Infestation,1,
-149,Ipecac,1,
-150,Tough Love,1,
-151,The Mulligan,1,
-152,Technology 2,1,
-153,Mutant Spider,1,
-154,Chemical Peel,1,
-155,The Peeper,1,
-156,Habit,1,
-157,Bloody Lust,1,
-158,Crystal Ball,1,
-159,Spirit of the Night,1,
-160,Crack the Sky,1,
-161,Ankh,1,
-162,Celtic Cross,1,
-163,Ghost Baby,1,
-164,The Candle,1,
-165,Cat-O-Nine-Tails,1,
-166,D20,1,
-167,Harlequin Baby,1,
-168,Epic Fetus,1,
-169,Polyphemus,1,
-170,Daddy Longlegs,1,
-171,Spider Butt,1,
-172,Sacrificial Dagger,1,
-173,Mitre,1,
-174,Rainbow Baby,1,
-175,Dad's Key,1,
-176,Stem Cells,1,
-177,Portable Slot,1,
-178,Holy Water,1,
-179,Fate,1,
-180,The Black Bean,1,
-181,White Pony,1,
-182,Sacred Heart,1,
-183,Tooth Picks,1,
-184,Holy Grail,1,
-185,Dead Dove,1,
-186,Blood Rights,1,
-187,Guppy's Hair Ball,1,
-188,Abel,1,
-189,SMB Super Fan,1,
-190,Pyro,1,
-191,3 Dollar Bill,1,
-192,Telepathy for Dummies,1,
-193,MEAT!,1,
-194,Magic 8 Ball,1,
-195,Mom's Coin Purse,1,
-196,Squeezy,1,
-197,Jesus Juice,1,
-198,Box,1,
-199,Mom's Key,1,
-200,Mom's Eyeshadow,1,
-201,Iron Bar,1,
-202,Midas' Touch,1,
-203,Humbleing Bundle,1,
-204,Fanny Pack,1,
-205,Sharp Plug,1,
-206,Guillotine,1,
-207,Ball of Bandages,1,
-208,Champion Belt,1,
-209,Butt Bombs,1,
-210,Gnawed Leaf,1,
-211,Spiderbaby,1,
-212,Guppy's Collar,1,
-213,Lost Contact,1,
-214,Anemic,1,
-215,Goat Head,1,
-216,Ceremonial Robes,1,
-217,Mom's Wig,1,
-218,Placenta,1,
-219,Old Bandage,1,
-220,Sad Bombs,1,
-221,Rubber Cement,1,
-222,Anti-Gravity,1,
-223,Pyromaniac,1,
-224,Cricket's Body,1,
-225,Gimpy,1,
-226,Black Lotus,1,
-227,Piggy Bank,1,
-228,Mom's Perfume,1,
-229,Monstro's Lung,1,
-230,Abaddon,1,
-231,Ball of Tar,1,
-232,Stop Watch,1,
-233,Tiny Planet,1,
-234,Infestation 2,1,
-236,E. Coli,1,
-237,Death's Touch,1,
-238,Key Piece 1,1,
-239,Key Piece 2,1,
-240,Experimental Treatment,1,
-241,Contract From Below,1,
-242,Infamy,1,
-243,Trinity Shield,1,
-244,Tech.5,1,
-245,20/20,1,
-246,Blue Map,1,
-247,BFFS!,1,
-248,Hive Mind,1,
-249,There's Options,1,
-250,Bogo Bombs,1,
-251,Starter Deck,1,
-252,Little Baggy,1,
-253,Magic Scab,1,
-254,Blood Clot,1,
-255,Screw,1,
-256,Hot Bombs,1,
-257,Fire Mind,1,
-258,Missing No.,1,
-259,Dark Matter,1,
-260,Black Candle,1,
-261,Proptosis,1,
-262,Missing Page 2,1,
-263,Clear Rune,1,
-264,Smart Fly,1,
-265,Dry Baby,1,
-266,Juicy Sack,1,
-267,Robo-Baby 2.0,1,
-268,Rotten Baby,1,
-269,Headless Baby,1,
-270,Leech,1,
-271,Mystery Sack,1,
-272,BBF,1,
-273,Bob's Brain,1,
-274,Best Bud,1,
-275,Lil Brimstone,1,
-276,Isaac's Heart,1,
-277,Lil Haunt,1,
-278,Dark Bum,1,
-279,Big Fan,1,
-280,Sissy Longlegs,1,
-281,Punching Bag,1,
-282,How to Jump,1,
-283,D100,1,
-284,D4,1,
-285,D10,1,
-286,Blank Card,1,
-287,Book of Secrets,1,
-288,Box of Spiders,1,
-289,Red Candle,1,
-290,The Jar,1,
-291,Flush!,1,
-292,Satanic Bible,1,
-293,Head of Krampus,1,
-294,Butter Bean,1,
-295,Magic Fingers,1,
-296,Converter,1,
-297,Pandora's Box,1,
-298,Unicorn Stump,1,
-299,Taurus,1,
-300,Aries,1,
-301,Cancer,1,
-302,Leo,1,
-303,Virgo,1,
-304,Libra,1,
-305,Scorpio,1,
-306,Sagittarius,1,
-307,Capricorn,1,
-308,Aquarius,1,
-309,Pisces,1,
-310,Eve's Mascara,1,
-311,Judas' Shadow,1,
-312,Maggy's Bow,1,
-313,Holy Mantle,1,
-314,Thunder Thighs,1,
-315,Strange Attractor,1,
-316,Cursed Eye,1,
-317,Mysterious Liquid,1,
-318,Gemini,1,
-319,Cain's Other Eye,1,
-320,???'s Only Friend,1,
-321,Samson's Chains,1,
-322,Mongo Baby,1,
-323,Isaac's Tears,1,
-324,Undefined,1,
-325,Scissors,1,
-326,Breath of Life,1,
-327,The Polaroid,1,
-328,The Negative,1,
-329,The Ludovico Technique,1,
-330,Soy Milk,1,
-331,Godhead,1,
-332,Lazarus' Rags,1,
-333,The Mind,1,
-334,The Body,1,
-335,The Soul,1,
-336,Dead Onion,1,
-337,Broken Watch,1,
-338,The Boomerang,1,
-339,Safety Pin,1,
-340,Caffeine Pill,1,
-341,Torn Photo,1,
-342,Blue Cap,1,
-343,Latch Key,1,
-344,Match Book,1,
-345,Synthoil,1,
-346,A Snack,1,
-347,Diplopia,1,
-348,Placebo,1,
-349,Wooden Nickel,1,
-350,Toxic Shock,1,
-351,Mega Bean,1,
-352,Glass Cannon,1,
-353,Bomber Boy,1,
-354,Crack Jacks,1,
-355,Mom's Pearls,1,
-356,Car Battery,1,
-357,Box of Friends,1,
-358,The Wiz,1,
-359,8 Inch Nails,1,
-360,Incubus,1,
-361,Fate's Reward,1,
-362,Lil Chest,1,
-363,Sworn Protector,1,
-364,Friend Zone,1,
-365,Lost Fly,1,
-366,Scatter Bombs,1,
-367,Sticky Bombs,1,
-368,Epiphora,1,
-369,Continuum,1,
-370,Mr. Dolly,1,
-371,Curse of the Tower,1,
-372,Charged Baby,1,
-373,Dead Eye,1,
-374,Holy Light,1,
-375,Host Hat,1,
-376,Restock,1,
-377,Bursting Sack,1,
-378,Number Two,1,
-379,Pupula Duplex,1,
-380,Pay to Play,1,
-381,Eden's Blessing,1,
-382,Friendly Ball,1,
-383,Tear Detonator,1,
-384,Lil Gurdy,1,
-385,Bumbo,1,
-386,D12,1,
-387,Censer,1,
-388,Key Bum,1,
-389,Rune Bag,1,
-390,Seraphim,1,
-391,Betrayal,1,
-392,Zodiac,1,
-393,Serpent's Kiss,1,
-394,Marked,1,
-395,Tech X,1,
-396,Ventricle Razor,1,
-397,Tractor Beam,1,
-398,God's Flesh,1,
-399,Maw of the Void,1,
-400,Spear of Destiny,1,
-401,Explosivo,1,
-402,Chaos,1,
-403,Spider Mod,1,
-404,Farting Baby,1,
-405,GB Bug,1,
-406,D8,1,
-407,Purity,1,
-408,Athame,1,
-409,Empty Vessel,1,
-410,Evil Eye,1,
-411,Lusty Blood,1,
-412,Cambion Conception,1,
-413,Immaculate Conception,1,
-414,More Options,1,
-415,Crown of Light,1,
-416,Deep Pockets,1,
-417,Succubus,1,
-418,Fruit Cake,1,
-419,Teleport 2.0,1,
-420,Black Powder,1,
-421,Kidney Bean,1,
-422,Glowing Hourglass,1,
-423,Circle of Protection,1,
-424,Sack Head,1,
-425,Night Light,1,
-426,Obsessed Fan,1,
-427,Mine Crafter,1,
-428,PJs,1,
-429,Head of the Keeper,1,
-430,Papa Fly,1,
-431,Multidimensional Baby,1,
-432,Glitter Bombs,1,
-433,My Shadow,1,
-434,Jar of Flies,1,
-435,Lil Loki,1,
-436,Milk!,1,
-437,D7,1,
-438,Binky,1,
-439,Mom's Box,1,
-440,Kidney Stone,1,
-441,Mega Blast,1,
-442,Dark Prince's Crown,1,
-443,Apple!,1,
-444,Lead Pencil,1,
-445,Dog Tooth,1,
-446,Dead Tooth,1,
-447,Linger Bean,1,
-448,Shard of Glass,1,
-449,Metal Plate,1,
-450,Eye of Greed,1,
-451,Tarot Cloth,1,
-452,Varicose Veins,1,
-453,Compound Fracture,1,
-454,Polydactyly,1,
-455,Dad's Lost Coin,1,
-456,Midnight Snack,1,
-457,Cone Head,1,
-458,Belly Button,1,
-459,Sinus Infection,1,
-460,Glaucoma,1,
-461,Parasitoid,1,
-462,Eye of Belial,1,
-463,Sulfuric Acid,1,
-464,Glyph of Balance,1,
-465,Analog Stick,1,
-466,Contagion,1,
-467,Finger!,1,
-468,Shade,1,
-469,Depression,1,
-470,Hushy,1,
-471,Lil Monstro,1,
-472,King Baby,1,
-473,Big Chubby,1,
-474,Broken Glass Cannon,1,
-475,Plan C,1,
-476,D1,1,
-477,Void,1,
-478,Pause,1,
-479,Smelter,1,
-480,Compost,1,
-481,Dataminer,1,
-482,Clicker,1,
-483,Mama Mega!,1,
-484,Wait What?,1,
-485,Crooked Penny,1,
-486,Dull Razor,1,
-487,Potato Peeler,1,
-488,Metronome,1,
-489,D Infinity,1,
-490,Eden's Soul,1,
-491,Acid Baby,1,
-492,YO LISTEN!,1,
-493,Adrenaline,1,
-494,Jacob's Ladder,1,
-495,Ghost Pepper,1,
-496,Euthanasia,1,
-497,Camo Undies,1,
-498,Duality,1,
-499,Eucharist,1,
-500,Sack of Sacks,1,
-501,Greed's Gullet,1,
-502,Large Zit,1,
-503,Little Horn,1,
-504,Brown Nugget,1,
-505,Poke Go,1,
-506,Backstabber,1,
-507,Sharp Straw,1,
-508,Mom's Razor,1,
-509,Bloodshot Eye,1,
-510,Delirious,1,
-511,Angry Fly,1,
-512,Black Hole,1,
-513,Bozo,1,
-514,Broken Modem,1,
-515,Mystery Gift,1,
-516,Sprinkler,1,
-517,Fast Bombs,1,
-518,Buddy in a Box,1,
-519,Lil Delirium,1,
-520,Jumper Cables,1,
-521,Coupon,1,
-522,Telekinesis,1,
-523,Moving Box,1,
-524,Technology Zero,1,
-525,Leprosy,1,
-526,7 Seals,1,
-527,Mr. ME!,1,
-528,Angelic Prism,1,
-529,Pop!,1,
-530,Death's List,1,
-531,Haemolacria,1,
-532,Lachryphagy,1,
-533,Trisagion,1,
-534,Schoolbag,1,
-535,Blanket,1,
-536,Sacrificial Altar,1,
-537,Lil Spewer,1,
-538,Marbles,1,
-539,Mystery Egg,1,
-540,Flat Stone,1,
-541,Marrow,1,
-542,Slipped Rib,1,
-543,Hallowed Ground,1,
-544,Pointy Rib,1,
-545,Book of the Dead,1,
-546,Dad's Ring,1,
-547,Divorce Papers,1,
-548,Jaw Bone,1,
-549,Brittle Bones,1,
-550,Broken Shovel,1,
-551,Broken Shovel,1,
-552,Mom's Shovel,1,
-553,Mucormycosis,1,
-554,2Spooky,1,
-555,Golden Razor,1,
-556,Sulfur,1,
-557,Fortune Cookie,1,
-558,Eye Sore,1,
-559,120 Volt,1,
-560,It Hurts,1,
-561,Almond Milk,1,
-562,Rock Bottom,1,
-563,Nancy Bombs,1,
-564,A Bar of Soap,1,
-565,Blood Puppy,1,
-566,Dream Catcher,1,
-567,Paschal Candle,1,
-568,Divine Intervention,1,
-569,Blood Oath,1,
-570,Playdough Cookie,1,
-571,Orphan Socks,1,
-572,Eye of the Occult,1,
-573,Immaculate Heart,1,
-574,Monstrance,1,
-575,The Intruder,1,
-576,Dirty Mind,1,
-577,Damocles,1,
-578,Free Lemonade,1,
-579,Spirit Sword,1,
-580,Red Key,1,
-581,Psy Fly,1,
-582,Wavy Cap,1,
-583,Rocket in a Jar,1,
-584,Book of Virtues,1,
-585,Alabaster Box,1,
-586,The Stairway,1,
-588,Sol,1,
-589,Luna,1,
-590,Mercurius,1,
-591,Venus,1,
-592,Terra,1,
-593,Mars,1,
-594,Jupiter,1,
-595,Saturnus,1,
-596,Uranus,1,
-597,Neptunus,1,
-598,Pluto,1,
-599,Voodoo Head,1,
-600,Eye Drops,1,
-601,Act of Contrition,1,
-602,Member Card,1,
-603,Battery Pack,1,
-604,Mom's Bracelet,1,
-605,The Scooper,1,
-606,Ocular Rift,1,
-607,Boiled Baby,1,
-608,Freezer Baby,1,
-609,Eternal D6,1,
-610,Bird Cage,1,
-611,Larynx,1,
-612,Lost Soul,1,
-614,Blood Bombs,1,
-615,Lil Dumpy,1,
-616,Bird's Eye,1,
-617,Lodestone,1,
-618,Rotten Tomato,1,
-619,Birthright,1,
-621,Red Stew,1,
-622,Genesis,1,
-623,Sharp Key,1,
-624,Booster Pack,1,
-625,Mega Mush,1,
-626,Knife Piece 1,1,
-627,Knife Piece 2,1,
-628,Death Certificate,1,
-629,Bot Fly,1,
-631,Meat Cleaver,1,
-632,Evil Charm,1,
-633,Dogma,1,
-634,Purgatory,1,
-635,Stitches,1,
-636,R Key,1,
-637,Knockout Drops,1,
-638,Eraser,1,
-639,Yuck Heart,1,
-640,Urn of Souls,1,
-641,Akeldama,1,
-642,Magic Skin,1,
-643,Revelation,1,
-644,Consolation Prize,1,
-645,Tinytoma,1,
-646,Brimstone Bombs,1,
-647,4.5 Volt,1,
-649,Fruity Plum,1,
-650,Plum Flute,1,
-651,Star of Bethlehem,1,
-652,Cube Baby,1,
-653,Vade Retro,1,
-654,False PHD,1,
-655,Spin to Win,1,
-657,Vasculitis,1,
-658,Giant Cell,1,
-659,Tropicamide,1,
-660,Card Reading,1,
-661,Quints,1,
-663,Tooth and Nail,1,
-664,Binge Eater,1,
-665,Guppy's Eye,1,
-667,Strawman,1,
-668,Dad's Note,1,
-669,Sausage,1,
-670,Options?,1,
-671,Candy Heart,1,
-672,A Pound of Flesh,1,
-673,Redemption,1,
-674,Spirit Shackles,1,
-675,Cracked Orb,1,
-676,Empty Heart,1,
-677,Astral Projection,1,
-678,C Section,1,
-679,Lil Abaddon,1,
-680,Montezuma's Revenge,1,
-681,Lil Portal,1,
-682,Worm Friend,1,
-683,Bone Spurs,1,
-684,Hungry Soul,1,
-685,Jar of Wisps,1,
-686,Soul Locket,1,
-687,Friend Finder,1,
-688,Inner Child,1,
-689,Glitched Crown,1,
-690,Belly Jelly,1,
-691,Sacred Orb,1,
-692,Sanguine Bond,1,
-693,The Swarm,1,
-694,Heartbreak,1,
-695,Bloody Gust,1,
-696,Salvation,1,
-697,Vanishing Twin,1,
-698,Twisted Pair,1,
-699,Azazel's Rage,1,
-700,Echo Chamber,1,
-701,Isaac's Tomb,1,
-702,Vengeful Spirit,1,
-703,Esau Jr.,1,
-704,Berserk!,1,
-705,Dark Arts,1,
-706,Abyss,1,
-707,Supper,1,
-708,Stapler,1,
-709,Suplex!,1,
-710,Bag of Crafting,1,
-711,Flip,1,
-712,Lemegeton,1,
-713,Sumptorium,1,
-714,Recall,1,
-715,Hold,1,
-716,Keeper's Sack,1,
-717,Keeper's Kin,1,
-719,Keeper's Box,1,
-720,Everything Jar,1,
-721,TMTRAINER,1,
-722,Anima Sola,1,
-723,Spindown Dice,1,
-724,Hypercoagulation,1,
-725,IBS,1,
-726,Hemoptysis,1,
-727,Ghost Bombs,1,
-728,Gello,1,
-729,Decap Attack,1,
-730,Glass Eye,1,
-731,Stye,1,
-732,Mom's Ring,1,
+﻿ItemID,ItemName,Korean,UnlockedFlag,Type,Quality
+1,The Sad Onion,슬픈 양파,1,Passive,3
+2,The Inner Eye,내면의 눈,1,Passive,3
+3,Spoon Bender,초능력자,1,Passive,3
+4,Cricket's Head,크리켓의 머리,1,Passive,4
+5,My Reflection,나의 모습,1,Passive,2
+6,Number One,오줌싸개,1,Passive,2
+7,Blood of the Martyr,순교자의 피,1,Passive,3
+8,Brother Bobby,보비,1,Passive,1
+9,Skatole,스카톨,1,Passive,0
+10,Halo of Flies,파리떼,1,Passive,2
+11,1up!,,1,Passive,2
+12,Magic Mushroom,마법의 버섯,1,Passive,4
+13,The Virus,바이러스,1,Passive,2
+14,Roid Rage,불량 스테로이드,1,Passive,2
+15,<3,♡,1,Passive,2
+16,Raw Liver,생간,1,Passive,2
+17,Skeleton Key,해골 열쇠,1,Passive,2
+18,A Dollar,달러,1,Passive,3
+19,Boom!,꽈광!,1,Passive,0
+20,Transcendence,초월,1,Passive,2
+21,The Compass,나침반,1,Passive,1
+22,Lunch,점심밥,1,Passive,1
+23,Dinner,저녁밥,1,Passive,1
+24,Dessert,간식,1,Passive,1
+25,Breakfast,아침밥,1,Passive,1
+26,Rotten Meat,썩은 고기,1,Passive,1
+27,Wooden Spoon,나무 숟가락,1,Passive,1
+28,The Belt,벨트,1,Passive,1
+29,Mom's Underwear,엄마의 속옷,1,Passive,1
+30,Mom's Heels,엄마의 하이힐,1,Passive,1
+31,Mom's Lipstick,엄마의 립스틱,1,Passive,1
+32,Wire Coat Hanger,철제 옷걸이,1,Passive,3
+33,The Bible,성경,1,Active,1
+34,The Book of Belial,벨리알의 책,1,Active,2
+35,The Necronomicon,네크로노미콘,1,Active,0
+36,The Poop,똥,1,Active,0
+37,Mr. Boom,미스터 붐,1,Active,1
+38,Tammy's Head,태미의 머리,1,Active,1
+39,Mom's Bra,엄마의 브래지어,1,Active,0
+40,Kamikaze!,카미카제!,1,Active,0
+41,Mom's Pad,엄마의 패드,1,Active,0
+42,Bob's Rotten Head,밥의 썩은 머리통,1,Active,1
+44,Teleport!,순간이동!,1,Active,0
+45,Yum Heart,맛난 하트,1,Active,1
+46,Lucky Foot,행운의 발,1,Passive,2
+47,Doctor's Remote,박사의 원격 조종기,1,Active,1
+48,Cupid's Arrow,큐피드의 화살,1,Passive,2
+49,Shoop Da Whoop!,모두 다 사라져빔!!,1,Active,2
+50,Steven,스티븐,1,Passive,3
+51,Pentagram,오망성,1,Passive,3
+52,Dr. Fetus,태아 박사,1,Passive,4
+53,Magneto,자석,1,Passive,1
+54,Treasure Map,보물 지도,1,Passive,1
+55,Mom's Eye,엄마의 눈알,1,Passive,1
+56,Lemon Mishap,레몬빛 실수,1,Active,0
+57,Distant Admiration,짝사랑,1,Passive,2
+58,Book of Shadows,그림자의 책,1,Active,3
+60,The Ladder,사다리,1,Passive,1
+62,Charm of the Vampire,뱀파이어의 부적,1,Passive,2
+63,The Battery,건전지,1,Passive,2
+64,Steam Sale,스팀 세일,1,Passive,2
+65,Anarchist Cookbook,무정부주의자의 요리책,1,Active,0
+66,The Hourglass,모래시계,1,Active,0
+67,Sister Maggy,매기,1,Passive,1
+68,Technology,기계장치,1,Passive,3
+69,Chocolate Milk,초콜릿 우유,1,Passive,3
+70,Growth Hormones,성장 호르몬,1,Passive,3
+71,Mini Mush,미니 버섯,1,Passive,2
+72,Rosary,묵주,1,Passive,2
+73,Cube of Meat,고기조각,1,Passive,1
+74,A Quarter,쿼터,1,Passive,0
+75,PHD,박사학위,1,Passive,2
+76,X-Ray Vision,투시 안경,1,Passive,2
+77,My Little Unicorn,나의 작은 유니콘,1,Active,1
+78,Book of Revelations,요한묵시록,1,Active,3
+79,The Mark,낙인,1,Passive,3
+80,The Pact,계약,1,Passive,3
+81,Dead Cat,죽은 고양이,1,Passive,3
+82,Lord of the Pit,구덩이의 제왕,1,Passive,3
+83,The Nail,대못,1,Active,2
+84,We Need to Go Deeper!,더 깊이 내려가야 해!,1,Active,2
+85,Deck of Cards,카드 덱,1,Active,2
+86,Monstro's Tooth,몬스트로의 이빨,1,Active,0
+87,Loki's Horns,로키의 뿔,1,Passive,1
+88,Little Chubby,리틀 처비,1,Passive,1
+89,Spider Bite,거미물림,1,Passive,2
+90,The Small Rock,작은 돌,1,Passive,3
+91,Spelunker Hat,탐험가 모자,1,Passive,2
+92,Super Bandage,슈퍼 밴디지,1,Passive,2
+93,The Gamekid,게임키드,1,Active,1
+94,Sack of Pennies,동전 주머니,1,Passive,1
+95,Robo-Baby,로보베이비,1,Passive,1
+96,Little C.H.A.D.,리틀 차드,1,Passive,2
+97,The Book of Sin,죄악의 책,1,Active,1
+98,The Relic,성유물,1,Passive,3
+99,Little Gish,리틀 기쉬,1,Passive,1
+100,Little Steven,리틀 스티븐,1,Passive,2
+101,The Halo,광륜,1,Passive,3
+102,Mom's Bottle of Pills,엄마의 약병,1,Active,1
+103,The Common Cold,감기,1,Passive,1
+104,The Parasite,기생충,1,Passive,3
+105,The D6,주사위,1,Active,4
+106,Mr. Mega,미스터 메가,1,Passive,2
+107,The Pinking Shears,핑킹 가위,1,Active,2
+108,The Wafer,제병,1,Passive,4
+109,Money = Power,돈 = 힘,1,Passive,3
+110,Mom's Contacts,엄마의 콘텍트렌즈,1,Passive,3
+111,The Bean,콩,1,Active,0
+112,Guardian Angel,수호천사,1,Passive,1
+113,Demon Baby,악마 아기,1,Passive,1
+114,Mom's Knife,엄마의 식칼,1,Passive,4
+115,Ouija Board,분신사바,1,Passive,2
+116,9 Volt,9볼트 건전지,1,Passive,2
+117,Dead Bird,죽은 새,1,Passive,0
+118,Brimstone,유황,1,Passive,4
+119,Blood Bag,혈액 팩,1,Passive,2
+120,Odd Mushroom,이상한 버섯,1,Passive,2
+121,Odd Mushroom,이상한 버섯,1,Passive,2
+122,Whore of Babylon,바빌론의 창녀,1,Passive,2
+123,Monster Manual,몬스터 도감,1,Active,1
+124,Dead Sea Scrolls,사해사본,1,Active,1
+125,Bobby-Bomb,보비 폭탄,1,Passive,1
+126,Razor Blade,면도날,1,Active,0
+127,Forget Me Now,날 잊어 주세요,1,Active,3
+128,Forever Alone,영원한 솔로,1,Passive,1
+129,Bucket of Lard,돼지기름 한 통,1,Passive,1
+130,A Pony,조랑말,1,Active,2
+131,Bomb Bag,폭탄 주머니,1,Passive,1
+132,A Lump of Coal,석탄 한 덩이,1,Passive,3
+133,Guppy's Paw,구피의 발,1,Active,3
+134,Guppy's Tail,구피의 꼬리,1,Passive,2
+135,IV Bag,수혈 팩,1,Active,2
+136,Best Friend,최고의 친구,1,Active,0
+137,Remote Detonator,원격 폭파기,1,Active,0
+138,Stigmata,성흔,1,Passive,2
+139,Mom's Purse,엄마의 지갑,1,Passive,2
+140,Bob's Curse,밥의 저주,1,Passive,1
+141,Pageant Boy,분장 소년,1,Passive,0
+142,Scapular,성의,1,Passive,2
+143,Speed Ball,스피드볼 마약,1,Passive,2
+144,Bum Friend,거지 친구,1,Passive,1
+145,Guppy's Head,구피의 머리,1,Active,2
+146,Prayer Card,기도 카드,1,Active,3
+147,Notched Axe,각진 곡괭이,1,Active,1
+148,Infestation,감염,1,Passive,0
+149,Ipecac,구토제,1,Passive,4
+150,Tough Love,사랑의 매,1,Passive,3
+151,The Mulligan,물리건,1,Passive,3
+152,Technology 2,기계장치 2,1,Passive,2
+153,Mutant Spider,돌연변이 거미,1,Passive,3
+154,Chemical Peel,화학 박피제,1,Passive,2
+155,The Peeper,엿보기 눈깔,1,Passive,2
+156,Habit,수녀복,1,Passive,2
+157,Bloody Lust,피의 욕망,1,Passive,2
+158,Crystal Ball,수정구슬,1,Active,3
+159,Spirit of the Night,밤의 영혼,1,Passive,3
+160,Crack the Sky,하늘을 가르다,1,Active,1
+161,Ankh,앙크,1,Passive,0
+162,Celtic Cross,켈트 십자가,1,Passive,1
+163,Ghost Baby,유령 아기,1,Passive,1
+164,The Candle,양초,1,Active,2
+165,Cat-O-Nine-Tails,아홉 가닥 채찍,1,Passive,3
+166,D20,20면 주사위,1,Active,2
+167,Harlequin Baby,할리퀸 아기,1,Passive,1
+168,Epic Fetus,쩌는 태아,1,Passive,4
+169,Polyphemus,폴리페무스,1,Passive,4
+170,Daddy Longlegs,장님거미,1,Passive,3
+171,Spider Butt,거미 엉덩이,1,Active,1
+172,Sacrificial Dagger,희생의 단도,1,Passive,2
+173,Mitre,주교관,1,Passive,3
+174,Rainbow Baby,무지개 아기,1,Passive,1
+175,Dad's Key,아빠의 열쇠,1,Active,2
+176,Stem Cells,줄기세포,1,Passive,1
+177,Portable Slot,휴대용 슬롯머신,1,Active,0
+178,Holy Water,성수,1,Passive,3
+179,Fate,운명,1,Passive,3
+180,The Black Bean,검은 콩,1,Passive,0
+181,White Pony,하얀 조랑말,1,Active,3
+182,Sacred Heart,성스러운 심장,1,Passive,4
+183,Tooth Picks,이쑤시개,1,Passive,3
+184,Holy Grail,신성한 성배,1,Passive,3
+185,Dead Dove,죽은 비둘기,1,Passive,3
+186,Blood Rights,피의 권리,1,Active,0
+187,Guppy's Hair Ball,구피의 털뭉치,1,Passive,1
+188,Abel,아벨,1,Passive,0
+189,SMB Super Fan,슈미보 광팬,1,Passive,3
+190,Pyro,폭탄마,1,Passive,3
+191,3 Dollar Bill,3달러 지폐,1,Passive,2
+192,Telepathy for Dummies,천재반을 위한 텔레파시법,1,Active,1
+193,MEAT!,고기!,1,Passive,2
+194,Magic 8 Ball,마법의 8번 공,1,Passive,1
+195,Mom's Coin Purse,엄마의 동전 지갑,1,Passive,0
+196,Squeezy,쥐어짜기 장난감,1,Passive,3
+197,Jesus Juice,예수 주스,1,Passive,2
+198,Box,상자,1,Passive,0
+199,Mom's Key,엄마의 열쇠,1,Passive,3
+200,Mom's Eyeshadow,엄마의 아이섀도우,1,Passive,1
+201,Iron Bar,철괴,1,Passive,2
+202,Midas' Touch,미다스의 손길,1,Passive,1
+203,Humbleing Bundle,험블 번들,1,Passive,3
+204,Fanny Pack,주머니 가방,1,Passive,1
+205,Sharp Plug,날카로운 플러그,1,Passive,2
+206,Guillotine,단두대,1,Passive,0
+207,Ball of Bandages,밴드 덩어리,1,Passive,1
+208,Champion Belt,챔피언 벨트,1,Passive,3
+209,Butt Bombs,궁둥이 폭탄,1,Passive,1
+210,Gnawed Leaf,갉아먹힌 나뭇잎,1,Passive,1
+211,Spiderbaby,새끼 거미,1,Passive,0
+212,Guppy's Collar,구피의 목걸이,1,Passive,1
+213,Lost Contact,잃어버린 렌즈,1,Passive,2
+214,Anemic,빈혈증,1,Passive,1
+215,Goat Head,염소 머리,1,Passive,3
+216,Ceremonial Robes,의식용 로브,1,Passive,3
+217,Mom's Wig,엄마의 가발,1,Passive,2
+218,Placenta,태반,1,Passive,2
+219,Old Bandage,낡은 밴드,1,Passive,2
+220,Sad Bombs,눈물 폭탄,1,Passive,2
+221,Rubber Cement,고무 접착제,1,Passive,3
+222,Anti-Gravity,반중력,1,Passive,1
+223,Pyromaniac,방화광,1,Passive,4
+224,Cricket's Body,크리켓의 몸,1,Passive,3
+225,Gimpy,김피,1,Passive,2
+226,Black Lotus,검은 연꽃,1,Passive,2
+227,Piggy Bank,돼지 저금통,1,Passive,1
+228,Mom's Perfume,엄마의 향수,1,Passive,2
+229,Monstro's Lung,몬스트로의 폐,1,Passive,2
+230,Abaddon,아바돈,1,Passive,3
+231,Ball of Tar,타르 덩어리,1,Passive,2
+232,Stop Watch,스톱워치,1,Passive,4
+233,Tiny Planet,소행성,1,Passive,0
+234,Infestation 2,감염 2,1,Passive,3
+236,E. Coli,대장균,1,Passive,0
+237,Death's Touch,죽음의 손길,1,Passive,3
+238,Key Piece 1,열쇠 조각 1,1,Passive,0
+239,Key Piece 2,열쇠 조각 2,1,Passive,0
+240,Experimental Treatment,임상시험,1,Passive,1
+241,Contract From Below,지하로부터의 계약,1,Passive,2
+242,Infamy,악명,1,Passive,2
+243,Trinity Shield,삼위일체 방패,1,Passive,2
+244,Tech.5,기계 0.5,1,Passive,3
+245,20/20,시력 2.0,1,Passive,4
+246,Blue Map,파란 지도,1,Passive,1
+247,BFFS!,베프들!,1,Passive,2
+248,Hive Mind,군체의식,1,Passive,2
+249,There's Options,추가 선택권,1,Passive,3
+250,Bogo Bombs,1+1 폭탄,1,Passive,1
+251,Starter Deck,스타터 덱,1,Passive,2
+252,Little Baggy,작은 주머니,1,Passive,0
+253,Magic Scab,마법의 딱쟁이,1,Passive,2
+254,Blood Clot,응고혈,1,Passive,2
+255,Screw,나사못,1,Passive,2
+256,Hot Bombs,불폭탄,1,Passive,1
+257,Fire Mind,불타는 마음,1,Passive,2
+258,Missing No.,,1,Passive,0
+259,Dark Matter,암흑 물질,1,Passive,3
+260,Black Candle,검은 양초,1,Passive,3
+261,Proptosis,안구 돌출증,1,Passive,3
+262,Missing Page 2,찢어진 페이지 2,1,Passive,0
+263,Clear Rune,투명한 룬,1,Active,2
+264,Smart Fly,똑똑한 파리,1,Passive,1
+265,Dry Baby,마른 아기,1,Passive,3
+266,Juicy Sack,축축한 알집,1,Passive,2
+267,Robo-Baby 2.0,로보 아기 2.0,1,Passive,1
+268,Rotten Baby,썩은 아기,1,Passive,3
+269,Headless Baby,머리없는 아기,1,Passive,1
+270,Leech,거머리,1,Passive,2
+271,Mystery Sack,수수께끼의 주머니,1,Passive,2
+272,BBF,베프,1,Passive,0
+273,Bob's Brain,밥의 뇌,1,Passive,0
+274,Best Bud,최고의 짝꿍,1,Passive,0
+275,Lil Brimstone,꼬마 유황,1,Passive,2
+276,Isaac's Heart,아이작의 심장,1,Passive,0
+277,Lil Haunt,꼬마 유령,1,Passive,1
+278,Dark Bum,악마 거지,1,Passive,3
+279,Big Fan,왕팬,1,Passive,1
+280,Sissy Longlegs,눈나 거미,1,Passive,1
+281,Punching Bag,샌드백,1,Passive,1
+282,How to Jump,점프 하는 법,1,Active,1
+283,D100,100면 주사위,1,Active,1
+284,D4,4면 주사위,1,Active,1
+285,D10,10면 주사위,1,Active,1
+286,Blank Card,빈 카드,1,Active,2
+287,Book of Secrets,비밀의 책,1,Active,0
+288,Box of Spiders,거미 상자,1,Active,1
+289,Red Candle,빨간 양초,1,Active,1
+290,The Jar,유리병,1,Active,0
+291,Flush!,쏴아!,1,Active,1
+292,Satanic Bible,사탄경,1,Active,3
+293,Head of Krampus,크람푸스의 머리,1,Active,1
+294,Butter Bean,흰강낭콩,1,Active,0
+295,Magic Fingers,침대 안마기,1,Active,0
+296,Converter,변환기,1,Active,1
+297,Pandora's Box,판도라의 상자,1,Active,2
+298,Unicorn Stump,유니콘의 잘린 뿔,1,Active,1
+299,Taurus,황소자리,1,Passive,1
+300,Aries,양자리,1,Passive,2
+301,Cancer,게자리,1,Passive,3
+302,Leo,사자자리,1,Passive,1
+303,Virgo,처녀자리,1,Passive,2
+304,Libra,천칭자리,1,Passive,1
+305,Scorpio,전갈자리,1,Passive,3
+306,Sagittarius,사수자리,1,Passive,3
+307,Capricorn,염소자리,1,Passive,3
+308,Aquarius,물병자리,1,Passive,2
+309,Pisces,물고기자리,1,Passive,2
+310,Eve's Mascara,이브의 마스카라,1,Passive,3
+311,Judas' Shadow,유다의 그림자,1,Passive,3
+312,Maggy's Bow,매기의 리본,1,Passive,2
+313,Holy Mantle,신성한 망토,1,Passive,4
+314,Thunder Thighs,살찐 허벅지,1,Passive,1
+315,Strange Attractor,이상한 끌개,1,Passive,0
+316,Cursed Eye,저주받은 눈알,1,Passive,0
+317,Mysterious Liquid,이상한 액체,1,Passive,3
+318,Gemini,쌍둥이자리,1,Passive,1
+319,Cain's Other Eye,카인의 왼쪽 눈,1,Passive,2
+320,???'s Only Friend,???의 하나뿐인 친구,1,Passive,1
+321,Samson's Chains,삼손의 쇠사슬,1,Passive,1
+322,Mongo Baby,누더기 아기,1,Passive,2
+323,Isaac's Tears,아이작의 눈물,1,Active,1
+324,Undefined,,1,Active,1
+325,Scissors,가위,1,Active,0
+326,Breath of Life,생명의 숨결,1,Active,1
+327,The Polaroid,즉석사진,1,Passive,2
+328,The Negative,반전사진,1,Passive,2
+329,The Ludovico Technique,루도비코 요법,1,Passive,1
+330,Soy Milk,두유,1,Passive,2
+331,Godhead,신,1,Passive,4
+332,Lazarus' Rags,나사로의 붕대,1,Passive,1
+333,The Mind,정신,1,Passive,3
+334,The Body,육체,1,Passive,3
+335,The Soul,영혼,1,Passive,3
+336,Dead Onion,죽은 양파,1,Passive,2
+337,Broken Watch,부서진 시계,1,Passive,1
+338,The Boomerang,부메랑,1,Active,1
+339,Safety Pin,안전핀,1,Passive,1
+340,Caffeine Pill,카페인 정,1,Passive,1
+341,Torn Photo,찢어진 사진,1,Passive,3
+342,Blue Cap,파란 환각버섯,1,Passive,3
+343,Latch Key,현관 열쇠,1,Passive,1
+344,Match Book,종이 성냥,1,Passive,1
+345,Synthoil,합성 스테로이드,1,Passive,3
+346,A Snack,과자,1,Passive,1
+347,Diplopia,복시,1,Active,3
+348,Placebo,위약,1,Active,1
+349,Wooden Nickel,나무 동전,1,Active,1
+350,Toxic Shock,독성 쇼크,1,Passive,3
+351,Mega Bean,대빵 큰 콩,1,Active,1
+352,Glass Cannon,유리 대포,1,Active,1
+353,Bomber Boy,봄버맨,1,Passive,2
+354,Crack Jacks,식품 완구,1,Passive,2
+355,Mom's Pearls,엄마의 진주목걸이,1,Passive,2
+356,Car Battery,자동차 건전지,1,Passive,3
+357,Box of Friends,친구 상자,1,Active,1
+358,The Wiz,법사,1,Passive,0
+359,8 Inch Nails,8인치 대못,1,Passive,3
+360,Incubus,인큐버스,1,Passive,4
+361,Fate's Reward,운명의 보상,1,Passive,2
+362,Lil Chest,꼬마 상자,1,Passive,2
+363,Sworn Protector,맹세한 수호자,1,Passive,2
+364,Friend Zone,사랑과 우정 사이,1,Passive,1
+365,Lost Fly,길잃은 파리,1,Passive,2
+366,Scatter Bombs,분산형 폭탄,1,Passive,1
+367,Sticky Bombs,끈끈이 폭탄,1,Passive,1
+368,Epiphora,유루증,1,Passive,1
+369,Continuum,연속체,1,Passive,2
+370,Mr. Dolly,돌리 씨,1,Passive,3
+371,Curse of the Tower,탑의 저주,1,Passive,0
+372,Charged Baby,충전지 아기,1,Passive,2
+373,Dead Eye,명사수의 눈,1,Passive,3
+374,Holy Light,신성한 빛,1,Passive,3
+375,Host Hat,호스트 모자,1,Passive,3
+376,Restock,재입고,1,Passive,2
+377,Bursting Sack,터진 알주머니,1,Passive,1
+378,Number Two,똥싸개,1,Passive,2
+379,Pupula Duplex,두개의 눈동자,1,Passive,2
+380,Pay to Play,정액제,1,Passive,2
+381,Eden's Blessing,에덴의 축복,1,Passive,3
+382,Friendly Ball,익숙한 공,1,Active,1
+383,Tear Detonator,눈물 기폭제,1,Active,1
+384,Lil Gurdy,꼬마 거디,1,Passive,1
+385,Bumbo,범보,1,Passive,1
+386,D12,12면 주사위,1,Active,1
+387,Censer,향로,1,Passive,2
+388,Key Bum,열쇠 거지,1,Passive,0
+389,Rune Bag,룬 가방,1,Passive,3
+390,Seraphim,세라핌,1,Passive,3
+391,Betrayal,배신,1,Passive,1
+392,Zodiac,황도궁,1,Passive,1
+393,Serpent's Kiss,독뱀의 키스,1,Passive,2
+394,Marked,조준,1,Passive,0
+395,Tech X,기계 X,1,Passive,4
+396,Ventricle Razor,심실 절단기,1,Active,1
+397,Tractor Beam,조종 광선,1,Passive,3
+398,God's Flesh,신의 살점,1,Passive,1
+399,Maw of the Void,공허의 구렁텅이,1,Passive,3
+400,Spear of Destiny,운명의 창,1,Passive,1
+401,Explosivo,폭발물,1,Passive,3
+402,Chaos,혼돈,1,Passive,3
+403,Spider Mod,스파이더모드,1,Passive,1
+404,Farting Baby,방귀쟁이 아기,1,Passive,1
+405,GB Bug,게임 버그,1,Passive,1
+406,D8,8면 주사위,1,Active,1
+407,Purity,순도,1,Passive,3
+408,Athame,마법 단검,1,Passive,3
+409,Empty Vessel,빈 그릇,1,Passive,2
+410,Evil Eye,악마의 눈,1,Passive,2
+411,Lusty Blood,욕망의 피,1,Passive,3
+412,Cambion Conception,몽마의 자식들,1,Passive,1
+413,Immaculate Conception,원죄없는 잉태,1,Passive,1
+414,More Options,더 많은 선택권,1,Passive,3
+415,Crown of Light,빛의 왕관,1,Passive,4
+416,Deep Pockets,넓은 가방,1,Passive,2
+417,Succubus,서큐버스,1,Passive,3
+418,Fruit Cake,과일 케이크,1,Passive,2
+419,Teleport 2.0,순간이동 2.0,1,Active,3
+420,Black Powder,검은 가루,1,Passive,0
+421,Kidney Bean,강낭콩,1,Active,0
+422,Glowing Hourglass,빛나는 모래시계,1,Active,3
+423,Circle of Protection,보호의 고리,1,Passive,2
+424,Sack Head,자루 머리,1,Passive,3
+425,Night Light,손전등,1,Passive,1
+426,Obsessed Fan,집착하는 추종자,1,Passive,0
+427,Mine Crafter,마인크래프터,1,Active,1
+428,PJs,잠옷,1,Passive,2
+429,Head of the Keeper,키퍼의 머리,1,Passive,2
+430,Papa Fly,파리 아저씨,1,Passive,1
+431,Multidimensional Baby,다차원 아기,1,Passive,2
+432,Glitter Bombs,반짝이 폭탄,1,Passive,2
+433,My Shadow,내 그림자,1,Passive,1
+434,Jar of Flies,파리 담은 병,1,Active,2
+435,Lil Loki,꼬마 로키,1,Passive,1
+436,Milk!,우유!,1,Passive,1
+437,D7,7면체 주사위,1,Active,1
+438,Binky,쪽쪽이,1,Passive,3
+439,Mom's Box,엄마의 상자,1,Active,2
+440,Kidney Stone,신장 결석,1,Passive,2
+441,Mega Blast,메가 블래스트,1,Active,4
+442,Dark Prince's Crown,어둠 왕자의 왕관,1,Passive,1
+443,Apple!,사과!,1,Passive,3
+444,Lead Pencil,연필,1,Passive,3
+445,Dog Tooth,개 이빨,1,Passive,2
+446,Dead Tooth,죽은 이빨,1,Passive,1
+447,Linger Bean,납작한 콩,1,Passive,0
+448,Shard of Glass,유리 조각,1,Passive,1
+449,Metal Plate,강철판,1,Passive,1
+450,Eye of Greed,탐욕의 눈,1,Passive,2
+451,Tarot Cloth,타로 천,1,Passive,2
+452,Varicose Veins,정맥류,1,Passive,0
+453,Compound Fracture,복합 골절,1,Passive,3
+454,Polydactyly,다지증,1,Passive,2
+455,Dad's Lost Coin,아빠의 잃어버린 동전,1,Passive,1
+456,Midnight Snack,곰팡이 핀 빵,1,Passive,1
+457,Cone Head,콘헤드,1,Passive,2
+458,Belly Button,배꼽,1,Passive,2
+459,Sinus Infection,축농증,1,Passive,3
+460,Glaucoma,녹내장,1,Passive,1
+461,Parasitoid,기생자,1,Passive,3
+462,Eye of Belial,벨리알의 눈,1,Passive,3
+463,Sulfuric Acid,황산,1,Passive,2
+464,Glyph of Balance,균형의 문장,1,Passive,2
+465,Analog Stick,아날로그 스틱,1,Passive,2
+466,Contagion,전염병,1,Passive,2
+467,Finger!,손가락!,1,Passive,1
+468,Shade,셰이드,1,Passive,0
+469,Depression,우울증,1,Passive,1
+470,Hushy,허쉬,1,Passive,0
+471,Lil Monstro,꼬마 몬스트로,1,Passive,2
+472,King Baby,아기 왕,1,Passive,1
+473,Big Chubby,커다란 처비,1,Passive,1
+474,Broken Glass Cannon,부서진 유리 대포,1,Passive,
+475,Plan C,플랜 C,1,Active,0
+476,D1,1면 주사위,1,Active,2
+477,Void,공허,1,Active,3
+478,Pause,일시정지,1,Active,0
+479,Smelter,용광로,1,Active,2
+480,Compost,퇴비,1,Active,0
+481,Dataminer,데이터마이너,1,Active,0
+482,Clicker,클리커,1,Active,0
+483,Mama Mega!,맘마 메가!,1,Active,3
+484,Wait What?,잠깐 뭐야?,1,Active,1
+485,Crooked Penny,구부러진 동전,1,Active,2
+486,Dull Razor,무딘 면도칼,1,Active,0
+487,Potato Peeler,감자칼,1,Active,2
+488,Metronome,메트로놈,1,Active,1
+489,D Infinity,무한 주사위,1,Active,4
+490,Eden's Soul,에덴의 영혼,1,Active,3
+491,Acid Baby,산성 아기,1,Passive,2
+492,YO LISTEN!,,1,Passive,2
+493,Adrenaline,아드레날린,1,Passive,1
+494,Jacob's Ladder,야곱의 사다리,1,Passive,3
+495,Ghost Pepper,고스트 페퍼,1,Passive,3
+496,Euthanasia,안락사,1,Passive,3
+497,Camo Undies,위장 속옷,1,Passive,3
+498,Duality,이중성,1,Passive,1
+499,Eucharist,성찬,1,Passive,3
+500,Sack of Sacks,자루 주머니,1,Passive,2
+501,Greed's Gullet,탐욕의 식도,1,Passive,1
+502,Large Zit,대왕 여드름,1,Passive,1
+503,Little Horn,작은 뿔,1,Passive,3
+504,Brown Nugget,갈색 너겟,1,Active,0
+505,Poke Go,포켓 GO,1,Passive,2
+506,Backstabber,배신자,1,Passive,3
+507,Sharp Straw,날카로운 빨대,1,Active,2
+508,Mom's Razor,엄마의 면도칼,1,Passive,1
+509,Bloodshot Eye,피눈물 눈알,1,Passive,1
+510,Delirious,정신착란,1,Active,1
+511,Angry Fly,성난 파리,1,Passive,1
+512,Black Hole,블랙홀,1,Active,1
+513,Bozo,멍청이,1,Passive,2
+514,Broken Modem,고장난 모뎀,1,Passive,3
+515,Mystery Gift,수수께끼의 선물,1,Active,3
+516,Sprinkler,스프링클러,1,Active,1
+517,Fast Bombs,빠른 폭탄,1,Passive,1
+518,Buddy in a Box,친구 든 상자,1,Passive,2
+519,Lil Delirium,꼬마 델리리움,1,Passive,1
+520,Jumper Cables,점퍼 케이블,1,Passive,3
+521,Coupon,쿠폰,1,Active,2
+522,Telekinesis,염동력,1,Active,1
+523,Moving Box,수납상자,1,Active,1
+524,Technology Zero,기계장치 0,1,Passive,3
+525,Leprosy,문둥병,1,Passive,0
+526,7 Seals,7개의 도장,1,Passive,2
+527,Mr. ME!,미 씨!,1,Active,3
+528,Angelic Prism,천사빛 프리즘,1,Passive,3
+529,Pop!,뽁!,1,Passive,1
+530,Death's List,죽음의 살생부,1,Passive,1
+531,Haemolacria,피눈물병,1,Passive,4
+532,Lachryphagy,눈물먹이,1,Passive,3
+533,Trisagion,삼성송,1,Passive,3
+534,Schoolbag,책가방,1,Passive,3
+535,Blanket,담요,1,Passive,2
+536,Sacrificial Altar,희생의 제단,1,Active,1
+537,Lil Spewer,꼬마 구토쟁이,1,Passive,1
+538,Marbles,구슬,1,Passive,2
+539,Mystery Egg,이상한 알,1,Passive,0
+540,Flat Stone,납작한 돌,1,Passive,2
+541,Marrow,골수,1,Passive,1
+542,Slipped Rib,빠진 갈비뼈,1,Passive,1
+543,Hallowed Ground,성지,1,Passive,1
+544,Pointy Rib,날카로운 갈비뼈,1,Passive,1
+545,Book of the Dead,망자의 책,1,Active,2
+546,Dad's Ring,아빠의 반지,1,Passive,2
+547,Divorce Papers,이혼 서류,1,Passive,3
+548,Jaw Bone,턱뼈,1,Passive,1
+549,Brittle Bones,최약골,1,Passive,3
+550,Broken Shovel,부러진 삽,1,Active,4
+551,Broken Shovel,부러진 삽,1,Passive,4
+552,Mom's Shovel,엄마의 삽,1,Active,4
+553,Mucormycosis,털곰팡이균,1,Passive,3
+554,2Spooky,넘나 무서운 것,1,Passive,1
+555,Golden Razor,황금 면도날,1,Active,0
+556,Sulfur,황,1,Active,2
+557,Fortune Cookie,포츈 쿠키,1,Active,2
+558,Eye Sore,흉물,1,Passive,1
+559,120 Volt,120 볼트,1,Passive,2
+560,It Hurts,너무 아파,1,Passive,1
+561,Almond Milk,아몬드 우유,1,Passive,1
+562,Rock Bottom,밑바닥,1,Passive,4
+563,Nancy Bombs,낸시 폭탄,1,Passive,1
+564,A Bar of Soap,비누 한 덩이,1,Passive,2
+565,Blood Puppy,핏덩이 강아지,1,Passive,1
+566,Dream Catcher,드림캐쳐,1,Passive,2
+567,Paschal Candle,부활절 양초,1,Passive,3
+568,Divine Intervention,신의 개입,1,Passive,1
+569,Blood Oath,피의 맹세,1,Passive,1
+570,Playdough Cookie,찰흙 쿠키,1,Passive,2
+571,Orphan Socks,짝짝이 양말,1,Passive,2
+572,Eye of the Occult,오컬트의 눈,1,Passive,3
+573,Immaculate Heart,원죄없는 심장,1,Passive,3
+574,Monstrance,성광,1,Passive,1
+575,The Intruder,침입자,1,Passive,2
+576,Dirty Mind,더러운 군집,1,Passive,1
+577,Damocles,다모클레스,1,Active,3
+578,Free Lemonade,공짜 레몬에이드,1,Active,0
+579,Spirit Sword,영혼검,1,Passive,3
+580,Red Key,붉은 열쇠,1,Active,3
+581,Psy Fly,초능력 파리,1,Passive,4
+582,Wavy Cap,어지러운 버섯,1,Active,0
+583,Rocket in a Jar,로켓 든 병,1,Passive,1
+584,Book of Virtues,미덕의 책,1,Active,3
+585,Alabaster Box,석고 옥합,1,Active,1
+586,The Stairway,천국의 계단,1,Passive,3
+588,Sol,태양,1,Passive,2
+589,Luna,달,1,Passive,3
+590,Mercurius,수성,1,Passive,2
+591,Venus,금성,1,Passive,2
+592,Terra,지구,1,Passive,3
+593,Mars,화성,1,Passive,0
+594,Jupiter,목성,1,Passive,2
+595,Saturnus,토성,1,Passive,2
+596,Uranus,천왕성,1,Passive,3
+597,Neptunus,해왕성,1,Passive,3
+598,Pluto,명왕성,1,Passive,3
+599,Voodoo Head,부두 머리,1,Passive,2
+600,Eye Drops,점안약,1,Passive,3
+601,Act of Contrition,참회의 기도,1,Passive,3
+602,Member Card,멤버쉽 카드,1,Passive,2
+603,Battery Pack,배터리 팩,1,Passive,0
+604,Mom's Bracelet,엄마의 팔찌,1,Active,1
+605,The Scooper,둥근 숟갈,1,Active,0
+606,Ocular Rift,오큘러 리프트,1,Passive,2
+607,Boiled Baby,종양 아기,1,Passive,1
+608,Freezer Baby,얼려버리는 아기,1,Passive,2
+609,Eternal D6,이터널 주사위,1,Active,3
+610,Bird Cage,새장,1,Passive,0
+611,Larynx,후두,1,Active,2
+612,Lost Soul,잃어버린 영혼,1,Passive,1
+614,Blood Bombs,혈액 폭탄,1,Passive,2
+615,Lil Dumpy,꼬마 덤피,1,Passive,3
+616,Bird's Eye,버즈아이,1,Passive,3
+617,Lodestone,자철석,1,Passive,2
+618,Rotten Tomato,썩은 토마토,1,Passive,2
+619,Birthright,생득권,1,Passive,3
+621,Red Stew,붉은 스튜,1,Passive,2
+622,Genesis,창세기,1,Active,2
+623,Sharp Key,날카로운 열쇠,1,Active,1
+624,Booster Pack,부스터 팩,1,Passive,1
+625,Mega Mush,거대버섯,1,Active,4
+626,Knife Piece 1,칼 조각 1,1,Passive,0
+627,Knife Piece 2,칼 조각 2,1,Passive,0
+628,Death Certificate,사망 증명서,1,Active,4
+629,Bot Fly,로봇 파리,1,Passive,3
+631,Meat Cleaver,고기 도축칼,1,Active,0
+632,Evil Charm,사악한 부적,1,Passive,1
+633,Dogma,신조,1,Passive,3
+634,Purgatory,연옥,1,Passive,1
+635,Stitches,봉제인형,1,Active,1
+636,R Key,R 키,1,Active,4
+637,Knockout Drops,KO 물약,1,Passive,2
+638,Eraser,지우개,1,Active,1
+639,Yuck Heart,역겨운 하트,1,Active,1
+640,Urn of Souls,영혼의 항아리,1,Active,3
+641,Akeldama,아겔다마,1,Passive,1
+642,Magic Skin,마법의 피부,1,Active,2
+643,Revelation,계시,1,Passive,4
+644,Consolation Prize,위로상,1,Passive,1
+645,Tinytoma,타이니토마,1,Passive,1
+646,Brimstone Bombs,유황불 폭탄,1,Passive,2
+647,4.5 Volt,4.5볼트 건전지,1,Passive,2
+649,Fruity Plum,탱탱한 플럼,1,Passive,1
+650,Plum Flute,플럼 피리,1,Active,1
+651,Star of Bethlehem,베들레헴의 별,1,Passive,3
+652,Cube Baby,큐브 아기,1,Passive,1
+653,Vade Retro,사탄아 물렀거라,1,Active,1
+654,False PHD,위조 학위,1,Passive,2
+655,Spin to Win,룰렛 팽이,1,Active,0
+657,Vasculitis,혈관염,1,Passive,1
+658,Giant Cell,거대한 세포,1,Passive,1
+659,Tropicamide,산동약,1,Passive,1
+660,Card Reading,카드점,1,Passive,3
+661,Quints,다섯 쌍둥이,1,Passive,2
+663,Tooth and Nail,이빨과 손톱,1,Passive,2
+664,Binge Eater,폭식가,1,Passive,4
+665,Guppy's Eye,구피의 눈,1,Passive,2
+667,Strawman,밀짚인형,1,Passive,1
+668,Dad's Note,아빠의 쪽지,1,Passive,0
+669,Sausage,소세지,1,Passive,3
+670,Options?,선택권?,1,Passive,2
+671,Candy Heart,캔디 하트,1,Passive,1
+672,A Pound of Flesh,살점 한 덩이,1,Passive,0
+673,Redemption,회개,1,Passive,2
+674,Spirit Shackles,영혼의 족쇄,1,Passive,1
+675,Cracked Orb,깨진 오브,1,Passive,1
+676,Empty Heart,비어있는 심장,1,Passive,1
+677,Astral Projection,유체이탈,1,Passive,1
+678,C Section,제왕절개,1,Passive,4
+679,Lil Abaddon,꼬마 아바돈,1,Passive,2
+680,Montezuma's Revenge,몬테주마의 복수,1,Passive,2
+681,Lil Portal,꼬마 포탈,1,Passive,0
+682,Worm Friend,지렁이 친구,1,Passive,3
+683,Bone Spurs,골국,1,Passive,2
+684,Hungry Soul,굶주린 영혼,1,Passive,2
+685,Jar of Wisps,도깨비불 든 병,1,Active,1
+686,Soul Locket,영혼 로켓,1,Passive,1
+687,Friend Finder,친구 찾기,1,Active,2
+688,Inner Child,내면의 아이,1,Passive,2
+689,Glitched Crown,글리치 왕관,1,Passive,4
+690,Belly Jelly,벨리 젤리,1,Passive,3
+691,Sacred Orb,성스러운 오브,1,Passive,4
+692,Sanguine Bond,핏빛 결속,1,Passive,1
+693,The Swarm,파리 군단,1,Passive,2
+694,Heartbreak,비탄,1,Passive,3
+695,Bloody Gust,피의 돌풍,1,Passive,2
+696,Salvation,구원,1,Passive,3
+697,Vanishing Twin,사라진 쌍둥이,1,Passive,1
+698,Twisted Pair,뒤틀린 한 쌍,1,Passive,4
+699,Azazel's Rage,아자젤의 분노,1,Passive,2
+700,Echo Chamber,반향효과,1,Passive,3
+701,Isaac's Tomb,아이작의 무덤,1,Passive,2
+702,Vengeful Spirit,복수심의 영혼,1,Passive,1
+703,Esau Jr.,에사우 주니어,1,Active,1
+704,Berserk!,폭주!,1,Active,1
+705,Dark Arts,흑마술,1,Active,1
+706,Abyss,무저갱,1,Active,3
+707,Supper,만찬,1,Passive,1
+708,Stapler,스테이플러,1,Passive,3
+709,Suplex!,수플렉스!,1,Active,1
+710,Bag of Crafting,조합 가방,1,Active,3
+711,Flip,뒤집기,1,Active,4
+712,Lemegeton,마도서 레메게톤,1,Active,3
+713,Sumptorium,섬토리움,1,Active,3
+714,Recall,복귀,1,Active,0
+715,Hold,저장,1,Active,0
+716,Keeper's Sack,키퍼의 자루,1,Passive,3
+717,Keeper's Kin,키퍼의 친척,1,Passive,2
+719,Keeper's Box,키퍼의 상자,1,Active,1
+720,Everything Jar,모든 게 담긴 병,1,Active,2
+721,TMTRAINER,,1,Passive,0
+722,Anima Sola,아니마 솔라,1,Active,3
+723,Spindown Dice,스핀다운 주사위,1,Active,4
+724,Hypercoagulation,과응고,1,Passive,2
+725,IBS,,1,Passive,0
+726,Hemoptysis,각혈,1,Passive,1
+727,Ghost Bombs,유령 폭탄,1,Passive,1
+728,Gello,겔로,1,Active,3
+729,Decap Attack,참수 공격,1,Active,1
+730,Glass Eye,의안,1,Passive,3
+731,Stye,다래끼,1,Passive,2
+732,Mom's Ring,엄마의 반지,1,Passive,3
