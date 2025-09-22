@@ -68,20 +68,25 @@ class TreeManager:
     def set_unlock(self, iid: str, unlocked: bool) -> None:
         if iid in self.records:
             self.records[iid]["unlock"] = bool(unlocked)
-            self.tree.set(iid, "unlock", "O" if unlocked else "X")
+            self.tree.set(iid, "unlock", "O" if unlocked else "")
 
 
 class IsaacSaveEditor(tk.Tk):
     """Main application window for the save editor."""
 
-    MAIN_TAB_NAMES: List[str] = [
-        "메인",
-        "완료 마크",
-        "비밀",
-        "패시브",
-        "액티브",
-        "도전과제",
+    SECRET_TAB_INFO: List[tuple[str, str]] = [
+        ("Character", "캐릭터"),
+        ("Map", "맵"),
+        ("Item", "업적아이템"),
+        ("Boss", "보스"),
+        ("Card", "카드"),
+        ("Rune", "룬"),
+        ("Pill", "알약"),
+        ("Trinket", "장신구"),
+        ("Other", "기타"),
+        ("Pickup", "픽업"),
     ]
+    SECRET_FALLBACK_TYPE = "Other"
 
     def __init__(self) -> None:
         super().__init__()
@@ -118,17 +123,9 @@ class IsaacSaveEditor(tk.Tk):
 
         self._locked_tree_ids: Set[int] = set()
 
-        self._completion_data = self._load_completion_data()
-        self._character_options = self._build_character_options()
-        self._current_character_id: Optional[str] = self._character_options[0][1] if self._character_options else None
-        self._character_var = tk.StringVar()
-        self._completion_tree: Optional[CheckboxTreeview] = None
-        self._completion_manager: Optional[TreeManager] = None
-
-        self._secret_records = self._load_secret_records()
-        self._secret_tree: Optional[CheckboxTreeview] = None
-        self._secret_manager: Optional[TreeManager] = None
-        self._secret_ids: List[str] = [record["iid"] for record in self._secret_records]
+        self._secret_records_by_type, self._secret_ids_by_type = self._load_secret_records()
+        self._secret_trees: Dict[str, CheckboxTreeview] = {}
+        self._secret_managers: Dict[str, TreeManager] = {}
 
         self._item_records, self._item_ids_by_type = self._load_item_records()
         self._item_trees: Dict[str, CheckboxTreeview] = {}
@@ -151,37 +148,34 @@ class IsaacSaveEditor(tk.Tk):
 
         main_tab = ttk.Frame(notebook, padding=12)
         main_tab.columnconfigure(0, weight=1)
-        notebook.add(main_tab, text=self.MAIN_TAB_NAMES[0])
+        notebook.add(main_tab, text="메인")
         self._build_main_tab(main_tab)
 
-        completion_tab = ttk.Frame(notebook, padding=12)
-        completion_tab.columnconfigure(0, weight=1)
-        completion_tab.rowconfigure(1, weight=1)
-        notebook.add(completion_tab, text=self.MAIN_TAB_NAMES[1])
-        self._build_completion_tab(completion_tab)
-
-        secrets_tab = ttk.Frame(notebook, padding=12)
-        secrets_tab.columnconfigure(0, weight=1)
-        secrets_tab.rowconfigure(1, weight=1)
-        notebook.add(secrets_tab, text=self.MAIN_TAB_NAMES[2])
-        self._build_secrets_tab(secrets_tab)
+        for secret_type, tab_label in self.SECRET_TAB_INFO:
+            if not self._secret_ids_by_type.get(secret_type):
+                continue
+            secrets_tab = ttk.Frame(notebook, padding=12)
+            secrets_tab.columnconfigure(0, weight=1)
+            secrets_tab.rowconfigure(1, weight=1)
+            notebook.add(secrets_tab, text=tab_label)
+            self._build_secrets_tab(secrets_tab, secret_type)
 
         passive_tab = ttk.Frame(notebook, padding=12)
         passive_tab.columnconfigure(0, weight=1)
         passive_tab.rowconfigure(1, weight=1)
-        notebook.add(passive_tab, text=self.MAIN_TAB_NAMES[3])
+        notebook.add(passive_tab, text="패시브")
         self._build_item_tab(passive_tab, "Passive")
 
         active_tab = ttk.Frame(notebook, padding=12)
         active_tab.columnconfigure(0, weight=1)
         active_tab.rowconfigure(1, weight=1)
-        notebook.add(active_tab, text=self.MAIN_TAB_NAMES[4])
+        notebook.add(active_tab, text="액티브")
         self._build_item_tab(active_tab, "Active")
 
         challenge_tab = ttk.Frame(notebook, padding=12)
         challenge_tab.columnconfigure(0, weight=1)
         challenge_tab.rowconfigure(1, weight=1)
-        notebook.add(challenge_tab, text=self.MAIN_TAB_NAMES[5])
+        notebook.add(challenge_tab, text="도전과제")
         self._build_challenges_tab(challenge_tab)
 
     def _build_main_tab(self, container: ttk.Frame) -> None:
@@ -224,64 +218,28 @@ class IsaacSaveEditor(tk.Tk):
         )
         set_999_button.grid(column=0, row=len(self._numeric_order) + 1, sticky="e", pady=(12, 0))
 
-    def _build_completion_tab(self, container: ttk.Frame) -> None:
-        selection_frame = ttk.Frame(container)
-        selection_frame.grid(column=0, row=0, sticky="ew")
-        selection_frame.columnconfigure(1, weight=1)
-
-        ttk.Label(selection_frame, text="캐릭터 선택:").grid(column=0, row=0, sticky="w")
-        combo = ttk.Combobox(selection_frame, state="readonly", textvariable=self._character_var)
-        combo.grid(column=1, row=0, sticky="w", padx=(8, 0))
-        combo.bind("<<ComboboxSelected>>", self._on_character_selected)
-
-        button_frame = ttk.Frame(selection_frame)
-        button_frame.grid(column=2, row=0, sticky="e")
-        ttk.Button(
-            button_frame,
-            text="모두 선택 (Select All)",
-            command=self._select_all_completion_marks,
-        ).pack(side="left", padx=(0, 6))
-        ttk.Button(
-            button_frame,
-            text="모두 해제 (Select None)",
-            command=self._select_none_completion_marks,
-        ).pack(side="left")
-
-        tree_container = ttk.Frame(container)
-        tree_container.grid(column=0, row=1, sticky="nsew", pady=(12, 0))
-        tree_container.columnconfigure(0, weight=1)
-        tree_container.rowconfigure(0, weight=1)
-        tree = self._create_tree(tree_container, ("unlock",))
-        tree.column("#0", anchor="w", width=320, stretch=True)
-        tree.column("unlock", anchor="center", width=140, stretch=False)
-
-        manager = TreeManager(tree, {})
-        tree.heading("#0", text="이름 (Name)", command=lambda m=manager: m.sort("name"))
-        tree.heading("unlock", text="해금 여부 (Unlock)", command=lambda m=manager: m.sort("unlock"))
-
-        self._completion_tree = tree
-        self._completion_manager = manager
-        self._bind_checkbox_handler(tree, self._handle_completion_toggle)
-
-        values = [label for label, _ in self._character_options]
-        combo["values"] = values
-        if self._current_character_id and values:
-            combo.current(0)
-            self._character_var.set(values[0])
-        self._populate_completion_tree()
-
-    def _build_secrets_tab(self, container: ttk.Frame) -> None:
+    def _build_secrets_tab(self, container: ttk.Frame, secret_type: str) -> None:
         button_frame = ttk.Frame(container)
         button_frame.grid(column=0, row=0, sticky="w")
         ttk.Button(
             button_frame,
             text="모두 선택 (Select All)",
-            command=self._select_all_secrets,
+            command=lambda t=secret_type: self._select_all_secrets(t),
         ).pack(side="left", padx=(0, 6))
         ttk.Button(
             button_frame,
             text="모두 해제 (Select None)",
-            command=self._select_none_secrets,
+            command=lambda t=secret_type: self._select_none_secrets(t),
+        ).pack(side="left")
+        ttk.Button(
+            button_frame,
+            text="모두 해금",
+            command=lambda t=secret_type: self._unlock_selected_secrets(t),
+        ).pack(side="left", padx=(12, 6))
+        ttk.Button(
+            button_frame,
+            text="모두 미해금",
+            command=lambda t=secret_type: self._lock_selected_secrets(t),
         ).pack(side="left")
 
         tree_container = ttk.Frame(container)
@@ -297,8 +255,8 @@ class IsaacSaveEditor(tk.Tk):
         tree.heading("unlock", text="해금 여부 (Unlock)", command=lambda m=manager: m.sort("unlock"))
 
         records: Dict[str, Dict[str, object]] = {}
-        for record in self._secret_records:
-            tree.insert("", "end", iid=record["iid"], text=record["display"], values=("X",))
+        for record in self._secret_records_by_type.get(secret_type, []):
+            tree.insert("", "end", iid=record["iid"], text=record["display"], values=("",))
             records[record["iid"]] = {
                 "iid": record["iid"],
                 "name_sort": record["name_sort"],
@@ -308,9 +266,8 @@ class IsaacSaveEditor(tk.Tk):
         manager.records = records
         manager.sort("name", ascending=True, update_toggle=False)
 
-        self._secret_tree = tree
-        self._secret_manager = manager
-        self._bind_checkbox_handler(tree, self._handle_secret_toggle)
+        self._secret_trees[secret_type] = tree
+        self._secret_managers[secret_type] = manager
 
     def _build_item_tab(self, container: ttk.Frame, item_type: str) -> None:
         button_frame = ttk.Frame(container)
@@ -324,6 +281,16 @@ class IsaacSaveEditor(tk.Tk):
             button_frame,
             text="모두 해제 (Select None)",
             command=lambda t=item_type: self._select_none_items(t),
+        ).pack(side="left")
+        ttk.Button(
+            button_frame,
+            text="모두 해금",
+            command=lambda t=item_type: self._unlock_selected_items(t),
+        ).pack(side="left", padx=(12, 6))
+        ttk.Button(
+            button_frame,
+            text="모두 미해금",
+            command=lambda t=item_type: self._lock_selected_items(t),
         ).pack(side="left")
 
         tree_container = ttk.Frame(container)
@@ -344,7 +311,7 @@ class IsaacSaveEditor(tk.Tk):
         for item_id, record in self._item_records.get(item_type, {}).items():
             quality = record.get("quality")
             quality_display = "-" if quality is None else str(quality)
-            tree.insert("", "end", iid=item_id, text=record["display"], values=("X", quality_display))
+            tree.insert("", "end", iid=item_id, text=record["display"], values=("", quality_display))
             records[item_id] = {
                 "iid": item_id,
                 "name_sort": record["name_sort"],
@@ -356,7 +323,6 @@ class IsaacSaveEditor(tk.Tk):
 
         self._item_trees[item_type] = tree
         self._item_managers[item_type] = manager
-        self._bind_checkbox_handler(tree, lambda t=item_type: self._handle_item_toggle(t))
 
     def _build_challenges_tab(self, container: ttk.Frame) -> None:
         button_frame = ttk.Frame(container)
@@ -370,6 +336,16 @@ class IsaacSaveEditor(tk.Tk):
             button_frame,
             text="모두 해제 (Select None)",
             command=self._select_none_challenges,
+        ).pack(side="left")
+        ttk.Button(
+            button_frame,
+            text="모두 해금",
+            command=self._unlock_selected_challenges,
+        ).pack(side="left", padx=(12, 6))
+        ttk.Button(
+            button_frame,
+            text="모두 미해금",
+            command=self._lock_selected_challenges,
         ).pack(side="left")
 
         tree_container = ttk.Frame(container)
@@ -386,7 +362,7 @@ class IsaacSaveEditor(tk.Tk):
 
         records: Dict[str, Dict[str, object]] = {}
         for record in self._challenge_records:
-            tree.insert("", "end", iid=record["iid"], text=record["display"], values=("X",))
+            tree.insert("", "end", iid=record["iid"], text=record["display"], values=("",))
             records[record["iid"]] = {
                 "iid": record["iid"],
                 "name_sort": record["name_sort"],
@@ -398,7 +374,6 @@ class IsaacSaveEditor(tk.Tk):
 
         self._challenge_tree = tree
         self._challenge_manager = manager
-        self._bind_checkbox_handler(tree, self._handle_challenge_toggle)
 
     def _create_tree(self, container: ttk.Frame, columns: tuple[str, ...]) -> CheckboxTreeview:
         tree = CheckboxTreeview(container, columns=columns, show="tree headings", selectmode="none")
@@ -411,42 +386,6 @@ class IsaacSaveEditor(tk.Tk):
         tree.configure(xscrollcommand=xscroll.set)
         return tree
 
-    def _populate_completion_tree(self) -> None:
-        if self._completion_tree is None or self._completion_manager is None:
-            return
-        char_id = self._current_character_id
-        marks = self._completion_data.get(char_id, {}).get("marks", []) if char_id is not None else []
-
-        self._lock_tree(self._completion_tree)
-        try:
-            self._completion_tree.delete(*self._completion_tree.get_children(""))
-            records: Dict[str, Dict[str, object]] = {}
-            for mark in marks:
-                iid = mark["iid"]
-                self._completion_tree.insert("", "end", iid=iid, text=mark["display"], values=("X",))
-                records[iid] = {
-                    "iid": iid,
-                    "name_sort": mark["name_sort"],
-                    "unlock": False,
-                    "quality": None,
-                    "index": mark["index"],
-                }
-            self._completion_manager.records = records
-        finally:
-            self._unlock_tree(self._completion_tree)
-        self._completion_manager.sort("name", ascending=True, update_toggle=False)
-
-    def _bind_checkbox_handler(self, tree: CheckboxTreeview, callback: Callable[[], None]) -> None:
-        def handler(event: tk.Event) -> None:  # type: ignore[override]
-            if self._is_tree_locked(tree):
-                return
-            element = tree.identify("element", event.x, event.y)
-            if "image" not in element:
-                return
-            self.after_idle(callback)
-
-        tree.bind("<ButtonRelease-1>", handler, add="+")
-
     def _lock_tree(self, tree: CheckboxTreeview) -> None:
         self._locked_tree_ids.add(id(tree))
 
@@ -458,69 +397,23 @@ class IsaacSaveEditor(tk.Tk):
     # ------------------------------------------------------------------
     # Data loading
     # ------------------------------------------------------------------
-    def _load_completion_data(self) -> Dict[str, Dict[str, object]]:
-        data: Dict[str, Dict[str, object]] = {}
-        csv_path = DATA_DIR / "ui_completion_marks.csv"
-        if not csv_path.exists():
-            return data
-        with csv_path.open(encoding="utf-8-sig") as file:
-            reader = csv.DictReader(file)
-            for row in reader:
-                char_id = (row.get("CharacterIndex") or "").strip()
-                if not char_id:
-                    continue
-                char_info = data.setdefault(
-                    char_id,
-                    {
-                        "english": (row.get("CharacterName") or "").strip(),
-                        "korean": (row.get("Korean") or "").strip(),
-                        "marks": [],
-                    },
-                )
-                mark_index = (row.get("MarkIndex") or "").strip()
-                mark_name = (row.get("MarkName") or "").strip()
-                if not mark_index:
-                    continue
-                try:
-                    index_value = int(mark_index)
-                except ValueError:
-                    index_value = len(char_info["marks"])  # type: ignore[arg-type]
-                display = mark_name or mark_index
-                char_info["marks"].append(
-                    {
-                        "iid": mark_index,
-                        "display": display,
-                        "name_sort": display.lower(),
-                        "index": index_value,
-                    }
-                )
-        for info in data.values():
-            info["marks"].sort(key=lambda mark: int(mark.get("index", 0)))  # type: ignore[arg-type]
-        return data
-
-    def _build_character_options(self) -> List[tuple[str, str]]:
-        options: List[tuple[str, str]] = []
-        for char_id, info in sorted(self._completion_data.items(), key=lambda item: int(item[0])):
-            english = str(info.get("english", ""))
-            korean = str(info.get("korean", ""))
-            if korean and english and korean != english:
-                label = f"{korean} ({english})"
-            else:
-                label = korean or english or char_id
-            options.append((label, char_id))
-        return options
-
-    def _load_secret_records(self) -> List[Dict[str, str]]:
+    def _load_secret_records(self) -> tuple[Dict[str, List[Dict[str, str]]], Dict[str, List[str]]]:
         csv_path = DATA_DIR / "ui_secrets.csv"
-        records: List[Dict[str, str]] = []
+        records_by_type: Dict[str, List[Dict[str, str]]] = {
+            type_key: [] for type_key, _ in self.SECRET_TAB_INFO
+        }
+        ids_by_type: Dict[str, List[str]] = {type_key: [] for type_key, _ in self.SECRET_TAB_INFO}
         if not csv_path.exists():
-            return records
+            return records_by_type, ids_by_type
         with csv_path.open(encoding="utf-8-sig") as file:
             reader = csv.DictReader(file)
             for row in reader:
                 secret_id = (row.get("SecretID") or "").strip()
                 if not secret_id:
                     continue
+                secret_type = (row.get("Type") or "").strip() or self.SECRET_FALLBACK_TYPE
+                if secret_type not in records_by_type:
+                    secret_type = self.SECRET_FALLBACK_TYPE
                 korean = (row.get("Korean") or "").strip()
                 unlock_name = (row.get("UnlockName") or "").strip()
                 secret_name = (row.get("SecretName") or "").strip()
@@ -531,14 +424,15 @@ class IsaacSaveEditor(tk.Tk):
                     display = f"{primary} ({secret_name})"
                 else:
                     display = primary
-                records.append(
+                records_by_type.setdefault(secret_type, []).append(
                     {
                         "iid": secret_id,
                         "display": display,
                         "name_sort": display.lower(),
                     }
                 )
-        return records
+                ids_by_type.setdefault(secret_type, []).append(secret_id)
+        return records_by_type, ids_by_type
 
     def _load_item_records(self) -> tuple[Dict[str, Dict[str, Dict[str, object]]], Dict[str, List[str]]]:
         csv_path = DATA_DIR / "ui_items.csv"
@@ -603,181 +497,198 @@ class IsaacSaveEditor(tk.Tk):
     # ------------------------------------------------------------------
     # Event handlers and select helpers
     # ------------------------------------------------------------------
-    def _on_character_selected(self, event: tk.Event) -> None:  # type: ignore[override]
-        value = self._character_var.get()
-        for label, char_id in self._character_options:
-            if label == value:
-                self._current_character_id = char_id
-                break
-        else:
-            self._current_character_id = None
-        self._populate_completion_tree()
-        self._refresh_completion_tab()
+    def _select_all_secrets(self, secret_type: str) -> None:
+        tree = self._secret_trees.get(secret_type)
+        if tree is None:
+            return
+        self._lock_tree(tree)
+        try:
+            for secret_id in self._secret_ids_by_type.get(secret_type, []):
+                tree.change_state(secret_id, "checked")
+        finally:
+            self._unlock_tree(tree)
 
-    def _handle_completion_toggle(self) -> None:
-        if not self._ensure_data_loaded():
-            self.refresh_current_values()
+    def _select_none_secrets(self, secret_type: str) -> None:
+        tree = self._secret_trees.get(secret_type)
+        if tree is None:
             return
-        if self._completion_tree is None or self._completion_manager is None:
-            return
-        char_id = self._current_character_id
-        if char_id is None:
-            return
-        checked = set(self._completion_tree.get_checked())
-        marks = self._completion_data.get(char_id, {}).get("marks", [])
-        length = max((int(mark["index"]) for mark in marks), default=-1) + 1
-        new_data = [0] * max(length, len(marks))
-        for mark in marks:
-            iid = mark["iid"]
-            index = int(mark["index"])
-            if iid in checked:
-                new_data[index] = 2
-        if self._apply_update(
-            lambda data: script.updateCheckListUnlocks(data, int(char_id), new_data),
-            "완료 마크를 업데이트하지 못했습니다.",
-        ):
-            for mark in marks:
-                unlocked = mark["iid"] in checked
-                self._completion_manager.set_unlock(mark["iid"], unlocked)
-            self._completion_manager.resort()
+        self._lock_tree(tree)
+        try:
+            for secret_id in self._secret_ids_by_type.get(secret_type, []):
+                tree.change_state(secret_id, "unchecked")
+        finally:
+            self._unlock_tree(tree)
 
-    def _handle_secret_toggle(self) -> None:
-        if not self._ensure_data_loaded():
-            self.refresh_current_values()
-            return
-        if self._secret_tree is None or self._secret_manager is None:
-            return
-        checked = sorted(self._secret_tree.get_checked(), key=lambda value: int(value))
-        if self._apply_update(
-            lambda data: script.updateSecrets(data, checked),
-            "비밀을 업데이트하지 못했습니다.",
-        ):
-            unlocked_set = set(checked)
-            for secret_id in self._secret_manager.records:
-                self._secret_manager.set_unlock(secret_id, secret_id in unlocked_set)
-            self._secret_manager.resort()
-
-    def _handle_item_toggle(self, item_type: str) -> None:
-        if not self._ensure_data_loaded():
-            self.refresh_current_values()
-            return
-        checked = sorted(self._gather_checked_item_ids(), key=lambda value: int(value))
-        if self._apply_update(
-            lambda data: script.updateItems(data, checked),
-            "아이템을 업데이트하지 못했습니다.",
-        ):
-            unlocked_set = set(checked)
-            for tree_type, manager in self._item_managers.items():
-                for item_id in manager.records:
-                    manager.set_unlock(item_id, item_id in unlocked_set)
-                manager.resort()
-
-    def _handle_challenge_toggle(self) -> None:
-        if not self._ensure_data_loaded():
-            self.refresh_current_values()
-            return
-        if self._challenge_tree is None or self._challenge_manager is None:
-            return
-        checked = sorted(self._challenge_tree.get_checked(), key=lambda value: int(value))
-        if self._apply_update(
-            lambda data: script.updateChallenges(data, checked),
-            "도전과제를 업데이트하지 못했습니다.",
-        ):
-            unlocked_set = set(checked)
-            for challenge_id in self._challenge_manager.records:
-                self._challenge_manager.set_unlock(challenge_id, challenge_id in unlocked_set)
-            self._challenge_manager.resort()
-
-    def _select_all_completion_marks(self) -> None:
+    def _unlock_selected_secrets(self, secret_type: str) -> None:
         if not self._ensure_data_loaded():
             return
-        char_id = self._current_character_id
-        if char_id is None:
+        tree = self._secret_trees.get(secret_type)
+        manager = self._secret_managers.get(secret_type)
+        if tree is None or manager is None:
             return
-        marks = self._completion_data.get(char_id, {}).get("marks", [])
-        length = max((int(mark["index"]) for mark in marks), default=-1) + 1
-        new_data = [2] * max(length, len(marks))
-        self._apply_update(
-            lambda data: script.updateCheckListUnlocks(data, int(char_id), new_data),
-            "완료 마크를 업데이트하지 못했습니다.",
-        )
-
-    def _select_none_completion_marks(self) -> None:
-        if not self._ensure_data_loaded():
+        selected = set(tree.get_checked())
+        if not selected:
             return
-        char_id = self._current_character_id
-        if char_id is None:
-            return
-        marks = self._completion_data.get(char_id, {}).get("marks", [])
-        length = max((int(mark["index"]) for mark in marks), default=-1) + 1
-        new_data = [0] * max(length, len(marks))
-        self._apply_update(
-            lambda data: script.updateCheckListUnlocks(data, int(char_id), new_data),
-            "완료 마크를 업데이트하지 못했습니다.",
-        )
-
-    def _select_all_secrets(self) -> None:
-        if not self._ensure_data_loaded():
-            return
-        ids_sorted = sorted(self._secret_ids, key=lambda value: int(value))
+        unlocked_ids = self._collect_unlocked_secrets()
+        unlocked_ids.update(selected)
+        ids_sorted = sorted(unlocked_ids, key=lambda value: int(value))
         self._apply_update(
             lambda data: script.updateSecrets(data, ids_sorted),
             "비밀을 업데이트하지 못했습니다.",
         )
 
-    def _select_none_secrets(self) -> None:
+    def _lock_selected_secrets(self, secret_type: str) -> None:
         if not self._ensure_data_loaded():
             return
+        tree = self._secret_trees.get(secret_type)
+        manager = self._secret_managers.get(secret_type)
+        if tree is None or manager is None:
+            return
+        selected = set(tree.get_checked())
+        if not selected:
+            return
+        unlocked_ids = self._collect_unlocked_secrets()
+        unlocked_ids.difference_update(selected)
+        ids_sorted = sorted(unlocked_ids, key=lambda value: int(value))
         self._apply_update(
-            lambda data: script.updateSecrets(data, []),
+            lambda data: script.updateSecrets(data, ids_sorted),
             "비밀을 업데이트하지 못했습니다.",
         )
 
+    def _collect_unlocked_secrets(self) -> Set[str]:
+        unlocked: Set[str] = set()
+        for manager in self._secret_managers.values():
+            for secret_id, info in manager.records.items():
+                if info.get("unlock"):
+                    unlocked.add(secret_id)
+        return unlocked
+
     def _select_all_items(self, item_type: str) -> None:
-        if not self._ensure_data_loaded():
+        tree = self._item_trees.get(item_type)
+        if tree is None:
             return
-        checked = self._gather_checked_item_ids()
-        checked.update(self._item_ids_by_type.get(item_type, []))
-        ids_sorted = sorted(checked, key=lambda value: int(value))
-        self._apply_update(
-            lambda data: script.updateItems(data, ids_sorted),
-            "아이템을 업데이트하지 못했습니다.",
-        )
+        self._lock_tree(tree)
+        try:
+            for item_id in self._item_ids_by_type.get(item_type, []):
+                tree.change_state(item_id, "checked")
+        finally:
+            self._unlock_tree(tree)
 
     def _select_none_items(self, item_type: str) -> None:
+        tree = self._item_trees.get(item_type)
+        if tree is None:
+            return
+        self._lock_tree(tree)
+        try:
+            for item_id in self._item_ids_by_type.get(item_type, []):
+                tree.change_state(item_id, "unchecked")
+        finally:
+            self._unlock_tree(tree)
+
+    def _unlock_selected_items(self, item_type: str) -> None:
         if not self._ensure_data_loaded():
             return
-        checked = self._gather_checked_item_ids()
-        for item_id in self._item_ids_by_type.get(item_type, []):
-            checked.discard(item_id)
-        ids_sorted = sorted(checked, key=lambda value: int(value))
+        tree = self._item_trees.get(item_type)
+        manager = self._item_managers.get(item_type)
+        if tree is None or manager is None:
+            return
+        selected = set(tree.get_checked())
+        if not selected:
+            return
+        unlocked_ids = self._collect_unlocked_items()
+        unlocked_ids.update(selected)
+        ids_sorted = sorted(unlocked_ids, key=lambda value: int(value))
         self._apply_update(
             lambda data: script.updateItems(data, ids_sorted),
             "아이템을 업데이트하지 못했습니다.",
         )
 
-    def _select_all_challenges(self) -> None:
+    def _lock_selected_items(self, item_type: str) -> None:
         if not self._ensure_data_loaded():
             return
-        ids_sorted = sorted(self._challenge_ids, key=lambda value: int(value))
+        tree = self._item_trees.get(item_type)
+        manager = self._item_managers.get(item_type)
+        if tree is None or manager is None:
+            return
+        selected = set(tree.get_checked())
+        if not selected:
+            return
+        unlocked_ids = self._collect_unlocked_items()
+        unlocked_ids.difference_update(selected)
+        ids_sorted = sorted(unlocked_ids, key=lambda value: int(value))
+        self._apply_update(
+            lambda data: script.updateItems(data, ids_sorted),
+            "아이템을 업데이트하지 못했습니다.",
+        )
+
+    def _collect_unlocked_items(self) -> Set[str]:
+        unlocked: Set[str] = set()
+        for manager in self._item_managers.values():
+            for item_id, info in manager.records.items():
+                if info.get("unlock"):
+                    unlocked.add(item_id)
+        return unlocked
+
+    def _select_all_challenges(self) -> None:
+        if self._challenge_tree is None:
+            return
+        self._lock_tree(self._challenge_tree)
+        try:
+            for challenge_id in self._challenge_ids:
+                self._challenge_tree.change_state(challenge_id, "checked")
+        finally:
+            self._unlock_tree(self._challenge_tree)
+
+    def _select_none_challenges(self) -> None:
+        if self._challenge_tree is None:
+            return
+        self._lock_tree(self._challenge_tree)
+        try:
+            for challenge_id in self._challenge_ids:
+                self._challenge_tree.change_state(challenge_id, "unchecked")
+        finally:
+            self._unlock_tree(self._challenge_tree)
+
+    def _unlock_selected_challenges(self) -> None:
+        if not self._ensure_data_loaded():
+            return
+        if self._challenge_tree is None or self._challenge_manager is None:
+            return
+        selected = set(self._challenge_tree.get_checked())
+        if not selected:
+            return
+        unlocked_ids = self._collect_unlocked_challenges()
+        unlocked_ids.update(selected)
+        ids_sorted = sorted(unlocked_ids, key=lambda value: int(value))
         self._apply_update(
             lambda data: script.updateChallenges(data, ids_sorted),
             "도전과제를 업데이트하지 못했습니다.",
         )
 
-    def _select_none_challenges(self) -> None:
+    def _lock_selected_challenges(self) -> None:
         if not self._ensure_data_loaded():
             return
+        if self._challenge_tree is None or self._challenge_manager is None:
+            return
+        selected = set(self._challenge_tree.get_checked())
+        if not selected:
+            return
+        unlocked_ids = self._collect_unlocked_challenges()
+        unlocked_ids.difference_update(selected)
+        ids_sorted = sorted(unlocked_ids, key=lambda value: int(value))
         self._apply_update(
-            lambda data: script.updateChallenges(data, []),
+            lambda data: script.updateChallenges(data, ids_sorted),
             "도전과제를 업데이트하지 못했습니다.",
         )
 
-    def _gather_checked_item_ids(self) -> Set[str]:
-        checked: Set[str] = set()
-        for tree in self._item_trees.values():
-            checked.update(tree.get_checked())
-        return checked
+    def _collect_unlocked_challenges(self) -> Set[str]:
+        if self._challenge_manager is None:
+            return set()
+        return {
+            challenge_id
+            for challenge_id, info in self._challenge_manager.records.items()
+            if info.get("unlock")
+        }
 
     def _ensure_data_loaded(self) -> bool:
         if self.data is None or not self.filename:
@@ -807,31 +718,8 @@ class IsaacSaveEditor(tk.Tk):
     # ------------------------------------------------------------------
     # Tree refresh helpers
     # ------------------------------------------------------------------
-    def _refresh_completion_tab(self) -> None:
-        if self._completion_tree is None or self._completion_manager is None:
-            return
-        char_id = self._current_character_id
-        marks = self._completion_data.get(char_id, {}).get("marks", []) if char_id is not None else []
-        if self.data is None or char_id is None:
-            checklist = [0] * len(marks)
-        else:
-            try:
-                checklist = script.getChecklistUnlocks(self.data, int(char_id))
-            except Exception:
-                checklist = [0] * len(marks)
-        self._lock_tree(self._completion_tree)
-        try:
-            for mark in marks:
-                index = int(mark["index"])
-                unlocked = index < len(checklist) and checklist[index] != 0
-                self._completion_tree.change_state(mark["iid"], "checked" if unlocked else "unchecked")
-                self._completion_manager.set_unlock(mark["iid"], unlocked)
-        finally:
-            self._unlock_tree(self._completion_tree)
-        self._completion_manager.resort()
-
     def _refresh_secrets_tab(self) -> None:
-        if self._secret_tree is None or self._secret_manager is None:
+        if not self._secret_managers:
             return
         if self.data is None:
             unlocked_ids: Set[str] = set()
@@ -841,15 +729,19 @@ class IsaacSaveEditor(tk.Tk):
             except Exception:
                 secrets = []
             unlocked_ids = {str(index + 1) for index, value in enumerate(secrets) if value != 0}
-        self._lock_tree(self._secret_tree)
-        try:
-            for secret_id in self._secret_manager.records:
-                unlocked = secret_id in unlocked_ids
-                self._secret_tree.change_state(secret_id, "checked" if unlocked else "unchecked")
-                self._secret_manager.set_unlock(secret_id, unlocked)
-        finally:
-            self._unlock_tree(self._secret_tree)
-        self._secret_manager.resort()
+        for secret_type, manager in self._secret_managers.items():
+            tree = self._secret_trees.get(secret_type)
+            if tree is None:
+                continue
+            self._lock_tree(tree)
+            try:
+                for secret_id in manager.records:
+                    unlocked = secret_id in unlocked_ids
+                    manager.set_unlock(secret_id, unlocked)
+                    tree.change_state(secret_id, "unchecked")
+            finally:
+                self._unlock_tree(tree)
+            manager.resort()
 
     def _refresh_items_tab(self) -> None:
         if not self._item_managers:
@@ -870,8 +762,8 @@ class IsaacSaveEditor(tk.Tk):
             try:
                 for item_id in manager.records:
                     unlocked = item_id in unlocked_ids
-                    tree.change_state(item_id, "checked" if unlocked else "unchecked")
                     manager.set_unlock(item_id, unlocked)
+                    tree.change_state(item_id, "unchecked")
             finally:
                 self._unlock_tree(tree)
             manager.resort()
@@ -891,8 +783,8 @@ class IsaacSaveEditor(tk.Tk):
         try:
             for challenge_id in self._challenge_manager.records:
                 unlocked = challenge_id in unlocked_ids
-                self._challenge_tree.change_state(challenge_id, "checked" if unlocked else "unchecked")
                 self._challenge_manager.set_unlock(challenge_id, unlocked)
+                self._challenge_tree.change_state(challenge_id, "unchecked")
         finally:
             self._unlock_tree(self._challenge_tree)
         self._challenge_manager.resort()
@@ -1012,7 +904,6 @@ class IsaacSaveEditor(tk.Tk):
                 vars_map = self._numeric_vars[key]
                 vars_map["current"].set("0")
                 vars_map["entry"].set("0")
-            self._refresh_completion_tab()
             self._refresh_secrets_tab()
             self._refresh_items_tab()
             self._refresh_challenges_tab()
@@ -1036,7 +927,6 @@ class IsaacSaveEditor(tk.Tk):
             vars_map["current"].set(value_str)
             vars_map["entry"].set(value_str)
 
-        self._refresh_completion_tab()
         self._refresh_secrets_tab()
         self._refresh_items_tab()
         self._refresh_challenges_tab()
