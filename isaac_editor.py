@@ -243,12 +243,12 @@ class IsaacSaveEditor(tk.Tk):
         ).pack(side="left")
         ttk.Button(
             button_frame,
-            text="모두 해금",
+            text="선택 해금",
             command=lambda t=secret_type: self._unlock_selected_secrets(t),
         ).pack(side="left", padx=(12, 6))
         ttk.Button(
             button_frame,
-            text="모두 미해금",
+            text="선택 미해금",
             command=lambda t=secret_type: self._lock_selected_secrets(t),
         ).pack(side="left")
 
@@ -306,12 +306,12 @@ class IsaacSaveEditor(tk.Tk):
         ).pack(side="left")
         ttk.Button(
             button_frame,
-            text="모두 해금",
+            text="선택 해금",
             command=lambda t=item_type: self._unlock_selected_items(t),
         ).pack(side="left", padx=(12, 6))
         ttk.Button(
             button_frame,
-            text="모두 미해금",
+            text="선택 미해금",
             command=lambda t=item_type: self._lock_selected_items(t),
         ).pack(side="left")
 
@@ -361,12 +361,12 @@ class IsaacSaveEditor(tk.Tk):
         ).pack(side="left")
         ttk.Button(
             button_frame,
-            text="모두 해금",
+            text="선택 해금",
             command=self._unlock_selected_challenges,
         ).pack(side="left", padx=(12, 6))
         ttk.Button(
             button_frame,
-            text="모두 미해금",
+            text="선택 미해금",
             command=self._lock_selected_challenges,
         ).pack(side="left")
 
@@ -416,6 +416,13 @@ class IsaacSaveEditor(tk.Tk):
 
     def _is_tree_locked(self, tree: CheckboxTreeview) -> bool:
         return id(tree) in self._locked_tree_ids
+
+    def _get_checked_or_warn(self, tree: CheckboxTreeview) -> Set[str] | None:
+        selected = set(tree.get_checked())
+        if not selected:
+            messagebox.showinfo("선택 없음", "먼저 체크박스에서 항목을 선택해주세요.")
+            return None
+        return selected
     # ------------------------------------------------------------------
     # Data loading
     # ------------------------------------------------------------------
@@ -548,7 +555,7 @@ class IsaacSaveEditor(tk.Tk):
         manager = self._secret_managers.get(secret_type)
         if tree is None or manager is None:
             return
-        selected = set(tree.get_checked())
+        selected = self._get_checked_or_warn(tree)
         if not selected:
             return
         unlocked_ids = self._collect_unlocked_secrets()
@@ -566,7 +573,7 @@ class IsaacSaveEditor(tk.Tk):
         manager = self._secret_managers.get(secret_type)
         if tree is None or manager is None:
             return
-        selected = set(tree.get_checked())
+        selected = self._get_checked_or_warn(tree)
         if not selected:
             return
         unlocked_ids = self._collect_unlocked_secrets()
@@ -614,7 +621,7 @@ class IsaacSaveEditor(tk.Tk):
         manager = self._item_managers.get(item_type)
         if tree is None or manager is None:
             return
-        selected = set(tree.get_checked())
+        selected = self._get_checked_or_warn(tree)
         if not selected:
             return
         unlocked_ids = self._collect_unlocked_items()
@@ -632,7 +639,7 @@ class IsaacSaveEditor(tk.Tk):
         manager = self._item_managers.get(item_type)
         if tree is None or manager is None:
             return
-        selected = set(tree.get_checked())
+        selected = self._get_checked_or_warn(tree)
         if not selected:
             return
         unlocked_ids = self._collect_unlocked_items()
@@ -676,7 +683,7 @@ class IsaacSaveEditor(tk.Tk):
             return
         if self._challenge_tree is None or self._challenge_manager is None:
             return
-        selected = set(self._challenge_tree.get_checked())
+        selected = self._get_checked_or_warn(self._challenge_tree)
         if not selected:
             return
         unlocked_ids = self._collect_unlocked_challenges()
@@ -692,7 +699,7 @@ class IsaacSaveEditor(tk.Tk):
             return
         if self._challenge_tree is None or self._challenge_manager is None:
             return
-        selected = set(self._challenge_tree.get_checked())
+        selected = self._get_checked_or_warn(self._challenge_tree)
         if not selected:
             return
         unlocked_ids = self._collect_unlocked_challenges()
