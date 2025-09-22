@@ -68,7 +68,7 @@ class TreeManager:
     def set_unlock(self, iid: str, unlocked: bool) -> None:
         if iid in self.records:
             self.records[iid]["unlock"] = bool(unlocked)
-            self.tree.set(iid, "unlock", "O" if unlocked else "")
+            self.tree.set(iid, "unlock", "O" if unlocked else "X")
 
 
 class IsaacSaveEditor(tk.Tk):
@@ -278,7 +278,7 @@ class IsaacSaveEditor(tk.Tk):
 
         records: Dict[str, Dict[str, object]] = {}
         for record in self._secret_records_by_type.get(secret_type, []):
-            tree.insert("", "end", iid=record["iid"], text=record["display"], values=("",))
+            tree.insert("", "end", iid=record["iid"], text=record["display"], values=("X",))
             records[record["iid"]] = {
                 "iid": record["iid"],
                 "name_sort": record["name_sort"],
@@ -333,7 +333,7 @@ class IsaacSaveEditor(tk.Tk):
         for item_id, record in self._item_records.get(item_type, {}).items():
             quality = record.get("quality")
             quality_display = "-" if quality is None else str(quality)
-            tree.insert("", "end", iid=item_id, text=record["display"], values=("", quality_display))
+            tree.insert("", "end", iid=item_id, text=record["display"], values=("X", quality_display))
             records[item_id] = {
                 "iid": item_id,
                 "name_sort": record["name_sort"],
@@ -384,7 +384,7 @@ class IsaacSaveEditor(tk.Tk):
 
         records: Dict[str, Dict[str, object]] = {}
         for record in self._challenge_records:
-            tree.insert("", "end", iid=record["iid"], text=record["display"], values=("",))
+            tree.insert("", "end", iid=record["iid"], text=record["display"], values=("X",))
             records[record["iid"]] = {
                 "iid": record["iid"],
                 "name_sort": record["name_sort"],
