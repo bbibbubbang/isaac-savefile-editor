@@ -170,30 +170,6 @@ class IsaacSaveEditor(tk.Tk):
         notebook.add(main_tab, text="메인")
         self._build_main_tab(main_tab)
 
-        special_secret_types = {"Item", "None"}
-        for secret_type in self._secret_tab_order:
-            if secret_type in special_secret_types:
-                continue
-            if not self._secret_ids_by_type.get(secret_type):
-                continue
-            tab_label = self._secret_tab_labels.get(secret_type, secret_type)
-            secrets_tab = ttk.Frame(notebook, padding=12)
-            secrets_tab.columnconfigure(0, weight=1)
-            notebook.add(secrets_tab, text=tab_label)
-            self._build_secrets_tab(secrets_tab, secret_type)
-
-        passive_tab = ttk.Frame(notebook, padding=12)
-        passive_tab.columnconfigure(0, weight=1)
-        passive_tab.rowconfigure(1, weight=1)
-        notebook.add(passive_tab, text="패시브")
-        self._build_item_tab(passive_tab, "Passive")
-
-        active_tab = ttk.Frame(notebook, padding=12)
-        active_tab.columnconfigure(0, weight=1)
-        active_tab.rowconfigure(1, weight=1)
-        notebook.add(active_tab, text="액티브")
-        self._build_item_tab(active_tab, "Active")
-
         challenge_tab = ttk.Frame(notebook, padding=12)
         challenge_tab.columnconfigure(0, weight=1)
         challenge_tab.rowconfigure(2, weight=1)
@@ -206,13 +182,6 @@ class IsaacSaveEditor(tk.Tk):
             achievements_tab.columnconfigure(0, weight=1)
             notebook.add(achievements_tab, text=tab_label)
             self._build_secrets_tab(achievements_tab, "Item")
-
-        if "None" in self._secret_tab_order and self._secret_ids_by_type.get("None"):
-            tab_label = self._secret_tab_labels.get("None", "None")
-            none_tab = ttk.Frame(notebook, padding=12)
-            none_tab.columnconfigure(0, weight=1)
-            notebook.add(none_tab, text=tab_label)
-            self._build_secrets_tab(none_tab, "None")
 
     def _build_main_tab(self, container: ttk.Frame) -> None:
         top_frame = ttk.Frame(container)
@@ -483,6 +452,7 @@ class IsaacSaveEditor(tk.Tk):
         ids_by_type: Dict[str, List[str]] = {}
         tab_labels: Dict[str, str] = {}
         type_order: List[str] = []
+        allowed_types = {"Item"}
         if not csv_path.exists():
             return records_by_type, ids_by_type, tab_labels, type_order
 
@@ -501,15 +471,16 @@ class IsaacSaveEditor(tk.Tk):
                 secret_type = (row.get("Type") or "").strip()
                 if not secret_type:
                     secret_type = self.SECRET_FALLBACK_TYPE
+                if secret_type not in allowed_types:
+                    continue
                 register_type(secret_type)
                 korean = (row.get("Korean") or "").strip()
                 unlock_name = (row.get("UnlockName") or "").strip()
                 secret_name = (row.get("SecretName") or "").strip()
                 primary = korean or unlock_name or secret_name or secret_id
-                if unlock_name and primary != unlock_name:
-                    display = f"{primary} ({unlock_name})"
-                elif secret_name and primary != secret_name:
-                    display = f"{primary} ({secret_name})"
+                secondary = secret_name or unlock_name
+                if secondary and primary != secondary:
+                    display = f"{primary} ({secondary})"
                 else:
                     display = primary
                 records_by_type[secret_type].append(
