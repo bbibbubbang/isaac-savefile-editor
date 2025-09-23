@@ -11,6 +11,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import shutil
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
@@ -26,6 +27,10 @@ SETTINGS_PATH = DATA_DIR / "settings.json"
 DEFAULT_SETTINGS: Dict[str, object] = {
     "remember_path": False,
     "last_path": "",
+    "auto_set_999": False,
+    "auto_overwrite": False,
+    "source_save_path": "",
+    "target_save_path": "",
 }
 
 COMPLETION_UNLOCK_VALUE = 15
@@ -109,6 +114,12 @@ class IsaacSaveEditor(tk.Tk):
 
         self.settings_path = SETTINGS_PATH
         self.settings = self._load_settings()
+        self._auto_set_999_default = bool(self.settings.get("auto_set_999", False))
+        self._auto_overwrite_default = bool(self.settings.get("auto_overwrite", False))
+        self.source_save_path = self._normalize_save_path(self.settings.get("source_save_path"))
+        self.target_save_path = self._normalize_save_path(self.settings.get("target_save_path"))
+        self.settings["source_save_path"] = self.source_save_path
+        self.settings["target_save_path"] = self.target_save_path
         remember_path = bool(self.settings.get("remember_path", False))
         self.remember_path_var = tk.BooleanVar(value=remember_path)
         self._default_loaded_text = "불러온 파일 (Loaded File): 없음"
@@ -176,7 +187,7 @@ class IsaacSaveEditor(tk.Tk):
 
         self._build_layout()
         self.refresh_current_values()
-        self.after(0, self._open_remembered_file_if_available)
+        self.after(0, self._perform_startup_tasks)
 
     @staticmethod
     def _build_lookup_keys(*values: str) -> Set[str]:
@@ -199,6 +210,25 @@ class IsaacSaveEditor(tk.Tk):
                             candidates.add(stripped)
             keys.update(candidate for candidate in candidates if candidate)
         return keys
+
+    @staticmethod
+    def _normalize_save_path(value: object) -> str:
+        if isinstance(value, str):
+            normalized = value.strip()
+            if normalized:
+                return os.path.abspath(normalized)
+        return ""
+
+    @staticmethod
+    def _path_contains_steam(path: str) -> bool:
+        normalized = path.replace("\\", "/").casefold()
+        return "steam" in normalized
+
+    @staticmethod
+    def _format_selected_path(path: str) -> str:
+        if not path:
+            return "선택된 파일: 없음"
+        return f"선택된 파일: {os.path.normpath(path)}"
     # ------------------------------------------------------------------
     # Layout construction helpers
     # ------------------------------------------------------------------
@@ -215,23 +245,30 @@ class IsaacSaveEditor(tk.Tk):
         completion_tab = ttk.Frame(notebook, padding=12)
         completion_tab.columnconfigure(0, weight=1)
         completion_tab.rowconfigure(2, weight=1)
-        notebook.add(completion_tab, text="체크리스트")
         self._build_completion_tab(completion_tab)
 
-        challenge_tab = ttk.Frame(notebook, padding=12)
-        challenge_tab.columnconfigure(0, weight=1)
-        challenge_tab.rowconfigure(2, weight=1)
-        notebook.add(challenge_tab, text="도전과제")
-        self._build_challenges_tab(challenge_tab)
-
-        for secret_type in self._secret_tab_order:
-            if not self._secret_ids_by_type.get(secret_type):
-                continue
+        def add_secret_tab(secret_type: str) -> None:
             tab_label = self._secret_tab_labels.get(secret_type, secret_type)
             secrets_tab = ttk.Frame(notebook, padding=12)
             secrets_tab.columnconfigure(0, weight=1)
             notebook.add(secrets_tab, text=tab_label)
             self._build_secrets_tab(secrets_tab, secret_type)
+
+        secret_order = [
+            secret_type
+            for secret_type in self._secret_tab_order
+            if self._secret_ids_by_type.get(secret_type)
+        ]
+        boss_tab_type: Optional[str] = None
+        for secret_type in secret_order:
+            if secret_type == "Boss" and boss_tab_type is None:
+                boss_tab_type = secret_type
+                continue
+            add_secret_tab(secret_type)
+        if boss_tab_type:
+            add_secret_tab(boss_tab_type)
+
+        notebook.add(completion_tab, text="체크리스트")
 
     def _build_main_tab(self, container: ttk.Frame) -> None:
         top_frame = ttk.Frame(container)
@@ -257,7 +294,71 @@ class IsaacSaveEditor(tk.Tk):
         )
         remember_check.grid(column=0, row=1, columnspan=2, sticky="w", pady=(8, 0))
 
-        for row_index, key in enumerate(self._numeric_order, start=1):
+        self.auto_set_999_var = tk.BooleanVar(value=self._auto_set_999_default)
+        self.auto_overwrite_var = tk.BooleanVar(value=self._auto_overwrite_default)
+        self.source_save_display_var = tk.StringVar(
+            value=self._format_selected_path(self.source_save_path)
+        )
+        self.target_save_display_var = tk.StringVar(
+            value=self._format_selected_path(self.target_save_path)
+        )
+
+        overwrite_frame = ttk.LabelFrame(
+            container,
+            text="세이브파일 덮어쓰기",
+            padding=(12, 10),
+        )
+        overwrite_frame.grid(column=0, row=1, sticky="ew", pady=(15, 0))
+        overwrite_frame.columnconfigure(1, weight=1)
+
+        auto_overwrite_check = ttk.Checkbutton(
+            overwrite_frame,
+            text="세이브파일 자동 덮어쓰기",
+            variable=self.auto_overwrite_var,
+            command=self._on_auto_overwrite_toggle,
+        )
+        auto_overwrite_check.grid(column=0, row=0, sticky="w")
+
+        help_button = ttk.Button(
+            overwrite_frame,
+            text="도움말",
+            command=self._show_auto_overwrite_help,
+        )
+        help_button.grid(column=1, row=0, sticky="e")
+
+        source_button = ttk.Button(
+            overwrite_frame,
+            text="원본 세이브파일 열기",
+            command=self._select_source_save_file,
+        )
+        source_button.grid(column=0, row=1, sticky="w", pady=(8, 0))
+
+        source_label = ttk.Label(
+            overwrite_frame,
+            textvariable=self.source_save_display_var,
+            wraplength=420,
+            justify="left",
+        )
+        source_label.grid(column=1, row=1, sticky="w", padx=(10, 0), pady=(8, 0))
+
+        target_button = ttk.Button(
+            overwrite_frame,
+            text="덮어쓰기할 세이브파일 열기",
+            command=self._select_target_save_file,
+        )
+        target_button.grid(column=0, row=2, sticky="w", pady=(8, 0))
+
+        target_label = ttk.Label(
+            overwrite_frame,
+            textvariable=self.target_save_display_var,
+            wraplength=420,
+            justify="left",
+        )
+        target_label.grid(column=1, row=2, sticky="w", padx=(10, 0), pady=(8, 0))
+
+        numeric_start_row = 2
+        for index, key in enumerate(self._numeric_order):
+            row_index = numeric_start_row + index
             config = self._numeric_config[key]
             current_var = tk.StringVar(value="0")
             entry_var = tk.StringVar(value="0")
@@ -272,14 +373,39 @@ class IsaacSaveEditor(tk.Tk):
                 current_var=current_var,
                 entry_var=entry_var,
                 command=lambda field_key=key: self.apply_field(field_key),
+                is_first=index == 0,
             )
+
+        auto_999_row = numeric_start_row + len(self._numeric_order)
+        auto_999_check = ttk.Checkbutton(
+            container,
+            text="프로그램 시작 시 999로 설정",
+            variable=self.auto_set_999_var,
+            command=self._on_auto_set_999_toggle,
+        )
+        auto_999_check.grid(column=0, row=auto_999_row, sticky="w", pady=(12, 0))
 
         set_999_button = ttk.Button(
             container,
-            text="기부/그리드 기계 999로 설정 (Set Donation & Greed to 999)",
-            command=self.set_donation_and_greed_to_max,
+            text="기부/그리드 기계/에덴 토큰 999로 설정",
+            command=self.set_donation_greed_eden_to_max,
         )
-        set_999_button.grid(column=0, row=len(self._numeric_order) + 1, sticky="e", pady=(12, 0))
+        set_999_button.grid(column=0, row=auto_999_row + 1, sticky="e", pady=(8, 0))
+
+        self._update_source_display()
+        self._update_target_display()
+
+    def _update_source_display(self) -> None:
+        if hasattr(self, "source_save_display_var"):
+            self.source_save_display_var.set(
+                self._format_selected_path(self.source_save_path)
+            )
+
+    def _update_target_display(self) -> None:
+        if hasattr(self, "target_save_display_var"):
+            self.target_save_display_var.set(
+                self._format_selected_path(self.target_save_path)
+            )
 
     def _build_completion_tab(self, container: ttk.Frame) -> None:
         container.columnconfigure(0, weight=1)
@@ -1345,9 +1471,10 @@ class IsaacSaveEditor(tk.Tk):
         current_var: tk.StringVar,
         entry_var: tk.StringVar,
         command: Callable[[], None],
+        is_first: bool = False,
     ) -> None:
         section = ttk.LabelFrame(container, text=title, padding=(12, 10))
-        pady = (15, 0) if row == 1 else (10, 0)
+        pady = (15, 0) if is_first else (10, 0)
         section.grid(column=0, row=row, sticky="ew", pady=pady)
         section.columnconfigure(1, weight=1)
 
@@ -1360,6 +1487,119 @@ class IsaacSaveEditor(tk.Tk):
 
         apply_button = ttk.Button(section, text="적용 (Apply)", command=command)
         apply_button.grid(column=2, row=1, sticky="e", padx=(10, 0), pady=(8, 0))
+
+    def _select_source_save_file(self) -> None:
+        filename = filedialog.askopenfilename(
+            title="원본 세이브파일 선택",
+            initialdir=self._get_initial_directory(),
+            filetypes=(("dat files", "*.dat"), ("all files", "*.*")),
+        )
+        if not filename:
+            return
+        normalized = self._normalize_save_path(filename)
+        if self.target_save_path:
+            source_name = os.path.basename(normalized)
+            target_name = os.path.basename(self.target_save_path)
+            if source_name != target_name:
+                messagebox.showerror("경고", "파일 이름이 다릅니다.")
+                return
+        self.source_save_path = normalized
+        self.settings["source_save_path"] = normalized
+        self._update_source_display()
+        self._save_settings()
+        self._apply_auto_overwrite_if_enabled(show_message=True)
+
+    def _select_target_save_file(self) -> None:
+        filename = filedialog.askopenfilename(
+            title="덮어쓰기할 세이브파일 선택",
+            initialdir=self._get_initial_directory(),
+            filetypes=(("dat files", "*.dat"), ("all files", "*.*")),
+        )
+        if not filename:
+            return
+        normalized = self._normalize_save_path(filename)
+        if not self._path_contains_steam(normalized):
+            proceed = messagebox.askyesno(
+                "경로 확인",
+                "아이작 세이브파일 경로가 아닌 것 같습니다. 그래도 계속하시겠습니까?",
+            )
+            if not proceed:
+                return
+        if self.source_save_path:
+            source_name = os.path.basename(self.source_save_path)
+            target_name = os.path.basename(normalized)
+            if source_name != target_name:
+                messagebox.showerror("경고", "파일 이름이 다릅니다.")
+                return
+        self.target_save_path = normalized
+        self.settings["target_save_path"] = normalized
+        self._update_target_display()
+        self._save_settings()
+        self._apply_auto_overwrite_if_enabled(show_message=True)
+
+    def _on_auto_set_999_toggle(self) -> None:
+        enabled = bool(self.auto_set_999_var.get())
+        self.settings["auto_set_999"] = enabled
+        self._save_settings()
+        if enabled:
+            self._apply_auto_999_if_needed()
+
+    def _on_auto_overwrite_toggle(self) -> None:
+        enabled = bool(self.auto_overwrite_var.get())
+        self.settings["auto_overwrite"] = enabled
+        self._save_settings()
+        if enabled:
+            self._apply_auto_overwrite_if_enabled(show_message=True)
+
+    def _show_auto_overwrite_help(self) -> None:
+        message = (
+            "1. '원본 세이브파일 열기' 버튼으로 기준이 되는 세이브파일을 선택하세요.\n"
+            "2. '덮어쓰기할 세이브파일 열기' 버튼으로 실제 게임 세이브파일을 선택하세요. "
+            "선택한 경로에 Steam 폴더가 없으면 계속할지 확인 메시지가 표시됩니다.\n"
+            "3. 두 파일의 이름은 같아야 하며 다르면 선택이 취소됩니다.\n"
+            "4. '세이브파일 자동 덮어쓰기'를 체크하면 경로가 저장되고, 프로그램 실행 시 원본 세이브파일이 자동으로 덮어쓰기 경로에 복사됩니다.\n"
+            "5. 자동 덮어쓰기가 활성화된 상태에서는 프로그램을 다시 실행해도 선택한 경로가 유지되며, 시작할 때마다 자동으로 덮어쓰기가 시도됩니다."
+        )
+        messagebox.showinfo("세이브파일 자동 덮어쓰기 안내", message)
+
+    def _apply_auto_999_if_needed(self) -> None:
+        if not bool(self.auto_set_999_var.get()):
+            return
+        if self.data is None or not self.filename:
+            return
+        self.set_donation_greed_eden_to_max(auto_trigger=True)
+
+    def _apply_auto_overwrite_if_enabled(self, *, show_message: bool = False) -> None:
+        if not bool(self.auto_overwrite_var.get()):
+            return
+        if not self.source_save_path or not self.target_save_path:
+            return
+        self._overwrite_target_save(show_message=show_message)
+
+    def _overwrite_target_save(self, *, show_message: bool) -> None:
+        source = self.source_save_path
+        target = self.target_save_path
+        if not source or not target:
+            if show_message:
+                messagebox.showwarning(
+                    "경로 없음",
+                    "원본과 덮어쓸 세이브파일을 모두 선택해주세요.",
+                )
+            return
+        if not os.path.exists(source):
+            messagebox.showerror("덮어쓰기 실패", "원본 세이브파일을 찾을 수 없습니다.")
+            return
+        target_dir = os.path.dirname(target)
+        if target_dir and not os.path.exists(target_dir):
+            messagebox.showerror("덮어쓰기 실패", "덮어쓸 세이브파일 경로를 찾을 수 없습니다.")
+            return
+        try:
+            shutil.copyfile(source, target)
+        except OSError as exc:
+            messagebox.showerror("덮어쓰기 실패", f"세이브파일을 덮어쓰지 못했습니다.\n{exc}")
+            return
+        if show_message:
+            messagebox.showinfo("덮어쓰기 완료", "원본 세이브파일을 덮어썼습니다.")
 
     def open_save_file(self) -> None:
         filename = filedialog.askopenfilename(
@@ -1404,6 +1644,7 @@ class IsaacSaveEditor(tk.Tk):
         self.settings["last_path"] = normalized
         self._save_settings()
         self.refresh_current_values()
+        self._apply_auto_999_if_needed()
         return True
 
     def _on_remember_path_toggle(self) -> None:
@@ -1432,6 +1673,10 @@ class IsaacSaveEditor(tk.Tk):
             )
             self.loaded_file_var.set(self._default_loaded_text)
 
+    def _perform_startup_tasks(self) -> None:
+        self._open_remembered_file_if_available()
+        self._apply_auto_overwrite_if_enabled()
+
     def _load_settings(self) -> Dict[str, object]:
         settings = DEFAULT_SETTINGS.copy()
         try:
@@ -1446,6 +1691,18 @@ class IsaacSaveEditor(tk.Tk):
             last_path = loaded.get("last_path")
             if isinstance(last_path, str):
                 settings["last_path"] = last_path
+            auto_999 = loaded.get("auto_set_999")
+            if isinstance(auto_999, bool):
+                settings["auto_set_999"] = auto_999
+            auto_overwrite = loaded.get("auto_overwrite")
+            if isinstance(auto_overwrite, bool):
+                settings["auto_overwrite"] = auto_overwrite
+            source_path = loaded.get("source_save_path")
+            if isinstance(source_path, str):
+                settings["source_save_path"] = source_path
+            target_path = loaded.get("target_save_path")
+            if isinstance(target_path, str):
+                settings["target_save_path"] = target_path
         return settings
 
     def _save_settings(self) -> None:
@@ -1454,6 +1711,12 @@ class IsaacSaveEditor(tk.Tk):
         last_path_setting = self.settings.get("last_path")
         if isinstance(last_path_setting, str):
             settings_to_save["last_path"] = last_path_setting
+        auto_set_var = getattr(self, "auto_set_999_var", None)
+        auto_overwrite_var = getattr(self, "auto_overwrite_var", None)
+        settings_to_save["auto_set_999"] = bool(auto_set_var.get()) if auto_set_var else False
+        settings_to_save["auto_overwrite"] = bool(auto_overwrite_var.get()) if auto_overwrite_var else False
+        settings_to_save["source_save_path"] = self.source_save_path
+        settings_to_save["target_save_path"] = self.target_save_path
         self.settings = settings_to_save
         try:
             with self.settings_path.open("w", encoding="utf-8") as file:
@@ -1506,12 +1769,14 @@ class IsaacSaveEditor(tk.Tk):
         self.refresh_current_values()
         return True
 
-    def set_donation_and_greed_to_max(self) -> None:
+    def set_donation_greed_eden_to_max(self, *, auto_trigger: bool = False) -> None:
         if self.data is None or not self.filename:
-            messagebox.showwarning("파일 없음", "먼저 세이브 파일을 열어주세요.")
+            if not auto_trigger:
+                messagebox.showwarning("파일 없음", "먼저 세이브 파일을 열어주세요.")
             return
-        if self.apply_field("donation", preset=999):
-            self.apply_field("greed", preset=999)
+        self.apply_field("donation", preset=999)
+        self.apply_field("greed", preset=999)
+        self.apply_field("eden", preset=999)
 
     def refresh_current_values(self) -> None:
         if self.data is None:
