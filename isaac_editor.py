@@ -28,6 +28,9 @@ DEFAULT_SETTINGS: Dict[str, object] = {
     "last_path": "",
 }
 
+COMPLETION_UNLOCK_VALUE = 15
+TOTAL_COMPLETION_MARKS = 12
+
 
 class TreeManager:
     """Manage sorting and column updates for :class:`CheckboxTreeview`."""
@@ -139,6 +142,16 @@ class IsaacSaveEditor(tk.Tk):
         self._locked_tree_ids: Set[int] = set()
 
         (
+            self._completion_characters,
+            self._completion_marks_by_character,
+        ) = self._load_completion_records()
+        self._completion_character_var = tk.StringVar()
+        self._completion_display_to_index: Dict[str, int] = {}
+        self._completion_tree: Optional[CheckboxTreeview] = None
+        self._completion_current_mark_ids: List[str] = []
+        self._current_completion_char_index: Optional[int] = None
+
+        (
             self._item_records,
             self._item_ids_by_type,
             self._item_lookup_by_name,
@@ -198,6 +211,12 @@ class IsaacSaveEditor(tk.Tk):
         main_tab.columnconfigure(0, weight=1)
         notebook.add(main_tab, text="메인")
         self._build_main_tab(main_tab)
+
+        completion_tab = ttk.Frame(notebook, padding=12)
+        completion_tab.columnconfigure(0, weight=1)
+        completion_tab.rowconfigure(2, weight=1)
+        notebook.add(completion_tab, text="체크리스트")
+        self._build_completion_tab(completion_tab)
 
         challenge_tab = ttk.Frame(notebook, padding=12)
         challenge_tab.columnconfigure(0, weight=1)
@@ -261,6 +280,108 @@ class IsaacSaveEditor(tk.Tk):
             command=self.set_donation_and_greed_to_max,
         )
         set_999_button.grid(column=0, row=len(self._numeric_order) + 1, sticky="e", pady=(12, 0))
+
+    def _build_completion_tab(self, container: ttk.Frame) -> None:
+        container.columnconfigure(0, weight=1)
+
+        header = ttk.Frame(container)
+        header.grid(column=0, row=0, sticky="w")
+
+        ttk.Label(header, text="캐릭터: ").pack(side="left")
+
+        self._completion_display_to_index.clear()
+        character_options: List[str] = []
+        for info in self._completion_characters:
+            display = self._format_completion_character_display(info)
+            self._completion_display_to_index[display] = int(info["index"])
+            character_options.append(display)
+
+        character_box = ttk.Combobox(
+            header,
+            textvariable=self._completion_character_var,
+            state="readonly",
+            values=character_options,
+            width=26,
+        )
+        character_box.pack(side="left", padx=(6, 0))
+        character_box.bind("<<ComboboxSelected>>", self._on_completion_character_selected)
+
+        ttk.Label(
+            container,
+            text="체크박스를 클릭하면 즉시 저장됩니다.",
+        ).grid(column=0, row=1, sticky="w", pady=(10, 0))
+
+        tree_container = ttk.Frame(container)
+        tree_container.grid(column=0, row=2, sticky="nsew", pady=(12, 0))
+        tree_container.columnconfigure(0, weight=1)
+        tree_container.rowconfigure(0, weight=1)
+        tree = self._create_completion_tree(tree_container)
+        tree.column("#0", anchor="w", width=420, stretch=True)
+        tree.bind("<ButtonRelease-1>", self._on_completion_tree_click, True)
+        self._completion_tree = tree
+
+        unlock_all_button = ttk.Button(
+            container,
+            text="모든 캐릭터 체크리스트 완료",
+            command=self._unlock_all_completion_marks_all_characters,
+        )
+        unlock_all_button.grid(column=0, row=3, sticky="e", pady=(12, 0))
+
+        if character_options:
+            character_box.current(0)
+            self._on_completion_character_selected()
+        else:
+            character_box.configure(state="disabled")
+            if self._completion_tree is not None:
+                self._completion_tree.state(("disabled",))
+
+    @staticmethod
+    def _format_completion_character_display(info: Dict[str, object]) -> str:
+        english = str(info.get("english", "")).strip()
+        korean = str(info.get("korean", "")).strip()
+        if korean and english and korean != english:
+            return f"{korean} ({english})"
+        if korean:
+            return korean
+        if english:
+            return english
+        return f"Character {info.get('index', '')}"
+
+    def _on_completion_character_selected(self, event: object | None = None) -> None:
+        selected = self._completion_character_var.get()
+        char_index = self._completion_display_to_index.get(selected)
+        if char_index is None:
+            return
+        self._populate_completion_tree_for_character(char_index)
+
+    def _populate_completion_tree_for_character(self, char_index: int) -> None:
+        tree = self._completion_tree
+        if tree is None:
+            self._current_completion_char_index = char_index
+            return
+        marks = self._completion_marks_by_character.get(char_index, [])
+        try:
+            marks_sorted = sorted(marks, key=lambda info: int(info.get("mark_index", 0)))
+        except TypeError:
+            marks_sorted = marks
+        self._lock_tree(tree)
+        try:
+            tree.delete(*tree.get_children())
+            mark_ids: List[str] = []
+            for mark in marks_sorted:
+                mark_id = str(mark.get("mark_index", ""))
+                if not mark_id:
+                    continue
+                display = str(mark.get("display") or mark.get("mark_name") or mark_id)
+                if tree.exists(mark_id):
+                    tree.delete(mark_id)
+                tree.insert("", "end", iid=mark_id, text=display)
+                mark_ids.append(mark_id)
+            self._completion_current_mark_ids = mark_ids
+        finally:
+            self._unlock_tree(tree)
+        self._current_completion_char_index = char_index
+        self._refresh_completion_tab()
 
     def _build_secrets_tab(self, container: ttk.Frame, secret_type: str) -> None:
         button_frame = ttk.Frame(container)
@@ -460,6 +581,17 @@ class IsaacSaveEditor(tk.Tk):
         self._challenge_tree = tree
         self._challenge_manager = manager
 
+    def _create_completion_tree(self, container: ttk.Frame) -> CheckboxTreeview:
+        tree = CheckboxTreeview(container, columns=(), show="tree", selectmode="none")
+        tree.grid(column=0, row=0, sticky="nsew")
+        yscroll = ttk.Scrollbar(container, orient="vertical", command=tree.yview)
+        yscroll.grid(column=1, row=0, sticky="ns")
+        tree.configure(yscrollcommand=yscroll.set)
+        xscroll = ttk.Scrollbar(container, orient="horizontal", command=tree.xview)
+        xscroll.grid(column=0, row=1, sticky="ew")
+        tree.configure(xscrollcommand=xscroll.set)
+        return tree
+
     def _create_tree(self, container: ttk.Frame, columns: tuple[str, ...]) -> CheckboxTreeview:
         tree = CheckboxTreeview(container, columns=columns, show="tree headings", selectmode="none")
         tree.grid(column=0, row=0, sticky="nsew")
@@ -489,6 +621,141 @@ class IsaacSaveEditor(tk.Tk):
     # ------------------------------------------------------------------
     # Data loading
     # ------------------------------------------------------------------
+    def _load_completion_records(
+        self,
+    ) -> tuple[List[Dict[str, object]], Dict[int, List[Dict[str, object]]]]:
+        characters_by_index: Dict[int, Dict[str, object]] = {
+            index: {"index": index, "english": name, "korean": name}
+            for index, name in enumerate(getattr(script, "characters", []))
+        }
+        default_marks_template = [
+            {"mark_index": idx, "mark_name": mark_name, "display": mark_name}
+            for idx, mark_name in enumerate(getattr(script, "checklist_order", []))
+        ]
+        marks_by_character: Dict[int, List[Dict[str, object]]] = {
+            index: [entry.copy() for entry in default_marks_template]
+            for index in characters_by_index
+        }
+
+        csv_path = DATA_DIR / "ui_completion_marks.csv"
+        if csv_path.exists():
+            try:
+                with csv_path.open(encoding="utf-8-sig", newline="") as file:
+                    reader = csv.DictReader(file)
+                    for row in reader:
+                        try:
+                            char_index = int((row.get("CharacterIndex") or "").strip())
+                            mark_index = int((row.get("MarkIndex") or "").strip())
+                        except (TypeError, ValueError):
+                            continue
+                        english_name = (row.get("CharacterName") or "").strip()
+                        korean_name = (row.get("Korean") or "").strip()
+                        mark_name = (row.get("MarkName") or "").strip()
+                        character_info = characters_by_index.setdefault(
+                            char_index,
+                            {
+                                "index": char_index,
+                                "english": english_name or f"Character {char_index}",
+                                "korean": korean_name or english_name or f"Character {char_index}",
+                            },
+                        )
+                        if english_name:
+                            character_info["english"] = english_name
+                        if korean_name:
+                            character_info["korean"] = korean_name
+                        marks = marks_by_character.setdefault(
+                            char_index,
+                            [entry.copy() for entry in default_marks_template],
+                        )
+                        mark_record = {
+                            "mark_index": mark_index,
+                            "mark_name": mark_name or f"Mark {mark_index}",
+                            "display": mark_name or f"Mark {mark_index}",
+                        }
+                        replaced = False
+                        for existing in marks:
+                            if int(existing.get("mark_index", -1)) == mark_index:
+                                existing.update(mark_record)
+                                replaced = True
+                                break
+                        if not replaced:
+                            marks.append(mark_record)
+            except OSError:
+                pass
+
+        sorted_indices = sorted(characters_by_index)
+        characters = []
+        normalized_marks: Dict[int, List[Dict[str, object]]] = {}
+        for index in sorted_indices:
+            info = characters_by_index[index]
+            info.setdefault("english", f"Character {index}")
+            info.setdefault("korean", info["english"])
+            info["index"] = index
+            characters.append(info)
+            marks = marks_by_character.get(index, [entry.copy() for entry in default_marks_template])
+            try:
+                marks.sort(key=lambda entry: int(entry.get("mark_index", 0)))
+            except TypeError:
+                pass
+            for entry in marks:
+                entry.setdefault("mark_name", f"Mark {entry.get('mark_index', 0)}")
+                entry.setdefault("display", entry["mark_name"])
+            normalized_marks[index] = marks
+
+        if not characters:
+            # fallback when script data and CSV are missing
+            characters = [
+                {
+                    "index": idx,
+                    "english": name,
+                    "korean": name,
+                }
+                for idx, name in enumerate(
+                    [
+                        "Isaac",
+                        "Maggy",
+                        "Cain",
+                        "Judas",
+                        "???",
+                        "Eve",
+                        "Samson",
+                        "Azazel",
+                        "Lazarus",
+                        "Eden",
+                        "The Lost",
+                        "Lilith",
+                        "Keeper",
+                        "Apollyon",
+                        "Forgotten",
+                        "Bethany",
+                        "Jacob & Esau",
+                        "T Isaac",
+                        "T Maggy",
+                        "T Cain",
+                        "T Judas",
+                        "T ???",
+                        "T Eve",
+                        "T Samson",
+                        "T Azazel",
+                        "T Lazarus",
+                        "T Eden",
+                        "T Lost",
+                        "T Lilith",
+                        "T Keeper",
+                        "T Apollyon",
+                        "T Forgotten",
+                        "T Bethany",
+                        "T Jacob",
+                    ]
+                )
+            ]
+            normalized_marks = {
+                info["index"]: [entry.copy() for entry in default_marks_template]
+                for info in characters
+            }
+
+        return characters, normalized_marks
+
     def _load_secret_records(
         self,
         item_lookup: Optional[Dict[str, Dict[str, object]]] = None,
@@ -660,6 +927,77 @@ class IsaacSaveEditor(tk.Tk):
     # ------------------------------------------------------------------
     # Event handlers and select helpers
     # ------------------------------------------------------------------
+    def _on_completion_tree_click(self, event: tk.Event) -> None:
+        tree = self._completion_tree
+        if tree is None or event.widget is not tree:
+            return
+        if self._is_tree_locked(tree):
+            return
+        if self._current_completion_char_index is None:
+            return
+        element = tree.identify("element", event.x, event.y)
+        if "image" not in element:
+            return
+        self.after_idle(self._commit_completion_tree_state)
+
+    def _commit_completion_tree_state(self) -> None:
+        tree = self._completion_tree
+        if tree is None:
+            return
+        if self._is_tree_locked(tree):
+            return
+        if self._current_completion_char_index is None:
+            return
+        if not self._completion_current_mark_ids:
+            return
+        new_values: List[int] = []
+        for mark_id in self._completion_current_mark_ids:
+            checked = tree.tag_has("checked", mark_id)
+            new_values.append(COMPLETION_UNLOCK_VALUE if checked else 0)
+        success = self._apply_update(
+            lambda data, idx=self._current_completion_char_index, values=new_values: script.updateCheckListUnlocks(
+                data, idx, values
+            ),
+            "체크리스트를 업데이트하지 못했습니다.",
+        )
+        if not success:
+            self._refresh_completion_tab()
+
+    def _unlock_all_completion_marks_all_characters(self) -> None:
+        if not self._ensure_data_loaded():
+            return
+        proceed = messagebox.askyesno(
+            "체크리스트 완료",
+            "모든 캐릭터의 체크리스트를 완료하시겠습니까?",
+            icon="question",
+        )
+        if not proceed:
+            return
+        script_character_count = len(getattr(script, "characters", []))
+        indices_from_script = set(range(script_character_count))
+        indices_from_ui = {int(info.get("index", idx)) for idx, info in enumerate(self._completion_characters)}
+        indices_from_marks = {int(index) for index in self._completion_marks_by_character}
+        char_indices = sorted(indices_from_script | indices_from_ui | indices_from_marks)
+        if not char_indices:
+            messagebox.showwarning("체크리스트 완료", "완료할 캐릭터 정보를 찾을 수 없습니다.")
+            return
+        mark_count = max(
+            (len(marks) for marks in self._completion_marks_by_character.values()),
+            default=TOTAL_COMPLETION_MARKS,
+        )
+        if mark_count <= 0:
+            mark_count = TOTAL_COMPLETION_MARKS
+
+        def updater(data: bytes) -> bytes:
+            result = data
+            payload = [COMPLETION_UNLOCK_VALUE] * mark_count
+            for index in char_indices:
+                result = script.updateCheckListUnlocks(result, index, payload)
+            return result
+
+        if self._apply_update(updater, "모든 캐릭터 체크리스트를 완료하지 못했습니다."):
+            messagebox.showinfo("완료", "모든 캐릭터 체크리스트를 완료했습니다.")
+
     def _select_all_secrets(self, secret_type: str) -> None:
         tree = self._secret_trees.get(secret_type)
         if tree is None:
@@ -881,6 +1219,51 @@ class IsaacSaveEditor(tk.Tk):
     # ------------------------------------------------------------------
     # Tree refresh helpers
     # ------------------------------------------------------------------
+    def _refresh_completion_tab(self) -> None:
+        tree = self._completion_tree
+        if tree is None:
+            return
+        if not self._completion_current_mark_ids:
+            tree.state(("disabled",))
+            return
+        if self._current_completion_char_index is None:
+            tree.state(("disabled",))
+            self._lock_tree(tree)
+            try:
+                for mark_id in self._completion_current_mark_ids:
+                    tree.change_state(mark_id, "unchecked")
+            finally:
+                self._unlock_tree(tree)
+            return
+        if self.data is None:
+            tree.state(("disabled",))
+            self._lock_tree(tree)
+            try:
+                for mark_id in self._completion_current_mark_ids:
+                    tree.change_state(mark_id, "unchecked")
+            finally:
+                self._unlock_tree(tree)
+            return
+        tree.state(("!disabled",))
+        try:
+            values = script.getChecklistUnlocks(self.data, self._current_completion_char_index)
+        except Exception:
+            values = []
+        unlocked_ids = {
+            str(index): True
+            for index, value in enumerate(values)
+            if value
+        }
+        self._lock_tree(tree)
+        try:
+            for mark_id in self._completion_current_mark_ids:
+                if unlocked_ids.get(mark_id):
+                    tree.change_state(mark_id, "checked")
+                else:
+                    tree.change_state(mark_id, "unchecked")
+        finally:
+            self._unlock_tree(tree)
+
     def _refresh_secrets_tab(self) -> None:
         if not self._secret_managers:
             return
@@ -1136,6 +1519,7 @@ class IsaacSaveEditor(tk.Tk):
                 vars_map = self._numeric_vars[key]
                 vars_map["current"].set("0")
                 vars_map["entry"].set("0")
+            self._refresh_completion_tab()
             self._refresh_secrets_tab()
             self._refresh_items_tab()
             self._refresh_challenges_tab()
@@ -1159,6 +1543,7 @@ class IsaacSaveEditor(tk.Tk):
             vars_map["current"].set(value_str)
             vars_map["entry"].set(value_str)
 
+        self._refresh_completion_tab()
         self._refresh_secrets_tab()
         self._refresh_items_tab()
         self._refresh_challenges_tab()
