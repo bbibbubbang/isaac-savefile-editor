@@ -407,7 +407,6 @@ class IsaacSaveEditor(tk.Tk):
         ttk.Label(
             container,
             text="도전과제는 모두 해금하고, 다른 아이템 탭에서 해금여부를 변경하세요.",
-            wraplength=520,
             justify="left",
         ).grid(column=0, row=1, sticky="w", pady=(8, 0))
 
