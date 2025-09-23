@@ -153,9 +153,13 @@ class IsaacSaveEditor(tk.Tk):
         self._build_main_tab(main_tab)
 
         item_tab_info: Optional[tuple[str, str]] = None
+        none_tab_info: Optional[tuple[str, str]] = None
         for secret_type, tab_label in self.SECRET_TAB_INFO:
             if secret_type == "Item":
                 item_tab_info = (secret_type, tab_label)
+                continue
+            if secret_type == "None":
+                none_tab_info = (secret_type, tab_label)
                 continue
             if not self._secret_ids_by_type.get(secret_type):
                 continue
@@ -188,6 +192,13 @@ class IsaacSaveEditor(tk.Tk):
             achievements_tab.columnconfigure(0, weight=1)
             notebook.add(achievements_tab, text=tab_label)
             self._build_secrets_tab(achievements_tab, secret_type)
+
+        if none_tab_info and self._secret_ids_by_type.get(none_tab_info[0]):
+            secret_type, tab_label = none_tab_info
+            none_tab = ttk.Frame(notebook, padding=12)
+            none_tab.columnconfigure(0, weight=1)
+            notebook.add(none_tab, text=tab_label)
+            self._build_secrets_tab(none_tab, secret_type)
 
     def _build_main_tab(self, container: ttk.Frame) -> None:
         top_frame = ttk.Frame(container)
