@@ -9,6 +9,7 @@ while keeping existing backend logic in ``script.py``.
 from __future__ import annotations
 
 import csv
+import json
 import os
 from pathlib import Path
 import tkinter as tk
@@ -21,6 +22,11 @@ import script
 
 
 DATA_DIR = Path(__file__).resolve().parent
+SETTINGS_PATH = DATA_DIR / "settings.json"
+DEFAULT_SETTINGS: Dict[str, object] = {
+    "remember_path": False,
+    "last_path": "",
+}
 
 
 class TreeManager:
@@ -96,6 +102,12 @@ class IsaacSaveEditor(tk.Tk):
         self.filename: str = ""
         self.data: bytes | None = None
 
+        self.settings_path = SETTINGS_PATH
+        self.settings = self._load_settings()
+        remember_path = bool(self.settings.get("remember_path", False))
+        self.remember_path_var = tk.BooleanVar(value=remember_path)
+        self._default_loaded_text = "불러온 파일 (Loaded File): 없음"
+
         self._numeric_config: Dict[str, Dict[str, int | str]] = {
             "donation": {
                 "offset": 0x4C,
@@ -139,6 +151,7 @@ class IsaacSaveEditor(tk.Tk):
 
         self._build_layout()
         self.refresh_current_values()
+        self.after(0, self._open_remembered_file_if_available)
     # ------------------------------------------------------------------
     # Layout construction helpers
     # ------------------------------------------------------------------
@@ -212,9 +225,17 @@ class IsaacSaveEditor(tk.Tk):
         )
         open_button.grid(column=0, row=0, sticky="w")
 
-        self.loaded_file_var = tk.StringVar(value="불러온 파일 (Loaded File): 없음")
+        self.loaded_file_var = tk.StringVar(value=self._default_loaded_text)
         loaded_file_label = ttk.Label(top_frame, textvariable=self.loaded_file_var)
         loaded_file_label.grid(column=1, row=0, sticky="w", padx=(10, 0))
+
+        remember_check = ttk.Checkbutton(
+            top_frame,
+            text="세이브파일 경로 기억",
+            variable=self.remember_path_var,
+            command=self._on_remember_path_toggle,
+        )
+        remember_check.grid(column=0, row=1, columnspan=2, sticky="w", pady=(8, 0))
 
         for row_index, key in enumerate(self._numeric_order, start=1):
             config = self._numeric_config[key]
@@ -867,6 +888,21 @@ class IsaacSaveEditor(tk.Tk):
         apply_button.grid(column=2, row=1, sticky="e", padx=(10, 0), pady=(8, 0))
 
     def open_save_file(self) -> None:
+        filename = filedialog.askopenfilename(
+            title="아이작 세이브파일 선택",
+            initialdir=self._get_initial_directory(),
+            filetypes=(("dat files", "*.dat"), ("all files", "*.*")),
+        )
+        if not filename:
+            return
+        self._load_file(filename)
+
+    def _get_initial_directory(self) -> str:
+        last_path_setting = self.settings.get("last_path")
+        if isinstance(last_path_setting, str) and last_path_setting:
+            candidate_dir = os.path.dirname(last_path_setting)
+            if candidate_dir and os.path.exists(candidate_dir):
+                return candidate_dir
         initdir = os.getcwd()
         for env_var in ("ProgramFiles(x86)", "ProgramFiles"):
             base_path = os.environ.get(env_var)
@@ -874,28 +910,82 @@ class IsaacSaveEditor(tk.Tk):
                 continue
             candidate = os.path.join(base_path, "Steam", "userdata")
             if os.path.exists(candidate):
-                initdir = candidate
-                break
+                return candidate
+        return initdir
 
-        filename = filedialog.askopenfilename(
-            title="아이작 세이브파일 선택",
-            initialdir=initdir,
-            filetypes=(("dat files", "*.dat"), ("all files", "*.*")),
-        )
-        if not filename:
-            return
-
+    def _load_file(self, filename: str, *, show_errors: bool = True) -> bool:
+        normalized = os.path.abspath(filename)
         try:
-            with open(filename, "rb") as file:
-                self.data = file.read()
+            with open(normalized, "rb") as file:
+                data = file.read()
         except OSError as exc:
-            messagebox.showerror("파일 오류", f"세이브 파일을 열 수 없습니다.\n{exc}")
-            return
+            if show_errors:
+                messagebox.showerror("파일 오류", f"세이브 파일을 열 수 없습니다.\n{exc}")
+            return False
 
-        self.filename = filename
-        basename = os.path.basename(filename)
+        self.data = data
+        self.filename = normalized
+        basename = os.path.basename(normalized)
         self.loaded_file_var.set(f"불러온 파일 (Loaded File): {basename}")
+        self.settings["last_path"] = normalized
+        self._save_settings()
         self.refresh_current_values()
+        return True
+
+    def _on_remember_path_toggle(self) -> None:
+        self.settings["remember_path"] = bool(self.remember_path_var.get())
+        if self.settings["remember_path"] and self.filename:
+            self.settings["last_path"] = self.filename
+        self._save_settings()
+
+    def _open_remembered_file_if_available(self) -> None:
+        if not bool(self.remember_path_var.get()):
+            return
+        last_path_setting = self.settings.get("last_path")
+        if not isinstance(last_path_setting, str) or not last_path_setting:
+            return
+        if not os.path.exists(last_path_setting):
+            messagebox.showwarning(
+                "자동 열기 실패",
+                "저장된 세이브 파일 경로를 찾을 수 없습니다. 새로 선택해주세요.",
+            )
+            self.loaded_file_var.set(self._default_loaded_text)
+            return
+        if not self._load_file(last_path_setting, show_errors=False):
+            messagebox.showwarning(
+                "자동 열기 실패",
+                "저장된 세이브 파일을 불러오지 못했습니다. 파일이 사용 중인지 확인해주세요.",
+            )
+            self.loaded_file_var.set(self._default_loaded_text)
+
+    def _load_settings(self) -> Dict[str, object]:
+        settings = DEFAULT_SETTINGS.copy()
+        try:
+            with self.settings_path.open(encoding="utf-8") as file:
+                loaded = json.load(file)
+        except (OSError, json.JSONDecodeError):
+            return settings
+        if isinstance(loaded, dict):
+            remember = loaded.get("remember_path")
+            if isinstance(remember, bool):
+                settings["remember_path"] = remember
+            last_path = loaded.get("last_path")
+            if isinstance(last_path, str):
+                settings["last_path"] = last_path
+        return settings
+
+    def _save_settings(self) -> None:
+        settings_to_save = DEFAULT_SETTINGS.copy()
+        settings_to_save["remember_path"] = bool(self.remember_path_var.get())
+        last_path_setting = self.settings.get("last_path")
+        if isinstance(last_path_setting, str):
+            settings_to_save["last_path"] = last_path_setting
+        self.settings = settings_to_save
+        try:
+            with self.settings_path.open("w", encoding="utf-8") as file:
+                json.dump(settings_to_save, file, ensure_ascii=False, indent=2)
+        except OSError:
+            pass
 
     def apply_field(self, key: str, preset: int | None = None) -> bool:
         if key not in self._numeric_config:
