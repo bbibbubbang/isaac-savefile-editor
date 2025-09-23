@@ -196,7 +196,7 @@ class IsaacSaveEditor(tk.Tk):
 
         challenge_tab = ttk.Frame(notebook, padding=12)
         challenge_tab.columnconfigure(0, weight=1)
-        challenge_tab.rowconfigure(1, weight=1)
+        challenge_tab.rowconfigure(2, weight=1)
         notebook.add(challenge_tab, text="도전과제")
         self._build_challenges_tab(challenge_tab)
 
