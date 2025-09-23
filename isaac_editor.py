@@ -83,15 +83,17 @@ class IsaacSaveEditor(tk.Tk):
     SECRET_TAB_LABELS: Dict[str, str] = {
         "Character": "캐릭터",
         "Map": "맵",
-        "Item": "업적아이템",
         "Boss": "보스",
+        "Item": "업적아이템",
+        "Item.Passive": "패시브",
+        "Item.Active": "액티브",
+        "Other": "기타",
+        "None": "무효과",
+        "Trinket": "장신구",
+        "Pickup": "픽업",
         "Card": "카드",
         "Rune": "룬",
         "Pill": "알약",
-        "Trinket": "장신구",
-        "None": "무효과",
-        "Other": "기타",
-        "Pickup": "픽업",
     }
     SECRET_FALLBACK_TYPE = "Other"
 
@@ -137,15 +139,20 @@ class IsaacSaveEditor(tk.Tk):
         self._locked_tree_ids: Set[int] = set()
 
         (
+            self._item_records,
+            self._item_ids_by_type,
+            self._item_lookup_by_name,
+        ) = self._load_item_records()
+
+        (
             self._secret_records_by_type,
             self._secret_ids_by_type,
             self._secret_tab_labels,
             self._secret_tab_order,
-        ) = self._load_secret_records()
+        ) = self._load_secret_records(self._item_lookup_by_name)
         self._secret_trees: Dict[str, CheckboxTreeview] = {}
         self._secret_managers: Dict[str, TreeManager] = {}
 
-        self._item_records, self._item_ids_by_type = self._load_item_records()
         self._item_trees: Dict[str, CheckboxTreeview] = {}
         self._item_managers: Dict[str, TreeManager] = {}
 
@@ -157,6 +164,28 @@ class IsaacSaveEditor(tk.Tk):
         self._build_layout()
         self.refresh_current_values()
         self.after(0, self._open_remembered_file_if_available)
+
+    @staticmethod
+    def _build_lookup_keys(*values: str) -> Set[str]:
+        keys: Set[str] = set()
+        articles = ("the ", "a ", "an ")
+        for value in values:
+            if not value:
+                continue
+            normalized = " ".join(value.replace("’", "'").split()).casefold()
+            if not normalized:
+                continue
+            candidates = {normalized, normalized.replace("'", "")}
+            for candidate in list(candidates):
+                if not candidate:
+                    continue
+                for prefix in articles:
+                    if candidate.startswith(prefix):
+                        stripped = candidate[len(prefix) :]
+                        if stripped:
+                            candidates.add(stripped)
+            keys.update(candidate for candidate in candidates if candidate)
+        return keys
     # ------------------------------------------------------------------
     # Layout construction helpers
     # ------------------------------------------------------------------
@@ -176,12 +205,14 @@ class IsaacSaveEditor(tk.Tk):
         notebook.add(challenge_tab, text="도전과제")
         self._build_challenges_tab(challenge_tab)
 
-        if "Item" in self._secret_tab_order and self._secret_ids_by_type.get("Item"):
-            tab_label = self._secret_tab_labels.get("Item", "Item")
-            achievements_tab = ttk.Frame(notebook, padding=12)
-            achievements_tab.columnconfigure(0, weight=1)
-            notebook.add(achievements_tab, text=tab_label)
-            self._build_secrets_tab(achievements_tab, "Item")
+        for secret_type in self._secret_tab_order:
+            if not self._secret_ids_by_type.get(secret_type):
+                continue
+            tab_label = self._secret_tab_labels.get(secret_type, secret_type)
+            secrets_tab = ttk.Frame(notebook, padding=12)
+            secrets_tab.columnconfigure(0, weight=1)
+            notebook.add(secrets_tab, text=tab_label)
+            self._build_secrets_tab(secrets_tab, secret_type)
 
     def _build_main_tab(self, container: ttk.Frame) -> None:
         top_frame = ttk.Frame(container)
@@ -255,11 +286,16 @@ class IsaacSaveEditor(tk.Tk):
             command=lambda t=secret_type: self._lock_selected_secrets(t),
         ).pack(side="left")
 
+        include_quality = secret_type.startswith("Item.")
+        info_text = None
+        if include_quality:
+            info_text = "업적 아이템은 모두 해금하고, 패시브/액티브 탭에서 해금 여부를 변경하세요."
+
         tree_row = 1
-        if secret_type == "Item":
+        if info_text:
             ttk.Label(
                 container,
-                text="업적아이템은 모두 해금하고, 패시브/액티브 아이템에서 해금 여부를 변경하세요.",
+                text=info_text,
                 wraplength=520,
                 justify="left",
             ).grid(column=0, row=1, sticky="w", pady=(8, 0))
@@ -271,22 +307,36 @@ class IsaacSaveEditor(tk.Tk):
         tree_container.grid(column=0, row=tree_row, sticky="nsew", pady=(12, 0))
         tree_container.columnconfigure(0, weight=1)
         tree_container.rowconfigure(0, weight=1)
-        tree = self._create_tree(tree_container, ("unlock",))
+        columns: tuple[str, ...]
+        if include_quality:
+            columns = ("unlock", "quality")
+        else:
+            columns = ("unlock",)
+        tree = self._create_tree(tree_container, columns)
         tree.column("#0", anchor="w", width=360, stretch=True)
         tree.column("unlock", anchor="center", width=140, stretch=False)
+        if include_quality:
+            tree.column("quality", anchor="center", width=120, stretch=False)
 
         manager = TreeManager(tree, {})
         tree.heading("#0", text="이름 (Name)", command=lambda m=manager: m.sort("name"))
         tree.heading("unlock", text="해금 여부 (Unlock)", command=lambda m=manager: m.sort("unlock"))
+        if include_quality:
+            tree.heading("quality", text="등급 (Quality)", command=lambda m=manager: m.sort("quality"))
 
         records: Dict[str, Dict[str, object]] = {}
         for record in self._secret_records_by_type.get(secret_type, []):
-            tree.insert("", "end", iid=record["iid"], text=record["display"], values=("X",))
+            quality_value = record.get("quality")
+            values: List[str] = ["X"]
+            if include_quality:
+                quality_display = "-" if quality_value is None else str(quality_value)
+                values.append(quality_display)
+            tree.insert("", "end", iid=record["iid"], text=record["display"], values=tuple(values))
             records[record["iid"]] = {
                 "iid": record["iid"],
                 "name_sort": record["name_sort"],
                 "unlock": False,
-                "quality": None,
+                "quality": quality_value if include_quality else None,
             }
         manager.records = records
         manager.sort("name", ascending=True, update_toggle=False)
@@ -441,18 +491,32 @@ class IsaacSaveEditor(tk.Tk):
     # ------------------------------------------------------------------
     def _load_secret_records(
         self,
+        item_lookup: Optional[Dict[str, Dict[str, object]]] = None,
     ) -> tuple[
-        Dict[str, List[Dict[str, str]]],
+        Dict[str, List[Dict[str, object]]],
         Dict[str, List[str]],
         Dict[str, str],
         List[str],
     ]:
         csv_path = DATA_DIR / "ui_secrets.csv"
-        records_by_type: Dict[str, List[Dict[str, str]]] = {}
+        records_by_type: Dict[str, List[Dict[str, object]]] = {}
         ids_by_type: Dict[str, List[str]] = {}
         tab_labels: Dict[str, str] = {}
         type_order: List[str] = []
-        allowed_types = {"Item"}
+        allowed_types = {
+            "Character",
+            "Map",
+            "Boss",
+            "Item",
+            "Other",
+            "None",
+            "Trinket",
+            "Pickup",
+            "Card",
+            "Rune",
+            "Pill",
+        }
+        item_lookup = item_lookup or {}
         if not csv_path.exists():
             return records_by_type, ids_by_type, tab_labels, type_order
 
@@ -468,15 +532,41 @@ class IsaacSaveEditor(tk.Tk):
                 secret_id = (row.get("SecretID") or "").strip()
                 if not secret_id:
                     continue
-                secret_type = (row.get("Type") or "").strip()
-                if not secret_type:
-                    secret_type = self.SECRET_FALLBACK_TYPE
-                if secret_type not in allowed_types:
-                    continue
-                register_type(secret_type)
+                secret_type_raw = (row.get("Type") or "").strip()
+                if not secret_type_raw:
+                    secret_type_raw = self.SECRET_FALLBACK_TYPE
+                if secret_type_raw not in allowed_types:
+                    secret_type_raw = self.SECRET_FALLBACK_TYPE
                 korean = (row.get("Korean") or "").strip()
                 unlock_name = (row.get("UnlockName") or "").strip()
                 secret_name = (row.get("SecretName") or "").strip()
+                quality_value: Optional[int] = None
+                lookup_names = (unlock_name, secret_name, korean)
+                if secret_type_raw == "Item":
+                    matched_info: Optional[Dict[str, object]] = None
+                    for key in self._build_lookup_keys(*lookup_names):
+                        matched_info = item_lookup.get(key)
+                        if matched_info:
+                            break
+                    if matched_info:
+                        item_type = str(matched_info.get("item_type"))
+                        if item_type in {"Passive", "Active"}:
+                            secret_type = f"Item.{item_type}"
+                            try:
+                                quality_value = (
+                                    int(matched_info.get("quality"))
+                                    if matched_info.get("quality") is not None
+                                    else None
+                                )
+                            except (TypeError, ValueError):
+                                quality_value = None
+                        else:
+                            secret_type = self.SECRET_FALLBACK_TYPE
+                    else:
+                        secret_type = self.SECRET_FALLBACK_TYPE
+                else:
+                    secret_type = secret_type_raw
+                register_type(secret_type)
                 primary = korean or unlock_name or secret_name or secret_id
                 secondary = secret_name or unlock_name
                 if secondary and primary != secondary:
@@ -488,17 +578,25 @@ class IsaacSaveEditor(tk.Tk):
                         "iid": secret_id,
                         "display": display,
                         "name_sort": display.lower(),
+                        "quality": quality_value,
                     }
                 )
                 ids_by_type[secret_type].append(secret_id)
         return records_by_type, ids_by_type, tab_labels, type_order
 
-    def _load_item_records(self) -> tuple[Dict[str, Dict[str, Dict[str, object]]], Dict[str, List[str]]]:
+    def _load_item_records(
+        self,
+    ) -> tuple[
+        Dict[str, Dict[str, Dict[str, object]]],
+        Dict[str, List[str]],
+        Dict[str, Dict[str, object]],
+    ]:
         csv_path = DATA_DIR / "ui_items.csv"
         records: Dict[str, Dict[str, Dict[str, object]]] = {"Passive": {}, "Active": {}}
         ids_by_type: Dict[str, List[str]] = {"Passive": [], "Active": []}
+        lookup_by_name: Dict[str, Dict[str, object]] = {}
         if not csv_path.exists():
-            return records, ids_by_type
+            return records, ids_by_type, lookup_by_name
         with csv_path.open(encoding="utf-8-sig") as file:
             reader = csv.DictReader(file)
             for row in reader:
@@ -518,14 +616,20 @@ class IsaacSaveEditor(tk.Tk):
                     display = f"{primary} ({english})"
                 else:
                     display = primary
-                records[item_type][item_id] = {
+                record = {
                     "iid": item_id,
                     "display": display,
                     "name_sort": display.lower(),
                     "quality": quality_value,
+                    "english": english,
+                    "korean": korean,
+                    "item_type": item_type,
                 }
+                records[item_type][item_id] = record
                 ids_by_type[item_type].append(item_id)
-        return records, ids_by_type
+                for key in self._build_lookup_keys(english, korean):
+                    lookup_by_name.setdefault(key, record)
+        return records, ids_by_type, lookup_by_name
 
     def _load_challenge_records(self) -> List[Dict[str, str]]:
         csv_path = DATA_DIR / "ui_challenges.csv"
