@@ -80,19 +80,19 @@ class TreeManager:
 class IsaacSaveEditor(tk.Tk):
     """Main application window for the save editor."""
 
-    SECRET_TAB_INFO: List[tuple[str, str]] = [
-        ("Character", "캐릭터"),
-        ("Map", "맵"),
-        ("Item", "업적아이템"),
-        ("Boss", "보스"),
-        ("Card", "카드"),
-        ("Rune", "룬"),
-        ("Pill", "알약"),
-        ("Trinket", "장신구"),
-        ("None", "무효과"),
-        ("Other", "기타"),
-        ("Pickup", "픽업"),
-    ]
+    SECRET_TAB_LABELS: Dict[str, str] = {
+        "Character": "캐릭터",
+        "Map": "맵",
+        "Item": "업적아이템",
+        "Boss": "보스",
+        "Card": "카드",
+        "Rune": "룬",
+        "Pill": "알약",
+        "Trinket": "장신구",
+        "None": "무효과",
+        "Other": "기타",
+        "Pickup": "픽업",
+    }
     SECRET_FALLBACK_TYPE = "Other"
 
     def __init__(self) -> None:
@@ -136,7 +136,12 @@ class IsaacSaveEditor(tk.Tk):
 
         self._locked_tree_ids: Set[int] = set()
 
-        self._secret_records_by_type, self._secret_ids_by_type = self._load_secret_records()
+        (
+            self._secret_records_by_type,
+            self._secret_ids_by_type,
+            self._secret_tab_labels,
+            self._secret_tab_order,
+        ) = self._load_secret_records()
         self._secret_trees: Dict[str, CheckboxTreeview] = {}
         self._secret_managers: Dict[str, TreeManager] = {}
 
@@ -165,17 +170,13 @@ class IsaacSaveEditor(tk.Tk):
         notebook.add(main_tab, text="메인")
         self._build_main_tab(main_tab)
 
-        item_tab_info: Optional[tuple[str, str]] = None
-        none_tab_info: Optional[tuple[str, str]] = None
-        for secret_type, tab_label in self.SECRET_TAB_INFO:
-            if secret_type == "Item":
-                item_tab_info = (secret_type, tab_label)
-                continue
-            if secret_type == "None":
-                none_tab_info = (secret_type, tab_label)
+        special_secret_types = {"Item", "None"}
+        for secret_type in self._secret_tab_order:
+            if secret_type in special_secret_types:
                 continue
             if not self._secret_ids_by_type.get(secret_type):
                 continue
+            tab_label = self._secret_tab_labels.get(secret_type, secret_type)
             secrets_tab = ttk.Frame(notebook, padding=12)
             secrets_tab.columnconfigure(0, weight=1)
             notebook.add(secrets_tab, text=tab_label)
@@ -199,19 +200,19 @@ class IsaacSaveEditor(tk.Tk):
         notebook.add(challenge_tab, text="도전과제")
         self._build_challenges_tab(challenge_tab)
 
-        if item_tab_info and self._secret_ids_by_type.get(item_tab_info[0]):
-            secret_type, tab_label = item_tab_info
+        if "Item" in self._secret_tab_order and self._secret_ids_by_type.get("Item"):
+            tab_label = self._secret_tab_labels.get("Item", "Item")
             achievements_tab = ttk.Frame(notebook, padding=12)
             achievements_tab.columnconfigure(0, weight=1)
             notebook.add(achievements_tab, text=tab_label)
-            self._build_secrets_tab(achievements_tab, secret_type)
+            self._build_secrets_tab(achievements_tab, "Item")
 
-        if none_tab_info and self._secret_ids_by_type.get(none_tab_info[0]):
-            secret_type, tab_label = none_tab_info
+        if "None" in self._secret_tab_order and self._secret_ids_by_type.get("None"):
+            tab_label = self._secret_tab_labels.get("None", "None")
             none_tab = ttk.Frame(notebook, padding=12)
             none_tab.columnconfigure(0, weight=1)
             notebook.add(none_tab, text=tab_label)
-            self._build_secrets_tab(none_tab, secret_type)
+            self._build_secrets_tab(none_tab, "None")
 
     def _build_main_tab(self, container: ttk.Frame) -> None:
         top_frame = ttk.Frame(container)
@@ -469,23 +470,38 @@ class IsaacSaveEditor(tk.Tk):
     # ------------------------------------------------------------------
     # Data loading
     # ------------------------------------------------------------------
-    def _load_secret_records(self) -> tuple[Dict[str, List[Dict[str, str]]], Dict[str, List[str]]]:
+    def _load_secret_records(
+        self,
+    ) -> tuple[
+        Dict[str, List[Dict[str, str]]],
+        Dict[str, List[str]],
+        Dict[str, str],
+        List[str],
+    ]:
         csv_path = DATA_DIR / "ui_secrets.csv"
-        records_by_type: Dict[str, List[Dict[str, str]]] = {
-            type_key: [] for type_key, _ in self.SECRET_TAB_INFO
-        }
-        ids_by_type: Dict[str, List[str]] = {type_key: [] for type_key, _ in self.SECRET_TAB_INFO}
+        records_by_type: Dict[str, List[Dict[str, str]]] = {}
+        ids_by_type: Dict[str, List[str]] = {}
+        tab_labels: Dict[str, str] = {}
+        type_order: List[str] = []
         if not csv_path.exists():
-            return records_by_type, ids_by_type
+            return records_by_type, ids_by_type, tab_labels, type_order
+
+        def register_type(secret_type: str) -> None:
+            if secret_type not in records_by_type:
+                records_by_type[secret_type] = []
+                ids_by_type[secret_type] = []
+                tab_labels[secret_type] = self.SECRET_TAB_LABELS.get(secret_type, secret_type)
+                type_order.append(secret_type)
         with csv_path.open(encoding="utf-8-sig") as file:
             reader = csv.DictReader(file)
             for row in reader:
                 secret_id = (row.get("SecretID") or "").strip()
                 if not secret_id:
                     continue
-                secret_type = (row.get("Type") or "").strip() or self.SECRET_FALLBACK_TYPE
-                if secret_type not in records_by_type:
+                secret_type = (row.get("Type") or "").strip()
+                if not secret_type:
                     secret_type = self.SECRET_FALLBACK_TYPE
+                register_type(secret_type)
                 korean = (row.get("Korean") or "").strip()
                 unlock_name = (row.get("UnlockName") or "").strip()
                 secret_name = (row.get("SecretName") or "").strip()
@@ -496,15 +512,15 @@ class IsaacSaveEditor(tk.Tk):
                     display = f"{primary} ({secret_name})"
                 else:
                     display = primary
-                records_by_type.setdefault(secret_type, []).append(
+                records_by_type[secret_type].append(
                     {
                         "iid": secret_id,
                         "display": display,
                         "name_sort": display.lower(),
                     }
                 )
-                ids_by_type.setdefault(secret_type, []).append(secret_id)
-        return records_by_type, ids_by_type
+                ids_by_type[secret_type].append(secret_id)
+        return records_by_type, ids_by_type, tab_labels, type_order
 
     def _load_item_records(self) -> tuple[Dict[str, Dict[str, Dict[str, object]]], Dict[str, List[str]]]:
         csv_path = DATA_DIR / "ui_items.csv"
