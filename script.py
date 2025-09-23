@@ -58,23 +58,43 @@ characters = ["Isaac", "Maggy", "Cain", "Judas", "???", "Eve", "Samson", "Azazel
               "T Jacob"]
 checklist_order = ["Isaac's Heart", "Isaac", "Satan", "Boss Rush", "Chest", "Dark Room", "Mega Satan", "Hush", "Greed", "Delirium", "Mother", "Beast"]
 
+_ENTRY_LENGTHS = [1, 4, 4, 1, 1, 1, 1, 4, 4, 1]
+_SECRET_SECTION_INDEX = 0
+
 def rshift(val, n): 
     return val>>n if val >= 0 else (val+0x100000000)>>n
 
 def getSectionOffsets(data):
     ofs = 0x14
     sectData = [-1, -1, -1]
-    entryLens = [1,4,4,1,1,1,1,4,4,1]
     sectionOffsets = [0] * 10
-    for i in range(len(entryLens)):
+    for i in range(len(_ENTRY_LENGTHS)):
         for j in range(3):
             sectData[j] = int.from_bytes(data[ofs:ofs+2], 'little', signed=False)
             ofs += 4
         if sectionOffsets[i] == 0:
             sectionOffsets[i] = ofs
         for j in range(sectData[2]):
-            ofs += entryLens[i]
+            ofs += _ENTRY_LENGTHS[i]
     return sectionOffsets
+
+
+def _get_section_entry_count(data, section_index):
+    ofs = 0x14
+    sectData = [-1, -1, -1]
+    for i in range(len(_ENTRY_LENGTHS)):
+        for j in range(3):
+            sectData[j] = int.from_bytes(data[ofs:ofs+2], 'little', signed=False)
+            ofs += 4
+        count = sectData[2]
+        if i == section_index:
+            return count
+        ofs += _ENTRY_LENGTHS[i] * count
+    raise IndexError("section_index out of range")
+
+
+def getSecretCount(data):
+    return _get_section_entry_count(data, _SECRET_SECTION_INDEX)
 
 def updateCheckListUnlocks(data, char_index, new_checklist_data):
     if char_index == 14:
@@ -169,8 +189,9 @@ def getChallenges(data):
 
 def getSecrets(data):
     secrets_data = []
-    offs = getSectionOffsets(data)[0]
-    for i in range(1, 638):
+    offs = getSectionOffsets(data)[_SECRET_SECTION_INDEX]
+    secret_count = getSecretCount(data)
+    for i in range(1, secret_count + 1):
         secrets_data.append(getInt(data, offs+i, num_bytes=1))
     return secrets_data
 
@@ -251,7 +272,8 @@ def getInt(data, offset, debug=False, num_bytes=2):
     return int.from_bytes(data[offset:offset+num_bytes], 'little')
 
 def updateSecrets(data, secret_list):
-    for i in range(1, 638):
+    secret_count = getSecretCount(data)
+    for i in range(1, secret_count + 1):
         data = alterSecret(data, i, False)
     for i in secret_list:
         data = alterSecret(data, int(i))
@@ -295,7 +317,8 @@ if __name__ == "__main__":
     # update a character's post-it: 0 is not completed, 1 is completed on normal, 2 is completed on hard. order is in checklist_order.
     data = updateCheckListUnlocks(data, characters.index("Maggie"), [0,0,1,0,2,1,0,1,0,0,0,2])
     # enable secrets for online beta NOTE: THIS HAS NOT BEEN TESTED ON THE ONLINE BETA!!! USE AT OWN RISK!!!
-    for i in range(638, 641):
+    secret_count = getSecretCount(data)
+    for i in range(secret_count - 4, secret_count + 1):
         data = alterSecret(data, i)
 
 
