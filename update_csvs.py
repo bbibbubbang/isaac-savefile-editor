@@ -10,54 +10,6 @@ ROOT = Path(__file__).resolve().parent
 
 KO_FILES = [ROOT / "ko_kr1.lua", ROOT / "ko_kr2.lua", ROOT / "ko_kr3.lua"]
 
-CHALLENGE_TRANSLATIONS = {
-    "Pitch Black": "칠흑의 어둠",
-    "High Brow": "고상한 취향",
-    "Head Trauma": "뇌진탕",
-    "Darkness Falls": "어둠이 내려온다",
-    "The Tank": "탱크",
-    "Solar System": "태양계",
-    "Suicide King": "자살 왕",
-    "Cat Got Your Tongue": "혀를 훔친 고양이",
-    "Demo Man": "폭파 전문가",
-    "Cursed!": "저주받았다!",
-    "Glass Cannon": "유리 대포",
-    "When Life Gives You Lemons": "인생이 레몬을 줄 때",
-    "BEANS!": "콩!",
-    "Its In The Cards": "카드에 달렸다",
-    "Slow Roll": "느린 굴림",
-    "Computer Savy": "컴퓨터 달인",
-    "WAKA WAKA": "와카 와카",
-    "The Host": "숙주",
-    "The Family Man": "가장",
-    "Purist": "순수주의자",
-    "XXXXXXXXL": "초대형 사이즈",
-    "SPEED!": "스피드!",
-    "Blue Bomber": "블루 폭격기",
-    "PAY TO PLAY": "돈 내고 즐겨라",
-    "Have A Heart": "하트를 챙겨라",
-    "I RULE!": "내가 짱이다!",
-    "BRAINS!": "뇌를 내놔!",
-    "PRIDE DAY!": "프라이드의 날!",
-    "Onan's Streak": "오난의 연속",
-    "The Guardian": "수호자",
-    "Backasswards": "거꾸로 진행",
-    "Aprils Fool": "만우절",
-    "Pokey Mans": "포키 맨즈",
-    "Ultra Hard": "극악 난이도",
-    "Pong": "퐁",
-    "Scat Man": "똥쟁이",
-    "Bloody Mary": "블러디 메리",
-    "Baptism by Fire": "불의 세례",
-    "Isaac's Awakening": "아이작의 각성",
-    "Seeing Double": "두 배로 보인다",
-    "Pica Run": "이식증 달리기",
-    "Hot Potato": "뜨거운 감자",
-    "Cantripped!": "캔트립!",
-    "Red Redemption": "붉은 구원",
-    "DELETE THIS": "이걸 삭제해",
-}
-
 
 def build_english_to_korean() -> Dict[str, str]:
     mapping: Dict[str, str] = {}
@@ -74,7 +26,6 @@ def build_english_to_korean() -> Dict[str, str]:
                 english = comment_match.group(1).strip()
                 if english and english not in mapping:
                     mapping[english] = korean
-    mapping.update(CHALLENGE_TRANSLATIONS)
     mapping.update(
         {
             "Jacob and Esau": "야곱과 에사우",

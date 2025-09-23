@@ -408,6 +408,7 @@ class IsaacSaveEditor(tk.Tk):
             container,
             text="도전과제는 모두 해금하고, 다른 아이템 탭에서 해금여부를 변경하세요.",
             justify="left",
+            anchor="w",
         ).grid(column=0, row=1, sticky="w", pady=(8, 0))
 
         tree_row = 2
