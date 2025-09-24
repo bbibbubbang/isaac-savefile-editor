@@ -35,8 +35,13 @@ DEFAULT_SETTINGS: Dict[str, object] = {
     "target_save_path": "",
 }
 
-COMPLETION_UNLOCK_VALUE = 15
 TOTAL_COMPLETION_MARKS = 12
+
+DEFAULT_COMPLETION_UNLOCK_MASK = getattr(script, "COMPLETION_DEFAULT_UNLOCK_MASK", 0x03)
+GREED_COMPLETION_UNLOCK_MASK = getattr(script, "COMPLETION_GREED_UNLOCK_MASK", 0x0C)
+COMPLETION_GREED_MARK_INDEX = 8
+
+ITEM_UNLOCK_MASK = getattr(script, "ITEM_FLAG_SEEN", 0x01)
 
 
 class TreeManager:
@@ -226,6 +231,11 @@ class IsaacSaveEditor(tk.Tk):
                             candidates.add(stripped_candidate)
             keys.update(candidate for candidate in candidates if candidate)
         return keys
+
+    def _completion_mask_for_mark(self, mark_index: int) -> int:
+        if mark_index == COMPLETION_GREED_MARK_INDEX:
+            return GREED_COMPLETION_UNLOCK_MASK
+        return DEFAULT_COMPLETION_UNLOCK_MASK
 
     @staticmethod
     def _normalize_save_path(value: object) -> str:
@@ -1145,10 +1155,31 @@ class IsaacSaveEditor(tk.Tk):
             return
         if not self._completion_current_mark_ids:
             return
-        new_values: List[int] = []
+        try:
+            current_values = script.getChecklistUnlocks(self.data, self._current_completion_char_index)
+        except Exception:
+            current_values = []
+        mark_count = max(
+            TOTAL_COMPLETION_MARKS,
+            len(current_values),
+            len(self._completion_current_mark_ids),
+        )
+        new_values: List[int] = list(current_values) + [0] * max(0, mark_count - len(current_values))
         for mark_id in self._completion_current_mark_ids:
+            try:
+                index = int(mark_id)
+            except (TypeError, ValueError):
+                continue
+            if index >= len(new_values):
+                new_values.extend([0] * (index + 1 - len(new_values)))
             checked = tree.tag_has("checked", mark_id)
-            new_values.append(COMPLETION_UNLOCK_VALUE if checked else 0)
+            mask = self._completion_mask_for_mark(index)
+            current = new_values[index]
+            if checked:
+                updated = current | mask
+            else:
+                updated = current & ~mask
+            new_values[index] = updated
         success = self._apply_update(
             lambda data, idx=self._current_completion_char_index, values=new_values: script.updateCheckListUnlocks(
                 data, idx, values
@@ -1185,9 +1216,17 @@ class IsaacSaveEditor(tk.Tk):
 
         def updater(data: bytes) -> bytes:
             result = data
-            payload = [COMPLETION_UNLOCK_VALUE] * mark_count
             for index in char_indices:
-                result = script.updateCheckListUnlocks(result, index, payload)
+                try:
+                    current_values = script.getChecklistUnlocks(result, index)
+                except Exception:
+                    current_values = []
+                target_length = max(mark_count, len(current_values), TOTAL_COMPLETION_MARKS)
+                values = list(current_values) + [0] * max(0, target_length - len(current_values))
+                for mark_index in range(target_length):
+                    mask = self._completion_mask_for_mark(mark_index)
+                    values[mark_index] = values[mark_index] | mask
+                result = script.updateCheckListUnlocks(result, index, values)
             return result
 
         if self._apply_update(updater, "모든 캐릭터 체크리스트를 완료하지 못했습니다."):
@@ -1505,11 +1544,11 @@ class IsaacSaveEditor(tk.Tk):
             values = script.getChecklistUnlocks(self.data, self._current_completion_char_index)
         except Exception:
             values = []
-        unlocked_ids = {
-            str(index): True
-            for index, value in enumerate(values)
-            if value
-        }
+        unlocked_ids = {}
+        for index, value in enumerate(values):
+            mask = self._completion_mask_for_mark(index)
+            if value & mask:
+                unlocked_ids[str(index)] = True
         self._lock_tree(tree)
         try:
             for mark_id in self._completion_current_mark_ids:
@@ -1555,7 +1594,11 @@ class IsaacSaveEditor(tk.Tk):
                 items = script.getItems(self.data)
             except Exception:
                 items = []
-            unlocked_ids = {str(index + 1) for index, value in enumerate(items) if value != 0}
+            unlocked_ids = {
+                str(index + 1)
+                for index, value in enumerate(items)
+                if value & ITEM_UNLOCK_MASK
+            }
         for item_type, tree in self._item_trees.items():
             manager = self._item_managers.get(item_type)
             if manager is None:

@@ -58,6 +58,18 @@ characters = ["Isaac", "Maggy", "Cain", "Judas", "???", "Eve", "Samson", "Azazel
               "T Jacob"]
 checklist_order = ["Isaac's Heart", "Isaac", "Satan", "Boss Rush", "Chest", "Dark Room", "Mega Satan", "Hush", "Greed", "Delirium", "Mother", "Beast"]
 
+
+ITEM_FLAG_SEEN = 0x01
+ITEM_FLAG_TOUCHED = 0x02
+ITEM_UNLOCK_CLEAR_MASK = ITEM_FLAG_SEEN | ITEM_FLAG_TOUCHED
+
+COMPLETION_FLAG_NORMAL = 0x01
+COMPLETION_FLAG_HARD = 0x02
+COMPLETION_FLAG_GREED = 0x04
+COMPLETION_FLAG_GREEDIER = 0x08
+COMPLETION_DEFAULT_UNLOCK_MASK = COMPLETION_FLAG_NORMAL | COMPLETION_FLAG_HARD
+COMPLETION_GREED_UNLOCK_MASK = COMPLETION_FLAG_GREED | COMPLETION_FLAG_GREEDIER
+
 _ENTRY_LENGTHS = [1, 4, 4, 1, 1, 1, 1, 4, 4, 1]
 _SECRET_SECTION_INDEX = 0
 
@@ -286,13 +298,34 @@ def updateChallenges(data, challenge_list):
         data = alterChallenge(data, int(i), True)
     return data
 
-def updateItems(data, item_list):
-    for i in range(1, 733):
-        if i in [43,59,61,235,587,613,620,630,648,656,662,666,718]:
+_SKIPPED_ITEM_IDS = {43, 59, 61, 235, 587, 613, 620, 630, 648, 656, 662, 666, 718}
+
+
+def _normalize_item_ids(item_list):
+    normalized = set()
+    for entry in item_list:
+        try:
+            item_id = int(entry)
+        except (TypeError, ValueError):
             continue
-        data = alterItem(data, i, False)
-    for i in item_list:
-        data = alterItem(data, int(i))
+        if 1 <= item_id <= 732 and item_id not in _SKIPPED_ITEM_IDS:
+            normalized.add(item_id)
+    return normalized
+
+
+def updateItems(data, item_list):
+    selected_ids = _normalize_item_ids(item_list)
+    offs = getSectionOffsets(data)[3]
+    for item_id in range(1, 733):
+        if item_id in _SKIPPED_ITEM_IDS:
+            continue
+        current_val = getInt(data, offs + item_id, num_bytes=1)
+        if item_id in selected_ids:
+            new_val = current_val | ITEM_FLAG_SEEN | ITEM_FLAG_TOUCHED
+        else:
+            new_val = current_val & ~ITEM_UNLOCK_CLEAR_MASK
+        if new_val != current_val:
+            data = alterInt(data, offs + item_id, new_val, num_bytes=1)
     return data
 
 def updateChecksum(data):
