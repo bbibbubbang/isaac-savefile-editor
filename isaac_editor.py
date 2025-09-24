@@ -1599,6 +1599,18 @@ class IsaacSaveEditor(tk.Tk):
 
         help_window.bind("<Escape>", lambda event: help_window.destroy())
 
+        help_window.update_idletasks()
+        root_x = self.winfo_rootx()
+        root_y = self.winfo_rooty()
+        root_width = self.winfo_width()
+        root_height = self.winfo_height()
+        window_width = help_window.winfo_width()
+        window_height = help_window.winfo_height()
+
+        pos_x = root_x + (root_width - window_width) // 2
+        pos_y = root_y + (root_height - window_height) // 2
+        help_window.geometry(f"+{pos_x}+{pos_y}")
+
     def _apply_auto_999_if_needed(self) -> None:
         if not bool(self.auto_set_999_var.get()):
             return
