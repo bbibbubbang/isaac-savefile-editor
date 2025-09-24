@@ -378,20 +378,24 @@ class IsaacSaveEditor(tk.Tk):
             )
 
         auto_999_row = numeric_start_row + len(self._numeric_order)
+        auto_999_frame = ttk.Frame(container)
+        auto_999_frame.grid(column=0, row=auto_999_row, sticky="ew", pady=(12, 0))
+        auto_999_frame.columnconfigure(0, weight=1)
+
         auto_999_check = ttk.Checkbutton(
-            container,
+            auto_999_frame,
             text="프로그램 시작 시 999로 설정",
             variable=self.auto_set_999_var,
             command=self._on_auto_set_999_toggle,
         )
-        auto_999_check.grid(column=0, row=auto_999_row, sticky="w", pady=(12, 0))
+        auto_999_check.grid(column=0, row=0, sticky="w")
 
         set_999_button = ttk.Button(
-            container,
+            auto_999_frame,
             text="기부/그리드 기계/에덴 토큰 999로 설정",
             command=self.set_donation_greed_eden_to_max,
         )
-        set_999_button.grid(column=0, row=auto_999_row + 1, sticky="e", pady=(8, 0))
+        set_999_button.grid(column=1, row=0, sticky="e", padx=(10, 0))
 
         self._update_source_display()
         self._update_target_display()
