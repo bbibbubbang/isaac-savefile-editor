@@ -11,6 +11,7 @@ from __future__ import annotations
 import csv
 import json
 import os
+import re
 import shutil
 from pathlib import Path
 import tkinter as tk
@@ -174,6 +175,7 @@ class IsaacSaveEditor(tk.Tk):
             self._secret_ids_by_type,
             self._secret_tab_labels,
             self._secret_tab_order,
+            self._secret_details_by_id,
         ) = self._load_secret_records(self._item_lookup_by_name)
         self._secret_trees: Dict[str, CheckboxTreeview] = {}
         self._secret_managers: Dict[str, TreeManager] = {}
@@ -181,10 +183,14 @@ class IsaacSaveEditor(tk.Tk):
         self._item_trees: Dict[str, CheckboxTreeview] = {}
         self._item_managers: Dict[str, TreeManager] = {}
 
+        self._secret_to_challenges: Dict[str, Set[str]] = {}
+        self._challenge_to_secrets: Dict[str, Set[str]] = {}
         self._challenge_records = self._load_challenge_records()
         self._challenge_tree: Optional[CheckboxTreeview] = None
         self._challenge_manager: Optional[TreeManager] = None
         self._challenge_ids: List[str] = [record["iid"] for record in self._challenge_records]
+
+        self._build_secret_challenge_links()
 
         self._build_layout()
         self.refresh_current_values()
@@ -201,14 +207,23 @@ class IsaacSaveEditor(tk.Tk):
             if not normalized:
                 continue
             candidates = {normalized, normalized.replace("'", "")}
+            stripped = normalized.strip("!?.")
+            if stripped:
+                candidates.add(stripped)
+            no_punct = re.sub(r"[!?.]", "", normalized).strip()
+            if no_punct:
+                candidates.add(no_punct)
+            no_paren = re.sub(r"\s*\(.*?\)", "", normalized).strip()
+            if no_paren:
+                candidates.add(no_paren)
             for candidate in list(candidates):
                 if not candidate:
                     continue
                 for prefix in articles:
                     if candidate.startswith(prefix):
-                        stripped = candidate[len(prefix) :]
-                        if stripped:
-                            candidates.add(stripped)
+                        stripped_candidate = candidate[len(prefix) :]
+                        if stripped_candidate:
+                            candidates.add(stripped_candidate)
             keys.update(candidate for candidate in candidates if candidate)
         return keys
 
@@ -895,12 +910,14 @@ class IsaacSaveEditor(tk.Tk):
         Dict[str, List[str]],
         Dict[str, str],
         List[str],
+        Dict[str, Dict[str, object]],
     ]:
         csv_path = DATA_DIR / "ui_secrets.csv"
         records_by_type: Dict[str, List[Dict[str, object]]] = {}
         ids_by_type: Dict[str, List[str]] = {}
         tab_labels: Dict[str, str] = {}
         type_order: List[str] = []
+        details_by_id: Dict[str, Dict[str, object]] = {}
         allowed_types = {
             "Character",
             "Map",
@@ -916,7 +933,7 @@ class IsaacSaveEditor(tk.Tk):
         }
         item_lookup = item_lookup or {}
         if not csv_path.exists():
-            return records_by_type, ids_by_type, tab_labels, type_order
+            return records_by_type, ids_by_type, tab_labels, type_order, details_by_id
 
         def register_type(secret_type: str) -> None:
             if secret_type not in records_by_type:
@@ -971,16 +988,25 @@ class IsaacSaveEditor(tk.Tk):
                     display = f"{primary} ({secondary})"
                 else:
                     display = primary
-                records_by_type[secret_type].append(
-                    {
-                        "iid": secret_id,
-                        "display": display,
-                        "name_sort": display.lower(),
-                        "quality": quality_value,
-                    }
-                )
+                record = {
+                    "iid": secret_id,
+                    "display": display,
+                    "name_sort": display.lower(),
+                    "quality": quality_value,
+                    "unlock_name": unlock_name,
+                    "secret_name": secret_name,
+                    "korean": korean,
+                }
+                records_by_type[secret_type].append(record)
                 ids_by_type[secret_type].append(secret_id)
-        return records_by_type, ids_by_type, tab_labels, type_order
+                details_by_id[secret_id] = {
+                    "unlock_name": unlock_name,
+                    "secret_name": secret_name,
+                    "korean": korean,
+                    "display": display,
+                    "secret_type": secret_type,
+                }
+        return records_by_type, ids_by_type, tab_labels, type_order, details_by_id
 
     def _load_item_records(
         self,
@@ -1052,9 +1078,47 @@ class IsaacSaveEditor(tk.Tk):
                         "iid": challenge_id,
                         "display": display,
                         "name_sort": display.lower(),
+                        "english": challenge_name,
+                        "korean": korean,
                     }
                 )
         return records
+
+    def _build_secret_challenge_links(self) -> None:
+        details = getattr(self, "_secret_details_by_id", {}) or {}
+        if not details or not self._challenge_records:
+            self._secret_to_challenges = {}
+            self._challenge_to_secrets = {}
+            return
+
+        name_to_challenges: Dict[str, Set[str]] = {}
+        for record in self._challenge_records:
+            challenge_id = str(record.get("iid", "")).strip()
+            if not challenge_id:
+                continue
+            english = str(record.get("english", "")).strip()
+            korean = str(record.get("korean", "")).strip()
+            for key in self._build_lookup_keys(english, korean):
+                if key:
+                    name_to_challenges.setdefault(key, set()).add(challenge_id)
+
+        secret_to_challenges: Dict[str, Set[str]] = {}
+        challenge_to_secrets: Dict[str, Set[str]] = {}
+        for secret_id, info in details.items():
+            unlock_name = str(info.get("unlock_name", "")).strip()
+            secret_name = str(info.get("secret_name", "")).strip()
+            korean = str(info.get("korean", "")).strip()
+            matched: Set[str] = set()
+            for key in self._build_lookup_keys(unlock_name, secret_name, korean):
+                matched.update(name_to_challenges.get(key, set()))
+            if not matched:
+                continue
+            secret_to_challenges[secret_id] = matched
+            for challenge_id in matched:
+                challenge_to_secrets.setdefault(challenge_id, set()).add(secret_id)
+
+        self._secret_to_challenges = secret_to_challenges
+        self._challenge_to_secrets = challenge_to_secrets
     # ------------------------------------------------------------------
     # Event handlers and select helpers
     # ------------------------------------------------------------------
@@ -1161,13 +1225,23 @@ class IsaacSaveEditor(tk.Tk):
         selected = self._get_checked_or_warn(tree)
         if not selected:
             return
-        unlocked_ids = self._collect_unlocked_secrets()
-        unlocked_ids.update(selected)
-        ids_sorted = sorted(unlocked_ids, key=lambda value: int(value))
-        self._apply_update(
-            lambda data: script.updateSecrets(data, ids_sorted),
-            "비밀을 업데이트하지 못했습니다.",
-        )
+        current_secret_ids = self._collect_unlocked_secrets()
+        related_secrets, related_challenges = self._expand_secret_relations(selected)
+        new_secret_ids = current_secret_ids | related_secrets
+        current_challenge_ids = self._collect_unlocked_challenges()
+        new_challenge_ids = current_challenge_ids | related_challenges
+        if new_secret_ids == current_secret_ids and new_challenge_ids == current_challenge_ids:
+            return
+        secret_list = sorted(new_secret_ids, key=lambda value: int(value))
+        challenge_list = sorted(new_challenge_ids, key=lambda value: int(value))
+
+        def updater(data: bytes) -> bytes:
+            result = script.updateSecrets(data, secret_list)
+            if new_challenge_ids != current_challenge_ids:
+                result = script.updateChallenges(result, challenge_list)
+            return result
+
+        self._apply_update(updater, "비밀을 업데이트하지 못했습니다.")
 
     def _lock_selected_secrets(self, secret_type: str) -> None:
         if not self._ensure_data_loaded():
@@ -1179,13 +1253,23 @@ class IsaacSaveEditor(tk.Tk):
         selected = self._get_checked_or_warn(tree)
         if not selected:
             return
-        unlocked_ids = self._collect_unlocked_secrets()
-        unlocked_ids.difference_update(selected)
-        ids_sorted = sorted(unlocked_ids, key=lambda value: int(value))
-        self._apply_update(
-            lambda data: script.updateSecrets(data, ids_sorted),
-            "비밀을 업데이트하지 못했습니다.",
-        )
+        current_secret_ids = self._collect_unlocked_secrets()
+        related_secrets, related_challenges = self._expand_secret_relations(selected)
+        new_secret_ids = current_secret_ids.difference(related_secrets)
+        current_challenge_ids = self._collect_unlocked_challenges()
+        new_challenge_ids = current_challenge_ids.difference(related_challenges)
+        if new_secret_ids == current_secret_ids and new_challenge_ids == current_challenge_ids:
+            return
+        secret_list = sorted(new_secret_ids, key=lambda value: int(value))
+        challenge_list = sorted(new_challenge_ids, key=lambda value: int(value))
+
+        def updater(data: bytes) -> bytes:
+            result = script.updateSecrets(data, secret_list)
+            if new_challenge_ids != current_challenge_ids:
+                result = script.updateChallenges(result, challenge_list)
+            return result
+
+        self._apply_update(updater, "비밀을 업데이트하지 못했습니다.")
 
     def _collect_unlocked_secrets(self) -> Set[str]:
         unlocked: Set[str] = set()
@@ -1289,13 +1373,23 @@ class IsaacSaveEditor(tk.Tk):
         selected = self._get_checked_or_warn(self._challenge_tree)
         if not selected:
             return
-        unlocked_ids = self._collect_unlocked_challenges()
-        unlocked_ids.update(selected)
-        ids_sorted = sorted(unlocked_ids, key=lambda value: int(value))
-        self._apply_update(
-            lambda data: script.updateChallenges(data, ids_sorted),
-            "도전과제를 업데이트하지 못했습니다.",
-        )
+        current_challenge_ids = self._collect_unlocked_challenges()
+        related_challenges, related_secrets = self._expand_challenge_relations(selected)
+        new_challenge_ids = current_challenge_ids | related_challenges
+        current_secret_ids = self._collect_unlocked_secrets()
+        new_secret_ids = current_secret_ids | related_secrets
+        if new_challenge_ids == current_challenge_ids and new_secret_ids == current_secret_ids:
+            return
+        challenge_list = sorted(new_challenge_ids, key=lambda value: int(value))
+        secret_list = sorted(new_secret_ids, key=lambda value: int(value))
+
+        def updater(data: bytes) -> bytes:
+            result = script.updateChallenges(data, challenge_list)
+            if new_secret_ids != current_secret_ids:
+                result = script.updateSecrets(result, secret_list)
+            return result
+
+        self._apply_update(updater, "도전과제를 업데이트하지 못했습니다.")
 
     def _lock_selected_challenges(self) -> None:
         if not self._ensure_data_loaded():
@@ -1305,13 +1399,23 @@ class IsaacSaveEditor(tk.Tk):
         selected = self._get_checked_or_warn(self._challenge_tree)
         if not selected:
             return
-        unlocked_ids = self._collect_unlocked_challenges()
-        unlocked_ids.difference_update(selected)
-        ids_sorted = sorted(unlocked_ids, key=lambda value: int(value))
-        self._apply_update(
-            lambda data: script.updateChallenges(data, ids_sorted),
-            "도전과제를 업데이트하지 못했습니다.",
-        )
+        current_challenge_ids = self._collect_unlocked_challenges()
+        related_challenges, related_secrets = self._expand_challenge_relations(selected)
+        new_challenge_ids = current_challenge_ids.difference(related_challenges)
+        current_secret_ids = self._collect_unlocked_secrets()
+        new_secret_ids = current_secret_ids.difference(related_secrets)
+        if new_challenge_ids == current_challenge_ids and new_secret_ids == current_secret_ids:
+            return
+        challenge_list = sorted(new_challenge_ids, key=lambda value: int(value))
+        secret_list = sorted(new_secret_ids, key=lambda value: int(value))
+
+        def updater(data: bytes) -> bytes:
+            result = script.updateChallenges(data, challenge_list)
+            if new_secret_ids != current_secret_ids:
+                result = script.updateSecrets(result, secret_list)
+            return result
+
+        self._apply_update(updater, "도전과제를 업데이트하지 못했습니다.")
 
     def _collect_unlocked_challenges(self) -> Set[str]:
         if self._challenge_manager is None:
@@ -1321,6 +1425,27 @@ class IsaacSaveEditor(tk.Tk):
             for challenge_id, info in self._challenge_manager.records.items()
             if info.get("unlock")
         }
+
+    def _expand_secret_relations(self, secret_ids: Set[str]) -> tuple[Set[str], Set[str]]:
+        related_secrets: Set[str] = set()
+        related_challenges: Set[str] = set()
+        mapping = getattr(self, "_secret_to_challenges", {})
+        inverse = getattr(self, "_challenge_to_secrets", {})
+        for secret_id in secret_ids:
+            related_secrets.add(secret_id)
+            for challenge_id in mapping.get(secret_id, set()):
+                related_challenges.add(challenge_id)
+                related_secrets.update(inverse.get(challenge_id, set()))
+        return related_secrets, related_challenges
+
+    def _expand_challenge_relations(self, challenge_ids: Set[str]) -> tuple[Set[str], Set[str]]:
+        related_challenges: Set[str] = set()
+        related_secrets: Set[str] = set()
+        inverse = getattr(self, "_challenge_to_secrets", {})
+        for challenge_id in challenge_ids:
+            related_challenges.add(challenge_id)
+            related_secrets.update(inverse.get(challenge_id, set()))
+        return related_challenges, related_secrets
 
     def _ensure_data_loaded(self) -> bool:
         if self.data is None or not self.filename:
