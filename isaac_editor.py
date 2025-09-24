@@ -814,20 +814,8 @@ class IsaacSaveEditor(tk.Tk):
         self._register_text(lock_button, "선택 미해금", "Lock Selected")
 
         include_quality = secret_type.startswith("Item.")
-        info_text = None
-        if include_quality:
-            info_text = (
-                "업적 아이템은 모두 해금하고, 패시브/액티브 탭에서 해금 여부를 변경하세요.",
-                "Unlock achievement items here, then adjust unlock status in the passive/active tabs.",
-            )
 
         tree_row = 1
-        if info_text:
-            info_label = ttk.Label(container, wraplength=520, justify="left")
-            info_label.grid(column=0, row=1, sticky="w", pady=(8, 0))
-            self._register_text(info_label, info_text[0], info_text[1])
-            tree_row = 2
-
         container.rowconfigure(tree_row, weight=1)
 
         tree_container = ttk.Frame(container)
@@ -1015,19 +1003,7 @@ class IsaacSaveEditor(tk.Tk):
         lock_button.pack(side="left")
         self._register_text(lock_button, "선택 미해금", "Lock Selected")
 
-        info_label = ttk.Label(
-            container,
-            wraplength=520,
-            justify="left",
-        )
-        info_label.grid(column=0, row=1, sticky="w", pady=(8, 0))
-        self._register_text(
-            info_label,
-            "도전과제는 모두 해금하고, 다른 아이템 탭에서 해금여부를 변경하세요.",
-            "Unlock challenges here, then adjust unlock status in the other item tabs.",
-        )
-
-        tree_row = 2
+        tree_row = 1
         container.rowconfigure(tree_row, weight=1)
 
         tree_container = ttk.Frame(container)
@@ -1338,7 +1314,10 @@ class IsaacSaveEditor(tk.Tk):
                 else:
                     secret_type = secret_type_raw
                 register_type(secret_type)
-                english_name = secret_name or unlock_name
+                if secret_type_raw == "Pill":
+                    english_name = unlock_name or secret_name
+                else:
+                    english_name = secret_name or unlock_name
                 korean_name = korean
                 primary_name = korean_name or english_name or secret_id
                 display = self._format_display_name(korean_name, english_name)
