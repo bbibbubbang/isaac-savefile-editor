@@ -373,7 +373,7 @@ class IsaacSaveEditor(tk.Tk):
                 title=str(config["title"]),
                 current_var=current_var,
                 entry_var=entry_var,
-                command=lambda field_key=key: self.apply_field(field_key),
+                command=lambda field_key=key: self.apply_field(field_key, preserve_entry=True),
                 is_first=index == 0,
             )
 
@@ -1793,7 +1793,9 @@ class IsaacSaveEditor(tk.Tk):
         except Exception:
             return None
 
-    def apply_field(self, key: str, preset: int | None = None) -> bool:
+    def apply_field(
+        self, key: str, preset: int | None = None, *, preserve_entry: bool = False
+    ) -> bool:
         if key not in self._numeric_config:
             return False
 
@@ -1835,7 +1837,7 @@ class IsaacSaveEditor(tk.Tk):
             messagebox.showerror("저장 실패", f"세이브 파일을 저장하지 못했습니다.\n{exc}")
             return False
 
-        self.refresh_current_values()
+        self.refresh_current_values(update_entry=not preserve_entry)
         return True
 
     def set_donation_greed_eden_to_max(self, *, auto_trigger: bool = False) -> None:
@@ -1846,7 +1848,9 @@ class IsaacSaveEditor(tk.Tk):
         original_streak = self._read_numeric_value("streak")
 
         for field_key in ("donation", "greed", "eden"):
-            if not self.apply_field(field_key, preset=999):
+            if not self.apply_field(
+                field_key, preset=999, preserve_entry=not auto_trigger
+            ):
                 break
 
         if original_streak is None:
@@ -1854,14 +1858,17 @@ class IsaacSaveEditor(tk.Tk):
 
         current_streak = self._read_numeric_value("streak")
         if current_streak is not None and current_streak != original_streak:
-            self.apply_field("streak", preset=original_streak)
+            self.apply_field(
+                "streak", preset=original_streak, preserve_entry=not auto_trigger
+            )
 
-    def refresh_current_values(self) -> None:
+    def refresh_current_values(self, *, update_entry: bool = True) -> None:
         if self.data is None:
             for key in self._numeric_order:
                 vars_map = self._numeric_vars[key]
                 vars_map["current"].set("0")
-                vars_map["entry"].set("0")
+                if update_entry:
+                    vars_map["entry"].set("0")
             self._refresh_completion_tab()
             self._refresh_secrets_tab()
             self._refresh_items_tab()
@@ -1884,7 +1891,8 @@ class IsaacSaveEditor(tk.Tk):
                 value = 0
             value_str = str(value)
             vars_map["current"].set(value_str)
-            vars_map["entry"].set(value_str)
+            if update_entry:
+                vars_map["entry"].set(value_str)
 
         self._refresh_completion_tab()
         self._refresh_secrets_tab()
