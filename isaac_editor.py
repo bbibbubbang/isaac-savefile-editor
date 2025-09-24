@@ -143,7 +143,11 @@ class IsaacSaveEditor(tk.Tk):
         self, notebook: ttk.Notebook, tab_widget: tk.Widget, korean: str, english: str
     ) -> None:
         def updater() -> None:
-            notebook.tab(tab_widget, text=self._text(korean, english))
+            if self._english_ui_enabled:
+                text = english or korean or ""
+            else:
+                text = korean or english or ""
+            notebook.tab(tab_widget, text=text)
 
         self._register_language_binding(updater)
 
