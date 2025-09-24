@@ -15,6 +15,7 @@ import shutil
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
+import tkinter.font as tkfont
 from typing import Callable, Dict, List, Optional, Set
 
 from ttkwidgets import CheckboxTreeview
@@ -1552,15 +1553,51 @@ class IsaacSaveEditor(tk.Tk):
             self._apply_auto_overwrite_if_enabled(show_message=True)
 
     def _show_auto_overwrite_help(self) -> None:
-        message = (
-            "1. '원본 세이브파일 열기' 버튼으로 기준이 되는 세이브파일을 선택하세요.\n"
-            "2. '덮어쓰기할 세이브파일 열기' 버튼으로 실제 게임 세이브파일을 선택하세요. "
-            "선택한 경로에 Steam 폴더가 없으면 계속할지 확인 메시지가 표시됩니다.\n"
-            "3. 두 파일의 이름은 같아야 하며 다르면 선택이 취소됩니다.\n"
-            "4. '세이브파일 자동 덮어쓰기'를 체크하면 경로가 저장되고, 프로그램 실행 시 원본 세이브파일이 자동으로 덮어쓰기 경로에 복사됩니다.\n"
-            "5. 자동 덮어쓰기가 활성화된 상태에서는 프로그램을 다시 실행해도 선택한 경로가 유지되며, 시작할 때마다 자동으로 덮어쓰기가 시도됩니다."
+        help_window = tk.Toplevel(self)
+        help_window.title("세이브파일 자동 덮어쓰기 안내")
+        help_window.transient(self)
+        help_window.resizable(False, False)
+
+        container = ttk.Frame(help_window, padding=(20, 16, 20, 16))
+        container.grid(sticky="nsew")
+        help_window.columnconfigure(0, weight=1)
+        help_window.rowconfigure(0, weight=1)
+        container.columnconfigure(0, weight=1)
+
+        base_font = tkfont.nametofont("TkDefaultFont")
+        base_size = abs(int(base_font.cget("size")))
+        title_font = base_font.copy()
+        title_font.configure(size=max(base_size + 2, 12), weight="bold")
+        body_font = base_font.copy()
+        body_font.configure(size=max(base_size + 1, 11))
+
+        title_label = ttk.Label(
+            container,
+            text="자동 덮어쓰기 사용 방법",
+            font=title_font,
+            justify="left",
         )
-        messagebox.showinfo("세이브파일 자동 덮어쓰기 안내", message)
+        title_label.grid(column=0, row=0, sticky="w")
+
+        steps = (
+            "1. '원본 세이브파일 열기' 버튼을 눌러 기준이 되는 세이브파일을 선택하세요.",
+            "2. '덮어쓰기할 세이브파일 열기' 버튼을 눌러 실제 게임 세이브파일을 선택하세요.",
+            "3. '세이브파일 자동 덮어쓰기'를 체크하면 경로가 저장되고, 프로그램 실행 시 원본 세이브파일이 자동으로 덮어쓰기 경로에 복사됩니다.",
+        )
+        body_label = ttk.Label(
+            container,
+            text="\n\n".join(steps),
+            font=body_font,
+            justify="left",
+            wraplength=460,
+        )
+        body_label.grid(column=0, row=1, sticky="w", pady=(12, 18))
+
+        close_button = ttk.Button(container, text="확인", command=help_window.destroy)
+        close_button.grid(column=0, row=2, sticky="e")
+        close_button.focus_set()
+
+        help_window.bind("<Escape>", lambda event: help_window.destroy())
 
     def _apply_auto_999_if_needed(self) -> None:
         if not bool(self.auto_set_999_var.get()):
