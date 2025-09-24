@@ -1,95 +1,95 @@
-# isaac-save-edit-script
-A script build in python for editing save files for the binding of isaac repentance.
-This project was heavily inspired and relies on the source code for the afterbirth save editor found here:
-https://moddingofisaac.com/mod/3236/afterbirth-save-editor-v10
+# Isaac Savefile Editor
 
-THIS PROJECT HAS NOT BEEN TESTED ON THE ONLINE BETA, USE AT YOUR OWN RISK!!!
+## 소개
+Isaac Savefile Editor는 The Binding of Isaac: Repentance 세이브 데이터를 읽고 수정할 수 있는 오픈 소스 도구입니다. Tkinter 기반 GUI와 파이썬 스크립트를 함께 제공하여 마우스로 간편하게 항목을 변경하거나 자동화 스크립트를 작성할 수 있습니다.
 
-As always, be sure to backup any saves before using this tool, as I do not guarantee that your save file will not be corrupted.
+## 요구 사항
+- Python 3.11 이상
+- Tkinter (CPython에 기본 포함)
+- `ttkwidgets` 패키지
+- (선택) 독립 실행형 실행 파일을 빌드하려면 PyInstaller
 
-<img width="681" alt="image" src="https://github.com/jamesthejellyfish/isaac-save-edit-script/assets/11594527/23bfc7f2-fa00-40c4-849d-b702f9989f4e">
-
-# Running
-
-To run, either download the latest release of the graphical version found here: https://github.com/jamesthejellyfish/isaac-save-edit-script/releases/
-then simply open the exe file.
-
-## Opening your save file
-Select the "Open Isaac Save File" menu item to locate your save file. By default, you will be navigated to your steam userdata folder. To find your save file, go to 
-```
-{steam_installation_path}\Steam\userdata\{steamid}\250900\remote\rep_persistengamedata{1|2|3}.dat
-```
-where {1|2|3} is either 1,2, or 3 depending on the save file you want to edit.
-For non-steam users, your save file location is generally in Documents\My Games\Binding of Isaac Repentance\persistentgamedata{1|2|3}.dat
-
-## Editing save data
-once you have imported your save data, the fields should be populated with the current information that is within that save. you should then be able to easily edit it according to your liking.
-NOTE: There is no "save" button to commit your changes to a save file, once you make a change it changes the file in real time. **Once again, make sure to backup any saves before using this tool**.
-### Editing Entries
-The current entries that you can edit are win streak, eden tokens, donation machine coins, and greed machine coins. To edit them, simply replace the number shown with the number desired and press the enter key.
-<img width="681" alt="image" src="https://github.com/jamesthejellyfish/isaac-save-edit-script/assets/11594527/c25c1d9f-bd72-4cee-984a-065ac0101ea3">
-
-### Editing Completion Marks
-in the "Completion Marks" Tab, you will be able to see the completion marks of all characters, and edit them. to edit a specific character's completion page, select them from the drop-down menu, and then check off the completion marks that you want them to have unlocked. You can also press the "unlock All" button to unlock all completion marks for a specific character, or the "unlock All All Chars" button to unlock every completion mark for every character. NOTE: The GUI version of this script only supports adding hard mode completion marks to characters. However, it is possible to add normal mode completion marks via the manual script. If you need a normal completion mark, see "Manual configuration".
-
-<img width="685" alt="image" src="https://github.com/jamesthejellyfish/isaac-save-edit-script/assets/11594527/8dcb02f3-1ec3-4a8b-987e-57a91906e1c2">
-<img width="682" alt="image" src="https://github.com/jamesthejellyfish/isaac-save-edit-script/assets/11594527/1075a5d4-1b2f-413b-afe7-2963b3607f3b">
-
-### Editing Secrets
-in the "Secrets" Tab, you can manually unlock or disable secrets one at a time by clicking the check box. In the "misc" tab, pressing the "Unlock All" secrets button will unlock all secrets. Note that this tool does not support the online beta, so unlocking online beta secrets is not supported. However, it is possible to do this using the manual script. For more info, see "Manual Configuration".
-
-<img width="683" alt="image" src="https://github.com/jamesthejellyfish/isaac-save-edit-script/assets/11594527/80bea766-f3b2-4140-a3fe-fce56e7ca02a">
-
-
-
-### Editing Items:
-in the "Items" Tab, you can manually select seen items one at a time by clicking the check box. In the "misc" tab, pressing the "Unlock All" items button will unlock all items.
-
-<img width="685" alt="image" src="https://github.com/jamesthejellyfish/isaac-save-edit-script/assets/11594527/0e8b3e1b-9e3f-4182-af57-86d203c4de6c">
-
-
-
-### Editing Challenges:
-in the "Challenges" Tab, you can manually complete challenges one at a time by clicking the check box. In the "misc" tab, pressing the "Unlock All" challenges button will complete all challenges.
-
-<img width="682" alt="image" src="https://github.com/jamesthejellyfish/isaac-save-edit-script/assets/11594527/bbe8acf2-fa2b-4314-8501-b461b23dbf32">
-
-
-# Manual configuration
-This section is for advanced users who want to modify the functionality of the script, or perform actions that aren't currently supported in the graphical version. This guide assumes you have already set up a python environment of a version >=3.11 and are familiar with entering console commands. For more information on how to setup python, visit https://docs.python.org/3/using/index.html
-## Dependencies
-the script file script.py does not have any dependencies, but the gui depends on the tkinter module and the ttkwidgets module. These can be installed using the following command:
 ```bash
 pip install ttkwidgets
 ```
 
-The Gui can then be opened using:
-```bash
-python gui.py
-```
+## 설치 및 실행
+1. **세이브 파일 백업**: `rep_persistentgamedata*.dat` 파일을 안전한 위치에 복사합니다.
+2. **세이브 파일 찾기**
+   - Steam: `{steam}\Steam\userdata\{steam_id}\250900\remote\rep_persistentgamedata{1|2|3}.dat`
+   - Windows (비 Steam): `%USERPROFILE%\Documents\My Games\Binding of Isaac Repentance\persistentgamedata{1|2|3}.dat`
+3. **에디터 실행**
+   - GUI: `python gui.py`
+   - 스크립트: `python script.py`
+4. GUI에서 **Open Isaac Save File** 메뉴를 사용하거나 `script.py`의 `filename` 변수를 수정해 세이브 파일을 불러옵니다.
 
-## more
-the base script.py file contains functions that should illustrate how to edit your file. To use the script, change the 'filename' variable to the filename of the savedata you want to edit, and then you can edit
-the main section like so:
-```py
-if __name__ == "__main__":
-  offset = 0x10
-  with open(filename, "rb") as file:
-      data = file.read()
-      length = len(data) - offset - 4
-      checksum = calcAfterbirthChecksum(data, offset, length).to_bytes(5, 'little', signed=True)[:4]
-      print(checksum)
-      old_checksum = data[offset + length:]    
-  #your code goes here
-  ...
-```
-Within the main section are also some examples of things you might want to do, such as edit a different secret, or add a normal completion mark.
-It is important to note that the functions do not edit data in-place, so if you actually want to change the data, you will need to re-assign the "data" variable to the output of the function.
+## GUI 사용법
+- **숫자 항목**: 연속 승수, 에덴 토큰, 기부 금액 등을 입력한 뒤 <kbd>Enter</kbd>를 누르면 즉시 저장됩니다.
+- **클리어 표시**: 캐릭터를 선택한 뒤 체크박스로 각 클리어 마크를 토글하거나 *Unlock All* 버튼으로 한꺼번에 해제/해금할 수 있습니다.
+- **비밀, 아이템, 도전과제**: 각 탭에서 항목을 체크/해제해 잠금을 관리하고, 필요 시 일괄 해금 스위치를 사용할 수 있습니다.
 
+GUI는 별도의 저장 버튼 없이 곧바로 세이브 파일을 갱신하므로, 항상 백업본을 유지하세요.
 
-# More information
-releases are made using the command:
+## 스크립트 활용
+자동화를 위해 `script.py`의 `filename`을 원하는 세이브 경로로 변경한 뒤 제공된 함수들로 체크섬을 다시 계산하고 데이터를 덮어쓸 수 있습니다. 예제 코드는 비밀, 클리어 마크 등의 플래그를 어떻게 조작하는지 보여주며, 필요에 맞게 수정해 사용할 수 있습니다.
+
+## 독립 실행 파일 만들기
+PyInstaller를 사용해 GUI를 단독 실행 파일로 빌드할 수 있습니다.
+
 ```bash
 pyinstaller --onefile -w gui.py
 ```
-and require the pyinstaller module to be installed.
+
+생성된 실행 파일은 파이썬을 설치하지 않은 환경에서도 GUI를 실행할 수 있게 해줍니다.
+
+## 주의 사항
+이 도구는 Repentance 온라인 베타 버전에서 검증되지 않았습니다. 사용 시 반드시 세이브 데이터를 백업하고 개인 책임 하에 진행하세요.
+
+---
+
+## English Translation
+
+### Overview
+Isaac Savefile Editor is an open-source utility for reading and modifying The Binding of Isaac: Repentance save data. It ships with a Tkinter-based GUI and a Python script so you can edit entries by hand or automate changes.
+
+### Requirements
+- Python 3.11 or later
+- Tkinter (bundled with CPython)
+- `ttkwidgets` package
+- (Optional) PyInstaller for standalone builds
+
+```bash
+pip install ttkwidgets
+```
+
+### Setup and Launch
+1. **Back up your save files:** copy your `rep_persistentgamedata*.dat` files somewhere safe.
+2. **Locate the save file**
+   - Steam: `{steam}\Steam\userdata\{steam_id}\250900\remote\rep_persistentgamedata{1|2|3}.dat`
+   - Windows (non-Steam): `%USERPROFILE%\Documents\My Games\Binding of Isaac Repentance\persistentgamedata{1|2|3}.dat`
+3. **Start the editor**
+   - GUI: `python gui.py`
+   - Script: `python script.py`
+4. Load the save through the GUI's **Open Isaac Save File** menu or by updating the `filename` variable in `script.py`.
+
+### Using the GUI
+- **Numeric fields:** adjust streaks, Eden tokens, donation values, and press <kbd>Enter</kbd> to apply the change immediately.
+- **Completion marks:** choose a character, toggle individual marks with checkboxes, or use the *Unlock All* buttons for bulk edits.
+- **Secrets, items, challenges:** unlock or relock entries per tab, and leverage the provided unlock-all toggles when needed.
+
+The GUI writes directly to the save file without a separate save button—keep backups handy.
+
+### Working with the Script
+For automation, update `filename` in `script.py`, then rely on the helper functions to recalculate checksums and write binary data. The included example demonstrates how to modify secrets, completion marks, and other flags; adapt it to your workflow.
+
+### Building a Standalone Executable
+You can bundle the GUI with PyInstaller:
+
+```bash
+pyinstaller --onefile -w gui.py
+```
+
+The resulting binary lets you distribute the editor without requiring Python on the target machine.
+
+### Disclaimer
+This editor has not been tested against the Repentance online beta. Use it at your own risk and always keep backups of your save data.
