@@ -33,6 +33,7 @@ DEFAULT_SETTINGS: Dict[str, object] = {
     "auto_overwrite": False,
     "source_save_path": "",
     "target_save_path": "",
+    "english_ui": False,
 }
 
 TOTAL_COMPLETION_MARKS = 12
@@ -95,22 +96,201 @@ class TreeManager:
 class IsaacSaveEditor(tk.Tk):
     """Main application window for the save editor."""
 
-    SECRET_TAB_LABELS: Dict[str, str] = {
-        "Character": "캐릭터",
-        "Map": "맵",
-        "Boss": "보스",
-        "Item": "업적아이템",
-        "Item.Passive": "패시브",
-        "Item.Active": "액티브",
-        "Other": "기타",
-        "None": "무효과",
-        "Trinket": "장신구",
-        "Pickup": "픽업",
-        "Card": "카드",
-        "Rune": "룬",
-        "Pill": "알약",
+    SECRET_TAB_LABELS: Dict[str, tuple[str, str]] = {
+        "Character": ("캐릭터", "Characters"),
+        "Map": ("맵", "Maps"),
+        "Boss": ("보스", "Bosses"),
+        "Item": ("업적아이템", "Achievement Items"),
+        "Item.Passive": ("패시브", "Passive"),
+        "Item.Active": ("액티브", "Active"),
+        "Other": ("기타", "Other"),
+        "None": ("무효과", "No Effect"),
+        "Trinket": ("장신구", "Trinkets"),
+        "Pickup": ("픽업", "Pickups"),
+        "Card": ("카드", "Cards"),
+        "Rune": ("룬", "Runes"),
+        "Pill": ("알약", "Pills"),
     }
     SECRET_FALLBACK_TYPE = "Other"
+
+    def _text(self, korean: str, english: str | None = None) -> str:
+        english = english or korean
+        korean = korean or english
+        if self._english_ui_enabled:
+            return english or ""
+        if english and korean and korean != english:
+            return f"{korean} ({english})"
+        return korean or english or ""
+
+    def _register_language_binding(self, callback: Callable[[], None]) -> None:
+        self._language_bindings.append(callback)
+        callback()
+
+    def _register_text(
+        self,
+        widget: tk.Widget,
+        korean: str,
+        english: str,
+        *,
+        option: str = "text",
+    ) -> None:
+        def updater() -> None:
+            widget.configure(**{option: self._text(korean, english)})
+
+        self._register_language_binding(updater)
+
+    def _register_tab_text(
+        self, notebook: ttk.Notebook, tab_widget: tk.Widget, korean: str, english: str
+    ) -> None:
+        def updater() -> None:
+            notebook.tab(tab_widget, text=self._text(korean, english))
+
+        self._register_language_binding(updater)
+
+    def _register_heading_text(
+        self,
+        tree: CheckboxTreeview,
+        column: str,
+        korean: str,
+        english: str,
+    ) -> None:
+        def updater() -> None:
+            tree.heading(column, text=self._text(korean, english))
+
+        self._register_language_binding(updater)
+
+    def _register_variable_text(
+        self, variable: tk.StringVar, korean: str, english: str
+    ) -> None:
+        def updater() -> None:
+            variable.set(self._text(korean, english))
+
+        self._register_language_binding(updater)
+
+    def _refresh_language_bindings(self) -> None:
+        for callback in self._language_bindings:
+            callback()
+
+    @staticmethod
+    def _normalize_sort_key(value: str) -> str:
+        return " ".join((value or "").casefold().split())
+
+    def _make_tree_item_language_updater(
+        self,
+        tree: CheckboxTreeview,
+        item_id: str,
+        category: str,
+        korean: str,
+        english: str,
+        *,
+        is_secret: bool = True,
+    ) -> Callable[[], None]:
+        def updater() -> None:
+            english_first = False
+            if is_secret:
+                english_first = self._secret_alphabetical.get(category, False)
+            else:
+                english_first = self._item_alphabetical.get(category, False)
+            tree.item(
+                item_id,
+                text=self._format_display_name(korean, english, english_first=english_first),
+            )
+
+        return updater
+
+    def _format_display_name(
+        self,
+        korean: str,
+        english: str,
+        *,
+        english_first: bool = False,
+    ) -> str:
+        if self._english_ui_enabled:
+            return english or korean or ""
+        primary = english if english_first else korean
+        secondary = korean if english_first else english
+        if primary and secondary and primary != secondary:
+            return f"{primary} ({secondary})"
+        return primary or secondary or ""
+
+    def _update_default_loaded_text(self) -> None:
+        self._default_loaded_text = self._text(
+            "불러온 파일: 없음",
+            "Loaded File: None",
+        )
+        if hasattr(self, "loaded_file_var") and self.loaded_file_var.get() in {
+            "",
+            getattr(self, "_default_loaded_text", ""),
+        }:
+            self.loaded_file_var.set(self._default_loaded_text)
+
+    def _apply_language_preferences(self) -> None:
+        self._refresh_language_bindings()
+        self._update_source_display()
+        self._update_target_display()
+        self._update_loaded_file_display()
+        self._refresh_completion_character_options()
+        self._update_completion_tree_language()
+        self._update_secret_tree_language()
+        self._update_item_tree_language()
+        self._update_challenge_tree_language()
+
+    def _refresh_completion_character_options(self) -> None:
+        box = getattr(self, "_completion_character_box", None)
+        if box is None:
+            return
+        options: List[str] = []
+        mapping: Dict[str, int] = {}
+        for info in self._completion_characters:
+            display = self._format_completion_character_display(info)
+            mapping[display] = int(info.get("index", 0))
+            options.append(display)
+        self._completion_display_to_index = mapping
+        box.configure(values=options)
+        if not options:
+            box.configure(state="disabled")
+            self._completion_character_var.set("")
+            return
+        box.configure(state="readonly")
+        current_index = self._current_completion_char_index
+        selected_display: Optional[str] = None
+        if current_index is not None:
+            for display, index in mapping.items():
+                if index == current_index:
+                    selected_display = display
+                    break
+        if selected_display is None:
+            selected_display = options[0]
+        self._completion_character_var.set(selected_display)
+        self._on_completion_character_selected()
+
+    def _update_completion_tree_language(self) -> None:
+        # Completion marks do not require language-dependent display updates beyond
+        # the bindings that refresh other widgets.
+        pass
+
+    def _update_secret_tree_language(self) -> None:
+        for secret_type, manager in self._secret_managers.items():
+            manager.sort("name", ascending=True, update_toggle=False)
+
+    def _update_item_tree_language(self) -> None:
+        for manager in self._item_managers.values():
+            manager.sort("name", ascending=True, update_toggle=False)
+
+    def _update_challenge_tree_language(self) -> None:
+        if self._challenge_manager is not None:
+            self._challenge_manager.sort("name", ascending=True, update_toggle=False)
+
+    def _update_loaded_file_display(self) -> None:
+        if not hasattr(self, "loaded_file_var"):
+            return
+        if self.filename:
+            basename = os.path.basename(self.filename)
+            self.loaded_file_var.set(
+                self._text("불러온 파일", "Loaded File") + f": {basename}"
+            )
+        else:
+            self.loaded_file_var.set(self._default_loaded_text)
 
     def __init__(self) -> None:
         super().__init__()
@@ -121,6 +301,10 @@ class IsaacSaveEditor(tk.Tk):
 
         self.settings_path = SETTINGS_PATH
         self.settings = self._load_settings()
+        self._english_ui_enabled = bool(self.settings.get("english_ui", False))
+        self._language_bindings: List[Callable[[], None]] = []
+        self._english_ui_var = tk.BooleanVar(value=self._english_ui_enabled)
+
         self._auto_set_999_default = bool(self.settings.get("auto_set_999", False))
         self._auto_overwrite_default = bool(self.settings.get("auto_overwrite", False))
         self.source_save_path = self._normalize_save_path(self.settings.get("source_save_path"))
@@ -129,28 +313,28 @@ class IsaacSaveEditor(tk.Tk):
         self.settings["target_save_path"] = self.target_save_path
         remember_path = bool(self.settings.get("remember_path", False))
         self.remember_path_var = tk.BooleanVar(value=remember_path)
-        self._default_loaded_text = "불러온 파일 (Loaded File): 없음"
+        self._register_language_binding(lambda: self._update_default_loaded_text())
 
-        self._numeric_config: Dict[str, Dict[str, int | str]] = {
+        self._numeric_config: Dict[str, Dict[str, object]] = {
             "donation": {
                 "offset": 0x4C,
-                "title": "기부 기계 (Donation Machine)",
-                "description": "기부 기계",
+                "title": ("기부 기계", "Donation Machine"),
+                "description": ("기부 기계", "Donation Machine"),
             },
             "greed": {
                 "offset": 0x1B0,
-                "title": "그리드 기계 (Greed Machine)",
-                "description": "그리드 기계",
+                "title": ("그리드 기계", "Greed Machine"),
+                "description": ("그리드 기계", "Greed Machine"),
             },
             "streak": {
                 "offset": 0x54,
-                "title": "연승 (Win Streak)",
-                "description": "연승",
+                "title": ("연승", "Win Streak"),
+                "description": ("연승", "Win Streak"),
             },
             "eden": {
                 "offset": 0x50,
-                "title": "에덴 토큰 (Eden Tokens)",
-                "description": "에덴 토큰",
+                "title": ("에덴 토큰", "Eden Tokens"),
+                "description": ("에덴 토큰", "Eden Tokens"),
             },
         }
         self._numeric_order: List[str] = ["donation", "greed", "streak", "eden"]
@@ -168,6 +352,7 @@ class IsaacSaveEditor(tk.Tk):
         self._completion_tree: Optional[CheckboxTreeview] = None
         self._completion_current_mark_ids: List[str] = []
         self._current_completion_char_index: Optional[int] = None
+        self._completion_character_box: Optional[ttk.Combobox] = None
 
         (
             self._item_records,
@@ -184,9 +369,11 @@ class IsaacSaveEditor(tk.Tk):
         ) = self._load_secret_records(self._item_lookup_by_name)
         self._secret_trees: Dict[str, CheckboxTreeview] = {}
         self._secret_managers: Dict[str, TreeManager] = {}
+        self._secret_alphabetical: Dict[str, bool] = {}
 
         self._item_trees: Dict[str, CheckboxTreeview] = {}
         self._item_managers: Dict[str, TreeManager] = {}
+        self._item_alphabetical: Dict[str, bool] = {}
 
         self._secret_to_challenges: Dict[str, Set[str]] = {}
         self._challenge_to_secrets: Dict[str, Set[str]] = {}
@@ -250,11 +437,14 @@ class IsaacSaveEditor(tk.Tk):
         normalized = path.replace("\\", "/").casefold()
         return "steam" in normalized
 
-    @staticmethod
-    def _format_selected_path(path: str) -> str:
+    def _format_selected_path(self, path: str) -> str:
         if not path:
-            return "선택된 파일: 없음"
-        return f"선택된 파일: {os.path.normpath(path)}"
+            return self._text("선택된 파일: 없음", "Selected File: None")
+        formatted = os.path.normpath(path)
+        return self._text(
+            f"선택된 파일: {formatted}",
+            f"Selected File: {formatted}",
+        )
     # ------------------------------------------------------------------
     # Layout construction helpers
     # ------------------------------------------------------------------
@@ -265,7 +455,8 @@ class IsaacSaveEditor(tk.Tk):
 
         main_tab = ttk.Frame(notebook, padding=12)
         main_tab.columnconfigure(0, weight=1)
-        notebook.add(main_tab, text="메인")
+        notebook.add(main_tab)
+        self._register_tab_text(notebook, main_tab, "메인", "Main")
         self._build_main_tab(main_tab)
 
         completion_tab = ttk.Frame(notebook, padding=12)
@@ -274,10 +465,13 @@ class IsaacSaveEditor(tk.Tk):
         self._build_completion_tab(completion_tab)
 
         def add_secret_tab(secret_type: str) -> None:
-            tab_label = self._secret_tab_labels.get(secret_type, secret_type)
+            tab_label = self._secret_tab_labels.get(
+                secret_type, (secret_type, secret_type)
+            )
             secrets_tab = ttk.Frame(notebook, padding=12)
             secrets_tab.columnconfigure(0, weight=1)
-            notebook.add(secrets_tab, text=tab_label)
+            notebook.add(secrets_tab)
+            self._register_tab_text(notebook, secrets_tab, tab_label[0], tab_label[1])
             self._build_secrets_tab(secrets_tab, secret_type)
 
         secret_order = [
@@ -294,31 +488,34 @@ class IsaacSaveEditor(tk.Tk):
         if boss_tab_type:
             add_secret_tab(boss_tab_type)
 
-        notebook.add(completion_tab, text="체크리스트")
+        notebook.add(completion_tab)
+        self._register_tab_text(notebook, completion_tab, "체크리스트", "Checklist")
 
     def _build_main_tab(self, container: ttk.Frame) -> None:
         top_frame = ttk.Frame(container)
         top_frame.grid(column=0, row=0, sticky="ew")
         top_frame.columnconfigure(1, weight=1)
 
-        open_button = ttk.Button(
-            top_frame,
-            text="아이작 세이브파일 열기",
-            command=self.open_save_file,
-        )
+        open_button = ttk.Button(top_frame, command=self.open_save_file)
         open_button.grid(column=0, row=0, sticky="w")
+        self._register_text(open_button, "아이작 세이브파일 열기", "Open Isaac Save File")
 
-        self.loaded_file_var = tk.StringVar(value=self._default_loaded_text)
+        self.loaded_file_var = tk.StringVar()
+        self._update_default_loaded_text()
         loaded_file_label = ttk.Label(top_frame, textvariable=self.loaded_file_var)
         loaded_file_label.grid(column=1, row=0, sticky="w", padx=(10, 0))
 
         remember_check = ttk.Checkbutton(
             top_frame,
-            text="세이브파일 경로 기억",
             variable=self.remember_path_var,
             command=self._on_remember_path_toggle,
         )
         remember_check.grid(column=0, row=1, columnspan=2, sticky="w", pady=(8, 0))
+        self._register_text(
+            remember_check,
+            "세이브파일 경로 기억",
+            "Remember Save File Path",
+        )
 
         self.auto_set_999_var = tk.BooleanVar(value=self._auto_set_999_default)
         self.auto_overwrite_var = tk.BooleanVar(value=self._auto_overwrite_default)
@@ -328,36 +525,47 @@ class IsaacSaveEditor(tk.Tk):
         self.target_save_display_var = tk.StringVar(
             value=self._format_selected_path(self.target_save_path)
         )
+        self._register_language_binding(self._update_source_display)
+        self._register_language_binding(self._update_target_display)
 
-        overwrite_frame = ttk.LabelFrame(
-            container,
-            text="세이브파일 덮어쓰기",
-            padding=(12, 10),
-        )
+        overwrite_frame = ttk.LabelFrame(container, padding=(12, 10))
         overwrite_frame.grid(column=0, row=1, sticky="ew", pady=(15, 0))
         overwrite_frame.columnconfigure(1, weight=1)
+        self._register_text(
+            overwrite_frame,
+            "세이브파일 덮어쓰기",
+            "Overwrite Save File",
+        )
 
         auto_overwrite_check = ttk.Checkbutton(
             overwrite_frame,
-            text="세이브파일 자동 덮어쓰기",
             variable=self.auto_overwrite_var,
             command=self._on_auto_overwrite_toggle,
         )
         auto_overwrite_check.grid(column=0, row=0, sticky="w")
+        self._register_text(
+            auto_overwrite_check,
+            "세이브파일 자동 덮어쓰기",
+            "Overwrite Automatically",
+        )
 
         help_button = ttk.Button(
             overwrite_frame,
-            text="도움말",
             command=self._show_auto_overwrite_help,
         )
         help_button.grid(column=1, row=0, sticky="e")
+        self._register_text(help_button, "도움말", "Help")
 
         source_button = ttk.Button(
             overwrite_frame,
-            text="원본 세이브파일 열기",
             command=self._select_source_save_file,
         )
         source_button.grid(column=0, row=1, sticky="w", pady=(8, 0))
+        self._register_text(
+            source_button,
+            "원본 세이브파일 열기",
+            "Select Source Save File",
+        )
 
         source_label = ttk.Label(
             overwrite_frame,
@@ -369,10 +577,14 @@ class IsaacSaveEditor(tk.Tk):
 
         target_button = ttk.Button(
             overwrite_frame,
-            text="덮어쓰기할 세이브파일 열기",
             command=self._select_target_save_file,
         )
         target_button.grid(column=0, row=2, sticky="w", pady=(8, 0))
+        self._register_text(
+            target_button,
+            "덮어쓰기할 세이브파일 열기",
+            "Select Target Save File",
+        )
 
         target_label = ttk.Label(
             overwrite_frame,
@@ -395,7 +607,7 @@ class IsaacSaveEditor(tk.Tk):
             self._build_numeric_section(
                 container=container,
                 row=row_index,
-                title=str(config["title"]),
+                title=config.get("title"),
                 current_var=current_var,
                 entry_var=entry_var,
                 command=lambda field_key=key: self.apply_field(field_key, preserve_entry=True),
@@ -406,21 +618,39 @@ class IsaacSaveEditor(tk.Tk):
         auto_999_frame = ttk.Frame(container)
         auto_999_frame.grid(column=0, row=auto_999_row, sticky="ew", pady=(12, 0))
         auto_999_frame.columnconfigure(0, weight=1)
+        auto_999_frame.columnconfigure(1, weight=0)
+        auto_999_frame.columnconfigure(2, weight=0)
 
         auto_999_check = ttk.Checkbutton(
             auto_999_frame,
-            text="프로그램 시작 시 999로 설정",
             variable=self.auto_set_999_var,
             command=self._on_auto_set_999_toggle,
         )
         auto_999_check.grid(column=0, row=0, sticky="w")
+        self._register_text(
+            auto_999_check,
+            "프로그램 시작 시 999로 설정",
+            "Set to 999 on Startup",
+        )
 
         set_999_button = ttk.Button(
             auto_999_frame,
-            text="기부/그리드 기계/에덴 토큰 999로 설정",
             command=self.set_donation_greed_eden_to_max,
         )
         set_999_button.grid(column=1, row=0, sticky="e", padx=(10, 0))
+        self._register_text(
+            set_999_button,
+            "기부/그리드 기계/에덴 토큰 999로 설정",
+            "Set Donation/Greed/Eden Tokens to 999",
+        )
+
+        english_ui_check = ttk.Checkbutton(
+            auto_999_frame,
+            variable=self._english_ui_var,
+            command=self._on_english_ui_toggle,
+        )
+        english_ui_check.grid(column=2, row=0, sticky="e", padx=(10, 0))
+        self._register_text(english_ui_check, "English UI", "English UI")
 
         self._update_source_display()
         self._update_target_display()
@@ -443,7 +673,9 @@ class IsaacSaveEditor(tk.Tk):
         header = ttk.Frame(container)
         header.grid(column=0, row=0, sticky="w")
 
-        ttk.Label(header, text="캐릭터: ").pack(side="left")
+        character_label = ttk.Label(header)
+        character_label.pack(side="left")
+        self._register_text(character_label, "캐릭터:", "Character:")
 
         self._completion_display_to_index.clear()
         character_options: List[str] = []
@@ -461,11 +693,15 @@ class IsaacSaveEditor(tk.Tk):
         )
         character_box.pack(side="left", padx=(6, 0))
         character_box.bind("<<ComboboxSelected>>", self._on_completion_character_selected)
+        self._completion_character_box = character_box
 
-        ttk.Label(
-            container,
-            text="체크박스를 클릭하면 즉시 저장됩니다.",
-        ).grid(column=0, row=1, sticky="w", pady=(10, 0))
+        info_label = ttk.Label(container)
+        info_label.grid(column=0, row=1, sticky="w", pady=(10, 0))
+        self._register_text(
+            info_label,
+            "체크박스를 클릭하면 즉시 저장됩니다.",
+            "Changes are saved immediately when you click the checkboxes.",
+        )
 
         tree_container = ttk.Frame(container)
         tree_container.grid(column=0, row=2, sticky="nsew", pady=(12, 0))
@@ -478,10 +714,14 @@ class IsaacSaveEditor(tk.Tk):
 
         unlock_all_button = ttk.Button(
             container,
-            text="모든 캐릭터 체크리스트 완료",
             command=self._unlock_all_completion_marks_all_characters,
         )
         unlock_all_button.grid(column=0, row=3, sticky="e", pady=(12, 0))
+        self._register_text(
+            unlock_all_button,
+            "모든 캐릭터 체크리스트 완료",
+            "Complete All Character Checklists",
+        )
 
         if character_options:
             character_box.current(0)
@@ -491,16 +731,12 @@ class IsaacSaveEditor(tk.Tk):
             if self._completion_tree is not None:
                 self._completion_tree.state(("disabled",))
 
-    @staticmethod
-    def _format_completion_character_display(info: Dict[str, object]) -> str:
+    def _format_completion_character_display(self, info: Dict[str, object]) -> str:
         english = str(info.get("english", "")).strip()
         korean = str(info.get("korean", "")).strip()
-        if korean and english and korean != english:
-            return f"{korean} ({english})"
-        if korean:
-            return korean
-        if english:
-            return english
+        display = self._format_display_name(korean, english)
+        if display:
+            return display
         return f"Character {info.get('index', '')}"
 
     def _on_completion_character_selected(self, event: object | None = None) -> None:
@@ -542,40 +778,54 @@ class IsaacSaveEditor(tk.Tk):
     def _build_secrets_tab(self, container: ttk.Frame, secret_type: str) -> None:
         button_frame = ttk.Frame(container)
         button_frame.grid(column=0, row=0, sticky="w")
-        ttk.Button(
+        select_all_button = ttk.Button(
             button_frame,
-            text="모두 선택 (Select All)",
             command=lambda t=secret_type: self._select_all_secrets(t),
-        ).pack(side="left", padx=(0, 6))
-        ttk.Button(
+        )
+        select_all_button.pack(side="left", padx=(0, 6))
+        self._register_text(select_all_button, "모두 선택", "Select All")
+
+        select_none_button = ttk.Button(
             button_frame,
-            text="모두 해제 (Select None)",
             command=lambda t=secret_type: self._select_none_secrets(t),
-        ).pack(side="left")
-        ttk.Button(
+        )
+        select_none_button.pack(side="left")
+        self._register_text(select_none_button, "모두 해제", "Select None")
+
+        alpha_button = ttk.Button(
             button_frame,
-            text="선택 해금",
+            command=lambda t=secret_type: self._toggle_secret_alphabetical(t),
+        )
+        alpha_button.pack(side="left", padx=(12, 0))
+        self._register_text(alpha_button, "알파벳순 정렬", "Sort Alphabetically")
+
+        unlock_button = ttk.Button(
+            button_frame,
             command=lambda t=secret_type: self._unlock_selected_secrets(t),
-        ).pack(side="left", padx=(12, 6))
-        ttk.Button(
+        )
+        unlock_button.pack(side="left", padx=(12, 6))
+        self._register_text(unlock_button, "선택 해금", "Unlock Selected")
+
+        lock_button = ttk.Button(
             button_frame,
-            text="선택 미해금",
             command=lambda t=secret_type: self._lock_selected_secrets(t),
-        ).pack(side="left")
+        )
+        lock_button.pack(side="left")
+        self._register_text(lock_button, "선택 미해금", "Lock Selected")
 
         include_quality = secret_type.startswith("Item.")
         info_text = None
         if include_quality:
-            info_text = "업적 아이템은 모두 해금하고, 패시브/액티브 탭에서 해금 여부를 변경하세요."
+            info_text = (
+                "업적 아이템은 모두 해금하고, 패시브/액티브 탭에서 해금 여부를 변경하세요.",
+                "Unlock achievement items here, then adjust unlock status in the passive/active tabs.",
+            )
 
         tree_row = 1
         if info_text:
-            ttk.Label(
-                container,
-                text=info_text,
-                wraplength=520,
-                justify="left",
-            ).grid(column=0, row=1, sticky="w", pady=(8, 0))
+            info_label = ttk.Label(container, wraplength=520, justify="left")
+            info_label.grid(column=0, row=1, sticky="w", pady=(8, 0))
+            self._register_text(info_label, info_text[0], info_text[1])
             tree_row = 2
 
         container.rowconfigure(tree_row, weight=1)
@@ -596,54 +846,90 @@ class IsaacSaveEditor(tk.Tk):
             tree.column("quality", anchor="center", width=120, stretch=False)
 
         manager = TreeManager(tree, {})
-        tree.heading("#0", text="이름 (Name)", command=lambda m=manager: m.sort("name"))
-        tree.heading("unlock", text="해금 여부 (Unlock)", command=lambda m=manager: m.sort("unlock"))
+        tree.heading("#0", command=lambda m=manager: m.sort("name"))
+        self._register_heading_text(tree, "#0", "이름", "Name")
+        tree.heading("unlock", command=lambda m=manager: m.sort("unlock"))
+        self._register_heading_text(tree, "unlock", "해금 여부", "Unlock Status")
         if include_quality:
-            tree.heading("quality", text="등급 (Quality)", command=lambda m=manager: m.sort("quality"))
+            tree.heading("quality", command=lambda m=manager: m.sort("quality"))
+            self._register_heading_text(tree, "quality", "등급", "Quality")
 
         records: Dict[str, Dict[str, object]] = {}
+        english_first = self._secret_alphabetical.get(secret_type, False)
         for record in self._secret_records_by_type.get(secret_type, []):
             quality_value = record.get("quality")
             values: List[str] = ["X"]
             if include_quality:
                 quality_display = "-" if quality_value is None else str(quality_value)
                 values.append(quality_display)
-            tree.insert("", "end", iid=record["iid"], text=record["display"], values=tuple(values))
+            item_id = record["iid"]
+            display_text = self._format_display_name(
+                str(record.get("korean", "")),
+                str(record.get("english", "")),
+                english_first=english_first,
+            )
+            tree.insert("", "end", iid=item_id, text=display_text, values=tuple(values))
             records[record["iid"]] = {
                 "iid": record["iid"],
-                "name_sort": record["name_sort"],
+                "name_sort": record.get("sort_default", record.get("name_sort")),
                 "unlock": False,
                 "quality": quality_value if include_quality else None,
+                "sort_default": record.get("sort_default", record.get("name_sort")),
+                "sort_english": record.get("sort_english", record.get("name_sort")),
             }
+            self._register_language_binding(
+                self._make_tree_item_language_updater(
+                    tree,
+                    item_id,
+                    secret_type,
+                    str(record.get("korean", "")),
+                    str(record.get("english", "")),
+                )
+            )
         manager.records = records
         manager.sort("name", ascending=True, update_toggle=False)
 
         self._secret_trees[secret_type] = tree
         self._secret_managers[secret_type] = manager
+        self._secret_alphabetical.setdefault(secret_type, False)
 
     def _build_item_tab(self, container: ttk.Frame, item_type: str) -> None:
         button_frame = ttk.Frame(container)
         button_frame.grid(column=0, row=0, sticky="w")
-        ttk.Button(
+        select_all_button = ttk.Button(
             button_frame,
-            text="모두 선택 (Select All)",
             command=lambda t=item_type: self._select_all_items(t),
-        ).pack(side="left", padx=(0, 6))
-        ttk.Button(
+        )
+        select_all_button.pack(side="left", padx=(0, 6))
+        self._register_text(select_all_button, "모두 선택", "Select All")
+
+        select_none_button = ttk.Button(
             button_frame,
-            text="모두 해제 (Select None)",
             command=lambda t=item_type: self._select_none_items(t),
-        ).pack(side="left")
-        ttk.Button(
+        )
+        select_none_button.pack(side="left")
+        self._register_text(select_none_button, "모두 해제", "Select None")
+
+        alpha_button = ttk.Button(
             button_frame,
-            text="선택 해금",
+            command=lambda t=item_type: self._toggle_item_alphabetical(t),
+        )
+        alpha_button.pack(side="left", padx=(12, 0))
+        self._register_text(alpha_button, "알파벳순 정렬", "Sort Alphabetically")
+
+        unlock_button = ttk.Button(
+            button_frame,
             command=lambda t=item_type: self._unlock_selected_items(t),
-        ).pack(side="left", padx=(12, 6))
-        ttk.Button(
+        )
+        unlock_button.pack(side="left", padx=(12, 6))
+        self._register_text(unlock_button, "선택 해금", "Unlock Selected")
+
+        lock_button = ttk.Button(
             button_frame,
-            text="선택 미해금",
             command=lambda t=item_type: self._lock_selected_items(t),
-        ).pack(side="left")
+        )
+        lock_button.pack(side="left")
+        self._register_text(lock_button, "선택 미해금", "Lock Selected")
 
         tree_container = ttk.Frame(container)
         tree_container.grid(column=0, row=1, sticky="nsew", pady=(12, 0))
@@ -655,57 +941,91 @@ class IsaacSaveEditor(tk.Tk):
         tree.column("quality", anchor="center", width=120, stretch=False)
 
         manager = TreeManager(tree, {})
-        tree.heading("#0", text="이름 (Name)", command=lambda m=manager: m.sort("name"))
-        tree.heading("unlock", text="해금 여부 (Unlock)", command=lambda m=manager: m.sort("unlock"))
-        tree.heading("quality", text="등급 (Quality)", command=lambda m=manager: m.sort("quality"))
+        tree.heading("#0", command=lambda m=manager: m.sort("name"))
+        self._register_heading_text(tree, "#0", "이름", "Name")
+        tree.heading("unlock", command=lambda m=manager: m.sort("unlock"))
+        self._register_heading_text(tree, "unlock", "해금 여부", "Unlock Status")
+        tree.heading("quality", command=lambda m=manager: m.sort("quality"))
+        self._register_heading_text(tree, "quality", "등급", "Quality")
 
         records: Dict[str, Dict[str, object]] = {}
+        english_first = self._item_alphabetical.get(item_type, False)
         for item_id, record in self._item_records.get(item_type, {}).items():
             quality = record.get("quality")
             quality_display = "-" if quality is None else str(quality)
-            tree.insert("", "end", iid=item_id, text=record["display"], values=("X", quality_display))
+            display_text = self._format_display_name(
+                str(record.get("korean", "")),
+                str(record.get("english", "")),
+                english_first=english_first,
+            )
+            tree.insert("", "end", iid=item_id, text=display_text, values=("X", quality_display))
             records[item_id] = {
                 "iid": item_id,
-                "name_sort": record["name_sort"],
+                "name_sort": record.get("sort_default", record.get("name_sort")),
                 "unlock": False,
                 "quality": quality,
+                "sort_default": record.get("sort_default", record.get("name_sort")),
+                "sort_english": record.get("sort_english", record.get("name_sort")),
             }
+            self._register_language_binding(
+                self._make_tree_item_language_updater(
+                    tree,
+                    item_id,
+                    item_type,
+                    str(record.get("korean", "")),
+                    str(record.get("english", "")),
+                    is_secret=False,
+                )
+            )
         manager.records = records
         manager.sort("name", ascending=True, update_toggle=False)
 
         self._item_trees[item_type] = tree
         self._item_managers[item_type] = manager
+        self._item_alphabetical.setdefault(item_type, False)
 
     def _build_challenges_tab(self, container: ttk.Frame) -> None:
         button_frame = ttk.Frame(container)
         button_frame.grid(column=0, row=0, sticky="w")
-        ttk.Button(
+        select_all_button = ttk.Button(
             button_frame,
-            text="모두 선택 (Select All)",
             command=self._select_all_challenges,
-        ).pack(side="left", padx=(0, 6))
-        ttk.Button(
-            button_frame,
-            text="모두 해제 (Select None)",
-            command=self._select_none_challenges,
-        ).pack(side="left")
-        ttk.Button(
-            button_frame,
-            text="선택 해금",
-            command=self._unlock_selected_challenges,
-        ).pack(side="left", padx=(12, 6))
-        ttk.Button(
-            button_frame,
-            text="선택 미해금",
-            command=self._lock_selected_challenges,
-        ).pack(side="left")
+        )
+        select_all_button.pack(side="left", padx=(0, 6))
+        self._register_text(select_all_button, "모두 선택", "Select All")
 
-        ttk.Label(
+        select_none_button = ttk.Button(
+            button_frame,
+            command=self._select_none_challenges,
+        )
+        select_none_button.pack(side="left")
+        self._register_text(select_none_button, "모두 해제", "Select None")
+
+        unlock_button = ttk.Button(
+            button_frame,
+            command=self._unlock_selected_challenges,
+        )
+        unlock_button.pack(side="left", padx=(12, 6))
+        self._register_text(unlock_button, "선택 해금", "Unlock Selected")
+
+        lock_button = ttk.Button(
+            button_frame,
+            command=self._lock_selected_challenges,
+        )
+        lock_button.pack(side="left")
+        self._register_text(lock_button, "선택 미해금", "Lock Selected")
+
+        info_label = ttk.Label(
             container,
-            text="도전과제는 모두 해금하고, 다른 아이템 탭에서 해금여부를 변경하세요.",
             wraplength=520,
             justify="left",
-        ).grid(column=0, row=1, sticky="w", pady=(8, 0))
+        )
+        info_label.grid(column=0, row=1, sticky="w", pady=(8, 0))
+        self._register_text(
+            info_label,
+            "도전과제는 모두 해금하고, 다른 아이템 탭에서 해금여부를 변경하세요.",
+            "Unlock challenges here, then adjust unlock status in the other item tabs.",
+        )
 
         tree_row = 2
         container.rowconfigure(tree_row, weight=1)
@@ -719,18 +1039,37 @@ class IsaacSaveEditor(tk.Tk):
         tree.column("unlock", anchor="center", width=140, stretch=False)
 
         manager = TreeManager(tree, {})
-        tree.heading("#0", text="이름 (Name)", command=lambda m=manager: m.sort("name"))
-        tree.heading("unlock", text="해금 여부 (Unlock)", command=lambda m=manager: m.sort("unlock"))
+        tree.heading("#0", command=lambda m=manager: m.sort("name"))
+        self._register_heading_text(tree, "#0", "이름", "Name")
+        tree.heading("unlock", command=lambda m=manager: m.sort("unlock"))
+        self._register_heading_text(tree, "unlock", "해금 여부", "Unlock Status")
 
         records: Dict[str, Dict[str, object]] = {}
         for record in self._challenge_records:
-            tree.insert("", "end", iid=record["iid"], text=record["display"], values=("X",))
+            item_id = record["iid"]
+            display_text = self._format_display_name(
+                str(record.get("korean", "")),
+                str(record.get("english", "")),
+            )
+            tree.insert("", "end", iid=item_id, text=display_text, values=("X",))
             records[record["iid"]] = {
                 "iid": record["iid"],
-                "name_sort": record["name_sort"],
+                "name_sort": record.get("sort_default", record.get("name_sort")),
                 "unlock": False,
                 "quality": None,
+                "sort_default": record.get("sort_default", record.get("name_sort")),
+                "sort_english": record.get("sort_english", record.get("name_sort")),
             }
+            self._register_language_binding(
+                self._make_tree_item_language_updater(
+                    tree,
+                    item_id,
+                    "challenge",
+                    str(record.get("korean", "")),
+                    str(record.get("english", "")),
+                    is_secret=False,
+                )
+            )
         manager.records = records
         manager.sort("name", ascending=True, update_toggle=False)
 
@@ -771,7 +1110,10 @@ class IsaacSaveEditor(tk.Tk):
     def _get_checked_or_warn(self, tree: CheckboxTreeview) -> Set[str] | None:
         selected = set(tree.get_checked())
         if not selected:
-            messagebox.showinfo("선택 없음", "먼저 체크박스에서 항목을 선택해주세요.")
+            messagebox.showinfo(
+                self._text("선택 없음", "No Selection"),
+                self._text("먼저 체크박스에서 항목을 선택해주세요.", "Please select at least one entry."),
+            )
             return None
         return selected
     # ------------------------------------------------------------------
@@ -925,7 +1267,7 @@ class IsaacSaveEditor(tk.Tk):
         csv_path = DATA_DIR / "ui_secrets.csv"
         records_by_type: Dict[str, List[Dict[str, object]]] = {}
         ids_by_type: Dict[str, List[str]] = {}
-        tab_labels: Dict[str, str] = {}
+        tab_labels: Dict[str, tuple[str, str]] = {}
         type_order: List[str] = []
         details_by_id: Dict[str, Dict[str, object]] = {}
         allowed_types = {
@@ -949,8 +1291,12 @@ class IsaacSaveEditor(tk.Tk):
             if secret_type not in records_by_type:
                 records_by_type[secret_type] = []
                 ids_by_type[secret_type] = []
-                tab_labels[secret_type] = self.SECRET_TAB_LABELS.get(secret_type, secret_type)
+                tab_labels[secret_type] = self.SECRET_TAB_LABELS.get(
+                    secret_type, (secret_type, secret_type)
+                )
                 type_order.append(secret_type)
+
+        map_duplicate_secret_ids = {"57", "78"}
         with csv_path.open(encoding="utf-8-sig") as file:
             reader = csv.DictReader(file)
             for row in reader:
@@ -992,20 +1338,21 @@ class IsaacSaveEditor(tk.Tk):
                 else:
                     secret_type = secret_type_raw
                 register_type(secret_type)
-                primary = korean or unlock_name or secret_name or secret_id
-                secondary = secret_name or unlock_name
-                if secondary and primary != secondary:
-                    display = f"{primary} ({secondary})"
-                else:
-                    display = primary
+                english_name = secret_name or unlock_name
+                korean_name = korean
+                primary_name = korean_name or english_name or secret_id
+                display = self._format_display_name(korean_name, english_name)
                 record = {
                     "iid": secret_id,
                     "display": display,
-                    "name_sort": display.lower(),
+                    "name_sort": self._normalize_sort_key(primary_name),
                     "quality": quality_value,
                     "unlock_name": unlock_name,
                     "secret_name": secret_name,
                     "korean": korean,
+                    "english": english_name,
+                    "sort_default": self._normalize_sort_key(korean_name or english_name or secret_id),
+                    "sort_english": self._normalize_sort_key(english_name or korean_name or secret_id),
                 }
                 records_by_type[secret_type].append(record)
                 ids_by_type[secret_type].append(secret_id)
@@ -1016,6 +1363,10 @@ class IsaacSaveEditor(tk.Tk):
                     "display": display,
                     "secret_type": secret_type,
                 }
+                if secret_type == "Item.Passive" and secret_id in map_duplicate_secret_ids:
+                    register_type("Map")
+                    records_by_type["Map"].append(record.copy())
+                    ids_by_type["Map"].append(secret_id)
         return records_by_type, ids_by_type, tab_labels, type_order, details_by_id
 
     def _load_item_records(
@@ -1045,19 +1396,17 @@ class IsaacSaveEditor(tk.Tk):
                     quality_value = int(quality_text) if quality_text else None
                 except ValueError:
                     quality_value = None
-                primary = korean or english or item_id
-                if english and primary != english:
-                    display = f"{primary} ({english})"
-                else:
-                    display = primary
+                display = self._format_display_name(korean, english)
                 record = {
                     "iid": item_id,
                     "display": display,
-                    "name_sort": display.lower(),
+                    "name_sort": self._normalize_sort_key(korean or english or item_id),
                     "quality": quality_value,
                     "english": english,
                     "korean": korean,
                     "item_type": item_type,
+                    "sort_default": self._normalize_sort_key(korean or english or item_id),
+                    "sort_english": self._normalize_sort_key(english or korean or item_id),
                 }
                 records[item_type][item_id] = record
                 ids_by_type[item_type].append(item_id)
@@ -1078,18 +1427,22 @@ class IsaacSaveEditor(tk.Tk):
                     continue
                 korean = (row.get("Korean") or "").strip()
                 challenge_name = (row.get("ChallengeName") or "").strip()
-                primary = korean or challenge_name or challenge_id
-                if challenge_name and primary != challenge_name:
-                    display = f"{primary} ({challenge_name})"
-                else:
-                    display = primary
+                display = self._format_display_name(korean, challenge_name)
                 records.append(
                     {
                         "iid": challenge_id,
                         "display": display,
-                        "name_sort": display.lower(),
+                        "name_sort": self._normalize_sort_key(
+                            korean or challenge_name or challenge_id
+                        ),
                         "english": challenge_name,
                         "korean": korean,
+                        "sort_default": self._normalize_sort_key(
+                            korean or challenge_name or challenge_id
+                        ),
+                        "sort_english": self._normalize_sort_key(
+                            challenge_name or korean or challenge_id
+                        ),
                     }
                 )
         return records
@@ -1184,7 +1537,10 @@ class IsaacSaveEditor(tk.Tk):
             lambda data, idx=self._current_completion_char_index, values=new_values: script.updateCheckListUnlocks(
                 data, idx, values
             ),
-            "체크리스트를 업데이트하지 못했습니다.",
+            self._text(
+                "체크리스트를 업데이트하지 못했습니다.",
+                "Failed to update checklists.",
+            ),
         )
         if not success:
             self._refresh_completion_tab()
@@ -1193,8 +1549,11 @@ class IsaacSaveEditor(tk.Tk):
         if not self._ensure_data_loaded():
             return
         proceed = messagebox.askyesno(
-            "체크리스트 완료",
-            "모든 캐릭터의 체크리스트를 완료하시겠습니까?",
+            self._text("체크리스트 완료", "Complete Checklists"),
+            self._text(
+                "모든 캐릭터의 체크리스트를 완료하시겠습니까?",
+                "Complete every character checklist?",
+            ),
             icon="question",
         )
         if not proceed:
@@ -1205,7 +1564,10 @@ class IsaacSaveEditor(tk.Tk):
         indices_from_marks = {int(index) for index in self._completion_marks_by_character}
         char_indices = sorted(indices_from_script | indices_from_ui | indices_from_marks)
         if not char_indices:
-            messagebox.showwarning("체크리스트 완료", "완료할 캐릭터 정보를 찾을 수 없습니다.")
+            messagebox.showwarning(
+                self._text("체크리스트 완료", "Complete Checklists"),
+                self._text("완료할 캐릭터 정보를 찾을 수 없습니다.", "No character data available to complete."),
+            )
             return
         mark_count = max(
             (len(marks) for marks in self._completion_marks_by_character.values()),
@@ -1229,8 +1591,17 @@ class IsaacSaveEditor(tk.Tk):
                 result = script.updateCheckListUnlocks(result, index, values)
             return result
 
-        if self._apply_update(updater, "모든 캐릭터 체크리스트를 완료하지 못했습니다."):
-            messagebox.showinfo("완료", "모든 캐릭터 체크리스트를 완료했습니다.")
+        if self._apply_update(
+            updater,
+            self._text(
+                "모든 캐릭터 체크리스트를 완료하지 못했습니다.",
+                "Failed to complete all character checklists.",
+            ),
+        ):
+            messagebox.showinfo(
+                self._text("완료", "Done"),
+                self._text("모든 캐릭터 체크리스트를 완료했습니다.", "All character checklists are complete."),
+            )
 
     def _select_all_secrets(self, secret_type: str) -> None:
         tree = self._secret_trees.get(secret_type)
@@ -1253,6 +1624,34 @@ class IsaacSaveEditor(tk.Tk):
                 tree.change_state(secret_id, "unchecked")
         finally:
             self._unlock_tree(tree)
+
+    def _toggle_secret_alphabetical(self, secret_type: str) -> None:
+        tree = self._secret_trees.get(secret_type)
+        manager = self._secret_managers.get(secret_type)
+        if tree is None or manager is None:
+            return
+        new_state = not self._secret_alphabetical.get(secret_type, False)
+        self._secret_alphabetical[secret_type] = new_state
+        records = self._secret_records_by_type.get(secret_type, [])
+        for record in records:
+            item_id = record.get("iid")
+            if not item_id:
+                continue
+            manager_record = manager.records.get(item_id)
+            if manager_record:
+                key = "sort_english" if new_state else "sort_default"
+                if key in manager_record:
+                    manager_record["name_sort"] = manager_record.get(key, manager_record.get("name_sort"))
+            tree.item(
+                item_id,
+                text=self._format_display_name(
+                    str(record.get("korean", "")),
+                    str(record.get("english", "")),
+                    english_first=new_state,
+                ),
+            )
+        manager.sort("name", ascending=True, update_toggle=False)
+        tree.yview_moveto(0)
 
     def _unlock_selected_secrets(self, secret_type: str) -> None:
         if not self._ensure_data_loaded():
@@ -1280,7 +1679,10 @@ class IsaacSaveEditor(tk.Tk):
                 result = script.updateChallenges(result, challenge_list)
             return result
 
-        self._apply_update(updater, "비밀을 업데이트하지 못했습니다.")
+        self._apply_update(
+            updater,
+            self._text("비밀을 업데이트하지 못했습니다.", "Failed to update secrets."),
+        )
 
     def _lock_selected_secrets(self, secret_type: str) -> None:
         if not self._ensure_data_loaded():
@@ -1308,7 +1710,10 @@ class IsaacSaveEditor(tk.Tk):
                 result = script.updateChallenges(result, challenge_list)
             return result
 
-        self._apply_update(updater, "비밀을 업데이트하지 못했습니다.")
+        self._apply_update(
+            updater,
+            self._text("비밀을 업데이트하지 못했습니다.", "Failed to update secrets."),
+        )
 
     def _collect_unlocked_secrets(self) -> Set[str]:
         unlocked: Set[str] = set()
@@ -1340,6 +1745,29 @@ class IsaacSaveEditor(tk.Tk):
         finally:
             self._unlock_tree(tree)
 
+    def _toggle_item_alphabetical(self, item_type: str) -> None:
+        tree = self._item_trees.get(item_type)
+        manager = self._item_managers.get(item_type)
+        if tree is None or manager is None:
+            return
+        new_state = not self._item_alphabetical.get(item_type, False)
+        self._item_alphabetical[item_type] = new_state
+        for item_id, manager_record in manager.records.items():
+            key = "sort_english" if new_state else "sort_default"
+            if key in manager_record:
+                manager_record["name_sort"] = manager_record.get(key, manager_record.get("name_sort"))
+            record = self._item_records.get(item_type, {}).get(item_id, {})
+            tree.item(
+                item_id,
+                text=self._format_display_name(
+                    str(record.get("korean", "")),
+                    str(record.get("english", "")),
+                    english_first=new_state,
+                ),
+            )
+        manager.sort("name", ascending=True, update_toggle=False)
+        tree.yview_moveto(0)
+
     def _unlock_selected_items(self, item_type: str) -> None:
         if not self._ensure_data_loaded():
             return
@@ -1355,7 +1783,7 @@ class IsaacSaveEditor(tk.Tk):
         ids_sorted = sorted(unlocked_ids, key=lambda value: int(value))
         self._apply_update(
             lambda data: script.updateItems(data, ids_sorted),
-            "아이템을 업데이트하지 못했습니다.",
+            self._text("아이템을 업데이트하지 못했습니다.", "Failed to update items."),
         )
 
     def _lock_selected_items(self, item_type: str) -> None:
@@ -1373,7 +1801,7 @@ class IsaacSaveEditor(tk.Tk):
         ids_sorted = sorted(unlocked_ids, key=lambda value: int(value))
         self._apply_update(
             lambda data: script.updateItems(data, ids_sorted),
-            "아이템을 업데이트하지 못했습니다.",
+            self._text("아이템을 업데이트하지 못했습니다.", "Failed to update items."),
         )
 
     def _collect_unlocked_items(self) -> Set[str]:
@@ -1428,7 +1856,10 @@ class IsaacSaveEditor(tk.Tk):
                 result = script.updateSecrets(result, secret_list)
             return result
 
-        self._apply_update(updater, "도전과제를 업데이트하지 못했습니다.")
+        self._apply_update(
+            updater,
+            self._text("도전과제를 업데이트하지 못했습니다.", "Failed to update challenges."),
+        )
 
     def _lock_selected_challenges(self) -> None:
         if not self._ensure_data_loaded():
@@ -1454,7 +1885,10 @@ class IsaacSaveEditor(tk.Tk):
                 result = script.updateSecrets(result, secret_list)
             return result
 
-        self._apply_update(updater, "도전과제를 업데이트하지 못했습니다.")
+        self._apply_update(
+            updater,
+            self._text("도전과제를 업데이트하지 못했습니다.", "Failed to update challenges."),
+        )
 
     def _collect_unlocked_challenges(self) -> Set[str]:
         if self._challenge_manager is None:
@@ -1488,25 +1922,38 @@ class IsaacSaveEditor(tk.Tk):
 
     def _ensure_data_loaded(self) -> bool:
         if self.data is None or not self.filename:
-            messagebox.showwarning("파일 없음", "먼저 세이브 파일을 열어주세요.")
+            messagebox.showwarning(
+                self._text("파일 없음", "No File"),
+                self._text("먼저 세이브 파일을 열어주세요.", "Please open a save file first."),
+            )
             return False
         return True
 
     def _apply_update(self, updater: Callable[[bytes], bytes], error_message: str) -> bool:
         if self.data is None or not self.filename:
-            messagebox.showwarning("파일 없음", "먼저 세이브 파일을 열어주세요.")
+            messagebox.showwarning(
+                self._text("파일 없음", "No File"),
+                self._text("먼저 세이브 파일을 열어주세요.", "Please open a save file first."),
+            )
             return False
         try:
             new_data = updater(self.data)
         except Exception as exc:  # pragma: no cover - defensive UI feedback
-            messagebox.showerror("업데이트 실패", f"{error_message}\n{exc}")
+            messagebox.showerror(
+                self._text("업데이트 실패", "Update Failed"),
+                f"{error_message}\n{exc}",
+            )
             return False
         updated_with_checksum = script.updateChecksum(new_data)
         try:
             with open(self.filename, "wb") as file:
                 file.write(updated_with_checksum)
         except OSError as exc:
-            messagebox.showerror("저장 실패", f"세이브 파일을 저장하지 못했습니다.\n{exc}")
+            messagebox.showerror(
+                self._text("저장 실패", "Save Failed"),
+                self._text("세이브 파일을 저장하지 못했습니다.", "Could not save the file.")
+                + f"\n{exc}",
+            )
             return False
         self.data = updated_with_checksum
         self.refresh_current_values()
@@ -1650,20 +2097,31 @@ class IsaacSaveEditor(tk.Tk):
         pady = (15, 0) if is_first else (10, 0)
         section.grid(column=0, row=row, sticky="ew", pady=pady)
         section.columnconfigure(1, weight=1)
+        title_ko, title_en = ("", "")
+        if isinstance(title, tuple):
+            title_ko, title_en = title
+        elif isinstance(title, str):
+            title_ko = title_en = title
+        self._register_text(section, title_ko, title_en)
 
-        ttk.Label(section, text="현재값 (Current):").grid(column=0, row=0, sticky="w")
+        current_label = ttk.Label(section)
+        current_label.grid(column=0, row=0, sticky="w")
+        self._register_text(current_label, "현재값:", "Current:")
         ttk.Label(section, textvariable=current_var).grid(column=1, row=0, sticky="w")
 
-        ttk.Label(section, text="새 값 (New Value):").grid(column=0, row=1, sticky="w", pady=(8, 0))
+        new_value_label = ttk.Label(section)
+        new_value_label.grid(column=0, row=1, sticky="w", pady=(8, 0))
+        self._register_text(new_value_label, "새 값:", "New Value:")
         entry = ttk.Entry(section, textvariable=entry_var, width=12)
         entry.grid(column=1, row=1, sticky="w", pady=(8, 0))
 
-        apply_button = ttk.Button(section, text="적용 (Apply)", command=command)
+        apply_button = ttk.Button(section, command=command)
         apply_button.grid(column=2, row=1, sticky="e", padx=(10, 0), pady=(8, 0))
+        self._register_text(apply_button, "적용", "Apply")
 
     def _select_source_save_file(self) -> None:
         filename = filedialog.askopenfilename(
-            title="원본 세이브파일 선택",
+            title=self._text("원본 세이브파일 선택", "Select Source Save File"),
             initialdir=self._get_initial_directory(),
             filetypes=(("dat files", "*.dat"), ("all files", "*.*")),
         )
@@ -1674,7 +2132,10 @@ class IsaacSaveEditor(tk.Tk):
             source_name = os.path.basename(normalized)
             target_name = os.path.basename(self.target_save_path)
             if source_name != target_name:
-                messagebox.showerror("경고", "파일 이름이 다릅니다.")
+                messagebox.showerror(
+                    self._text("경고", "Warning"),
+                    self._text("파일 이름이 다릅니다.", "The file names do not match."),
+                )
                 return
         self.source_save_path = normalized
         self.settings["source_save_path"] = normalized
@@ -1684,7 +2145,7 @@ class IsaacSaveEditor(tk.Tk):
 
     def _select_target_save_file(self) -> None:
         filename = filedialog.askopenfilename(
-            title="덮어쓰기할 세이브파일 선택",
+            title=self._text("덮어쓰기할 세이브파일 선택", "Select Target Save File"),
             initialdir=self._get_initial_directory(),
             filetypes=(("dat files", "*.dat"), ("all files", "*.*")),
         )
@@ -1693,8 +2154,11 @@ class IsaacSaveEditor(tk.Tk):
         normalized = self._normalize_save_path(filename)
         if not self._path_contains_steam(normalized):
             proceed = messagebox.askyesno(
-                "경로 확인",
-                "아이작 세이브파일 경로가 아닌 것 같습니다. 그래도 계속하시겠습니까?",
+                self._text("경로 확인", "Confirm Path"),
+                self._text(
+                    "아이작 세이브파일 경로가 아닌 것 같습니다. 그래도 계속하시겠습니까?",
+                    "This does not look like an Isaac save path. Continue anyway?",
+                ),
             )
             if not proceed:
                 return
@@ -1702,7 +2166,10 @@ class IsaacSaveEditor(tk.Tk):
             source_name = os.path.basename(self.source_save_path)
             target_name = os.path.basename(normalized)
             if source_name != target_name:
-                messagebox.showerror("경고", "파일 이름이 다릅니다.")
+                messagebox.showerror(
+                    self._text("경고", "Warning"),
+                    self._text("파일 이름이 다릅니다.", "The file names do not match."),
+                )
                 return
         self.target_save_path = normalized
         self.settings["target_save_path"] = normalized
@@ -1724,9 +2191,18 @@ class IsaacSaveEditor(tk.Tk):
         if enabled:
             self._apply_auto_overwrite_if_enabled(show_message=True)
 
+    def _on_english_ui_toggle(self) -> None:
+        enabled = bool(self._english_ui_var.get())
+        if enabled == self._english_ui_enabled:
+            return
+        self._english_ui_enabled = enabled
+        self.settings["english_ui"] = enabled
+        self._save_settings()
+        self._apply_language_preferences()
+
     def _show_auto_overwrite_help(self) -> None:
         help_window = tk.Toplevel(self)
-        help_window.title("세이브파일 자동 덮어쓰기 안내")
+        help_window.title(self._text("세이브파일 자동 덮어쓰기 안내", "Auto Overwrite Guide"))
         help_window.transient(self)
         help_window.resizable(False, False)
 
@@ -1745,17 +2221,23 @@ class IsaacSaveEditor(tk.Tk):
 
         title_label = ttk.Label(
             container,
-            text="자동 덮어쓰기 사용 방법",
             font=title_font,
             justify="left",
+            text=self._text("자동 덮어쓰기 사용 방법", "How to Use Auto Overwrite"),
         )
         title_label.grid(column=0, row=0, sticky="w")
 
-        steps = (
+        steps_ko = (
             "1. '원본 세이브파일 열기' 버튼을 눌러 기준이 되는 세이브파일을 선택하세요.",
             "2. '덮어쓰기할 세이브파일 열기' 버튼을 눌러 실제 게임 세이브파일을 선택하세요.",
             "3. '세이브파일 자동 덮어쓰기'를 체크하면 경로가 저장되고, 프로그램 실행 시 원본 세이브파일이 자동으로 덮어쓰기 경로에 복사됩니다.",
         )
+        steps_en = (
+            "1. Click 'Select Source Save File' to choose the reference save file.",
+            "2. Click 'Select Target Save File' to choose the in-game save to overwrite.",
+            "3. Check 'Overwrite Automatically' to save the paths and copy the source file automatically on startup.",
+        )
+        steps = steps_en if self._english_ui_enabled else steps_ko
         body_label = ttk.Label(
             container,
             text="\n\n".join(steps),
@@ -1765,7 +2247,11 @@ class IsaacSaveEditor(tk.Tk):
         )
         body_label.grid(column=0, row=1, sticky="w", pady=(12, 18))
 
-        close_button = ttk.Button(container, text="확인", command=help_window.destroy)
+        close_button = ttk.Button(
+            container,
+            command=help_window.destroy,
+            text=self._text("확인", "OK"),
+        )
         close_button.grid(column=0, row=2, sticky="e")
         close_button.focus_set()
 
@@ -1803,28 +2289,47 @@ class IsaacSaveEditor(tk.Tk):
         if not source or not target:
             if show_message:
                 messagebox.showwarning(
-                    "경로 없음",
-                    "원본과 덮어쓸 세이브파일을 모두 선택해주세요.",
+                    self._text("경로 없음", "Missing Paths"),
+                    self._text(
+                        "원본과 덮어쓸 세이브파일을 모두 선택해주세요.",
+                        "Please select both the source and target save files.",
+                    ),
                 )
             return
         if not os.path.exists(source):
-            messagebox.showerror("덮어쓰기 실패", "원본 세이브파일을 찾을 수 없습니다.")
+            messagebox.showerror(
+                self._text("덮어쓰기 실패", "Overwrite Failed"),
+                self._text("원본 세이브파일을 찾을 수 없습니다.", "The source save file could not be found."),
+            )
             return
         target_dir = os.path.dirname(target)
         if target_dir and not os.path.exists(target_dir):
-            messagebox.showerror("덮어쓰기 실패", "덮어쓸 세이브파일 경로를 찾을 수 없습니다.")
+            messagebox.showerror(
+                self._text("덮어쓰기 실패", "Overwrite Failed"),
+                self._text(
+                    "덮어쓸 세이브파일 경로를 찾을 수 없습니다.",
+                    "The target save path could not be found.",
+                ),
+            )
             return
         try:
             shutil.copyfile(source, target)
         except OSError as exc:
-            messagebox.showerror("덮어쓰기 실패", f"세이브파일을 덮어쓰지 못했습니다.\n{exc}")
+            messagebox.showerror(
+                self._text("덮어쓰기 실패", "Overwrite Failed"),
+                self._text("세이브파일을 덮어쓰지 못했습니다.", "Could not overwrite the save file.")
+                + f"\n{exc}",
+            )
             return
         if show_message:
-            messagebox.showinfo("덮어쓰기 완료", "원본 세이브파일을 덮어썼습니다.")
+            messagebox.showinfo(
+                self._text("덮어쓰기 완료", "Overwrite Complete"),
+                self._text("원본 세이브파일을 덮어썼습니다.", "The source save file has been copied."),
+            )
 
     def open_save_file(self) -> None:
         filename = filedialog.askopenfilename(
-            title="아이작 세이브파일 선택",
+            title=self._text("아이작 세이브파일 선택", "Select Isaac Save File"),
             initialdir=self._get_initial_directory(),
             filetypes=(("dat files", "*.dat"), ("all files", "*.*")),
         )
@@ -1855,13 +2360,17 @@ class IsaacSaveEditor(tk.Tk):
                 data = file.read()
         except OSError as exc:
             if show_errors:
-                messagebox.showerror("파일 오류", f"세이브 파일을 열 수 없습니다.\n{exc}")
+                messagebox.showerror(
+                    self._text("파일 오류", "File Error"),
+                    self._text("세이브 파일을 열 수 없습니다.", "Unable to open the save file.")
+                    + f"\n{exc}",
+                )
             return False
 
         self.data = data
         self.filename = normalized
         basename = os.path.basename(normalized)
-        self.loaded_file_var.set(f"불러온 파일 (Loaded File): {basename}")
+        self._update_loaded_file_display()
         self.settings["last_path"] = normalized
         self._save_settings()
         self.refresh_current_values()
@@ -1882,15 +2391,21 @@ class IsaacSaveEditor(tk.Tk):
             return
         if not os.path.exists(last_path_setting):
             messagebox.showwarning(
-                "자동 열기 실패",
-                "저장된 세이브 파일 경로를 찾을 수 없습니다. 새로 선택해주세요.",
+                self._text("자동 열기 실패", "Auto Open Failed"),
+                self._text(
+                    "저장된 세이브 파일 경로를 찾을 수 없습니다. 새로 선택해주세요.",
+                    "The stored save file path could not be found. Please choose a new file.",
+                ),
             )
             self.loaded_file_var.set(self._default_loaded_text)
             return
         if not self._load_file(last_path_setting, show_errors=False):
             messagebox.showwarning(
-                "자동 열기 실패",
-                "저장된 세이브 파일을 불러오지 못했습니다. 파일이 사용 중인지 확인해주세요.",
+                self._text("자동 열기 실패", "Auto Open Failed"),
+                self._text(
+                    "저장된 세이브 파일을 불러오지 못했습니다. 파일이 사용 중인지 확인해주세요.",
+                    "Could not open the stored save file. Please ensure it is not in use.",
+                ),
             )
             self.loaded_file_var.set(self._default_loaded_text)
 
@@ -1924,6 +2439,9 @@ class IsaacSaveEditor(tk.Tk):
             target_path = loaded.get("target_save_path")
             if isinstance(target_path, str):
                 settings["target_save_path"] = target_path
+            english_ui = loaded.get("english_ui")
+            if isinstance(english_ui, bool):
+                settings["english_ui"] = english_ui
         return settings
 
     def _save_settings(self) -> None:
@@ -1938,6 +2456,7 @@ class IsaacSaveEditor(tk.Tk):
         settings_to_save["auto_overwrite"] = bool(auto_overwrite_var.get()) if auto_overwrite_var else False
         settings_to_save["source_save_path"] = self.source_save_path
         settings_to_save["target_save_path"] = self.target_save_path
+        settings_to_save["english_ui"] = bool(self._english_ui_var.get())
         self.settings = settings_to_save
         try:
             with self.settings_path.open("w", encoding="utf-8") as file:
@@ -1968,20 +2487,31 @@ class IsaacSaveEditor(tk.Tk):
             return False
 
         if self.data is None or not self.filename:
-            messagebox.showwarning("파일 없음", "먼저 세이브 파일을 열어주세요.")
+            messagebox.showwarning(
+                self._text("파일 없음", "No File"),
+                self._text("먼저 세이브 파일을 열어주세요.", "Please open a save file first."),
+            )
             return False
 
         vars_map = self._numeric_vars[key]
         entry_var = vars_map["entry"]
         config = self._numeric_config[key]
+        description_value = config.get("description")
+        if isinstance(description_value, tuple):
+            description_ko, description_en = description_value
+        else:
+            description_ko = description_en = str(description_value)
 
         raw_value = preset if preset is not None else entry_var.get()
         try:
             new_value = int(raw_value)
         except (TypeError, ValueError):
             messagebox.showerror(
-                "유효하지 않은 값",
-                f"{config['description']}에 사용할 정수를 입력해주세요.",
+                self._text("유효하지 않은 값", "Invalid Value"),
+                self._text(
+                    f"{description_ko}에 사용할 정수를 입력해주세요.",
+                    f"Please enter a valid integer for {description_en}.",
+                ),
             )
             return False
 
@@ -1992,8 +2522,12 @@ class IsaacSaveEditor(tk.Tk):
             updated_with_checksum = script.updateChecksum(updated)
         except Exception as exc:  # pragma: no cover - defensive UI feedback
             messagebox.showerror(
-                "업데이트 실패",
-                f"{config['description']} 값을 수정하지 못했습니다.\n{exc}",
+                self._text("업데이트 실패", "Update Failed"),
+                self._text(
+                    f"{description_ko} 값을 수정하지 못했습니다.",
+                    f"Could not update the {description_en} value.",
+                )
+                + f"\n{exc}",
             )
             return False
 
@@ -2002,7 +2536,11 @@ class IsaacSaveEditor(tk.Tk):
             with open(self.filename, "wb") as file:
                 file.write(self.data)
         except OSError as exc:
-            messagebox.showerror("저장 실패", f"세이브 파일을 저장하지 못했습니다.\n{exc}")
+            messagebox.showerror(
+                self._text("저장 실패", "Save Failed"),
+                self._text("세이브 파일을 저장하지 못했습니다.", "Could not save the file.")
+                + f"\n{exc}",
+            )
             return False
 
         self.refresh_current_values(update_entry=not preserve_entry)
@@ -2011,7 +2549,10 @@ class IsaacSaveEditor(tk.Tk):
     def set_donation_greed_eden_to_max(self, *, auto_trigger: bool = False) -> None:
         if self.data is None or not self.filename:
             if not auto_trigger:
-                messagebox.showwarning("파일 없음", "먼저 세이브 파일을 열어주세요.")
+                messagebox.showwarning(
+                    self._text("파일 없음", "No File"),
+                    self._text("먼저 세이브 파일을 열어주세요.", "Please open a save file first."),
+                )
             return
         original_streak = self._read_numeric_value("streak")
 
@@ -2047,7 +2588,11 @@ class IsaacSaveEditor(tk.Tk):
             section_offsets = script.getSectionOffsets(self.data)
             base_offset = section_offsets[1] + 0x4
         except Exception as exc:  # pragma: no cover - defensive UI feedback
-            messagebox.showerror("읽기 실패", f"값을 불러오지 못했습니다.\n{exc}")
+            messagebox.showerror(
+                self._text("읽기 실패", "Read Failed"),
+                self._text("값을 불러오지 못했습니다.", "Could not read the requested values.")
+                + f"\n{exc}",
+            )
             return
 
         for key in self._numeric_order:
