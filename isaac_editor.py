@@ -1777,6 +1777,22 @@ class IsaacSaveEditor(tk.Tk):
         except OSError:
             pass
 
+    def _read_numeric_value(self, key: str) -> Optional[int]:
+        if self.data is None:
+            return None
+        config = self._numeric_config.get(key)
+        if config is None:
+            return None
+        try:
+            section_offsets = script.getSectionOffsets(self.data)
+        except Exception:
+            return None
+        try:
+            base_offset = section_offsets[1] + 0x4 + int(config["offset"])
+            return int(script.getInt(self.data, base_offset))
+        except Exception:
+            return None
+
     def apply_field(self, key: str, preset: int | None = None) -> bool:
         if key not in self._numeric_config:
             return False
@@ -1827,9 +1843,18 @@ class IsaacSaveEditor(tk.Tk):
             if not auto_trigger:
                 messagebox.showwarning("파일 없음", "먼저 세이브 파일을 열어주세요.")
             return
-        self.apply_field("donation", preset=999)
-        self.apply_field("greed", preset=999)
-        self.apply_field("eden", preset=999)
+        original_streak = self._read_numeric_value("streak")
+
+        for field_key in ("donation", "greed", "eden"):
+            if not self.apply_field(field_key, preset=999):
+                break
+
+        if original_streak is None:
+            return
+
+        current_streak = self._read_numeric_value("streak")
+        if current_streak is not None and current_streak != original_streak:
+            self.apply_field("streak", preset=original_streak)
 
     def refresh_current_values(self) -> None:
         if self.data is None:
