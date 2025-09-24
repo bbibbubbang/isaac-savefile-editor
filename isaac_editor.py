@@ -118,8 +118,6 @@ class IsaacSaveEditor(tk.Tk):
         korean = korean or english
         if self._english_ui_enabled:
             return english or ""
-        if english and korean and korean != english:
-            return f"{korean} ({english})"
         return korean or english or ""
 
     def _register_language_binding(self, callback: Callable[[], None]) -> None:
