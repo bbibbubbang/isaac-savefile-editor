@@ -1835,7 +1835,7 @@ class IsaacSaveEditor(tk.Tk):
             messagebox.showerror("저장 실패", f"세이브 파일을 저장하지 못했습니다.\n{exc}")
             return False
 
-        self.refresh_current_values()
+        self.refresh_current_values(refresh_trees=False)
         return True
 
     def set_donation_greed_eden_to_max(self, *, auto_trigger: bool = False) -> None:
@@ -1856,16 +1856,17 @@ class IsaacSaveEditor(tk.Tk):
         if current_streak is not None and current_streak != original_streak:
             self.apply_field("streak", preset=original_streak)
 
-    def refresh_current_values(self) -> None:
+    def refresh_current_values(self, *, refresh_trees: bool = True) -> None:
         if self.data is None:
             for key in self._numeric_order:
                 vars_map = self._numeric_vars[key]
                 vars_map["current"].set("0")
                 vars_map["entry"].set("0")
-            self._refresh_completion_tab()
-            self._refresh_secrets_tab()
-            self._refresh_items_tab()
-            self._refresh_challenges_tab()
+            if refresh_trees:
+                self._refresh_completion_tab()
+                self._refresh_secrets_tab()
+                self._refresh_items_tab()
+                self._refresh_challenges_tab()
             return
 
         try:
@@ -1886,10 +1887,11 @@ class IsaacSaveEditor(tk.Tk):
             vars_map["current"].set(value_str)
             vars_map["entry"].set(value_str)
 
-        self._refresh_completion_tab()
-        self._refresh_secrets_tab()
-        self._refresh_items_tab()
-        self._refresh_challenges_tab()
+        if refresh_trees:
+            self._refresh_completion_tab()
+            self._refresh_secrets_tab()
+            self._refresh_items_tab()
+            self._refresh_challenges_tab()
 
 def main() -> None:
     app = IsaacSaveEditor()
