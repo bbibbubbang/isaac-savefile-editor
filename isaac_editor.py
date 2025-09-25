@@ -75,7 +75,7 @@ class SecretIcon:
 class IconCheckboxTreeview(CheckboxTreeview):
     """Checkbox treeview that can display custom icons alongside checkboxes."""
 
-    _ICON_SPACING = 4
+    _ICON_SPACING = 32
     _STYLE_NAME = "IconCheckboxTreeview.Treeview"
     _ROW_PADDING = 6
 
