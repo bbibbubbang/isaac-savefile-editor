@@ -1,13 +1,12 @@
 # Isaac Savefile Editor
 
 ## 소개
-Isaac Savefile Editor는 The Binding of Isaac: Repentance+ 세이브 데이터를 읽고 수정할 수 있는 오픈 소스 도구입니다. Tkinter 기반 GUI와 파이썬 스크립트를 함께 제공하여 마우스로 간편하게 항목을 변경하거나 자동화 스크립트를 작성할 수 있습니다.
+Isaac Savefile Editor는 The Binding of Isaac: Repentance+ 세이브 데이터를 읽고 수정할 수 있는 오픈 소스 도구입니다.
 
 ## 설치 및 실행
-1. **세이브 파일 백업**: `rep+_persistentgamedata*.dat` 파일을 안전한 위치에 복사합니다.
+1. **세이브 파일 백업**: `rep+_persistentgamedata{1|2|3}.dat` 파일을 안전한 위치에 복사합니다.
 2. **세이브 파일 찾기**
    - Steam: `{steam}\Steam\userdata\{스팀아이디}\250900\remote\rep_persistentgamedata{1|2|3}.dat`
-   - Windows (비 Steam): `%USERPROFILE%\Documents\My Games\Binding of Isaac Repentance\persistentgamedata{1|2|3}.dat`
 
 ## 사용법
 - **숫자 입력 항목**: 기부 머신,에덴 토큰,연승 횟수 등을 입력한 뒤 <kbd>적용</kbd>을 누르면 즉시 저장됩니다.
