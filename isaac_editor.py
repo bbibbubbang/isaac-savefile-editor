@@ -54,6 +54,90 @@ UNLOCKED_SECRET_TAG = "secret_unlocked_highlight"
 LOCKED_SECRET_BACKGROUND = LOCKED_ITEM_BACKGROUND
 UNLOCKED_SECRET_BACKGROUND = UNLOCKED_ITEM_BACKGROUND
 
+
+def _strip_focus_elements(layout: list[tuple[str, dict]]) -> list[tuple[str, dict]]:
+    """Recursively remove ttk focus elements from a layout definition."""
+
+    cleaned: list[tuple[str, dict]] = []
+    for element, options in layout:
+        if "focus" in element.lower():
+            continue
+        new_options = dict(options)
+        children = new_options.get("children")
+        if isinstance(children, (list, tuple)):
+            new_options["children"] = _strip_focus_elements(list(children))
+        cleaned.append((element, new_options))
+    return cleaned
+
+
+def _remove_focus_highlight(widget: tk.Misc) -> None:
+    """Recursively disable Tk highlight borders and focus traversal."""
+
+    for option, value in ("highlightthickness", 0), ("takefocus", 0):
+        try:
+            widget.configure(**{option: value})
+        except tk.TclError:
+            pass
+    try:
+        background = widget.cget("background")
+    except tk.TclError:
+        background = ""
+    if background:
+        for option in ("highlightbackground", "highlightcolor"):
+            try:
+                widget.configure(**{option: background})
+            except tk.TclError:
+                pass
+    for child in widget.winfo_children():
+        _remove_focus_highlight(child)
+
+
+def _suppress_focus_indicators(root: tk.Misc) -> None:
+    """Remove dotted focus outlines from common ttk widget styles."""
+
+    try:
+        default_bg = root.cget("background")
+    except tk.TclError:
+        default_bg = ""
+    for option in (
+        "*highlightthickness",
+        "*FocusHighlightThickness",
+    ):
+        root.option_add(option, 0)
+    if default_bg:
+        for option in ("*highlightbackground", "*highlightcolor"):
+            root.option_add(option, default_bg)
+
+    style = ttk.Style(root)
+    focus_free_styles = [
+        "TNotebook",
+        "TNotebook.Tab",
+        "TButton",
+        "Toolbutton",
+        "TCheckbutton",
+        "TRadiobutton",
+        "TMenubutton",
+        "TCombobox",
+        "TEntry",
+        "Horizontal.TScrollbar",
+        "Vertical.TScrollbar",
+        "Treeview",
+        "Treeview.Item",
+        "IconCheckboxTreeview.Treeview.Icon",
+        "IconCheckboxTreeview.Treeview.Compact",
+    ]
+    for style_name in focus_free_styles:
+        try:
+            layout = style.layout(style_name)
+        except tk.TclError:
+            continue
+        if not layout:
+            continue
+        try:
+            style.layout(style_name, _strip_focus_elements(list(layout)))
+        except tk.TclError:
+            continue
+
 TOTAL_COMPLETION_MARKS = 12
 
 DEFAULT_COMPLETION_UNLOCK_MASK = getattr(script, "COMPLETION_DEFAULT_UNLOCK_MASK", 0x03)
@@ -667,6 +751,8 @@ class IsaacSaveEditor(tk.Tk):
         super().__init__()
         self.title("Isaac Savefile Editor")
 
+        _suppress_focus_indicators(self)
+
         self.filename: str = ""
         self.data: bytes | None = None
 
@@ -783,6 +869,8 @@ class IsaacSaveEditor(tk.Tk):
         self._build_secret_challenge_links()
 
         self._build_layout()
+        _suppress_focus_indicators(self)
+        _remove_focus_highlight(self)
         self.refresh_current_values()
         self._set_initial_window_size()
         self.after(0, self._perform_startup_tasks)
