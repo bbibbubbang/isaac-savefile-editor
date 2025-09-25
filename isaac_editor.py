@@ -75,22 +75,55 @@ class SecretIcon:
 class IconCheckboxTreeview(CheckboxTreeview):
     """Checkbox treeview that can display custom icons alongside checkboxes."""
 
-    _ICON_SPACING = 32
-    _STYLE_NAME = "IconCheckboxTreeview.Treeview"
-    _ROW_PADDING = 6
+    _ICON_SPACING = 6
+    _STYLE_BASE = "IconCheckboxTreeview.Treeview"
+    _STYLE_ICON = f"{_STYLE_BASE}.Icon"
+    _STYLE_COMPACT = f"{_STYLE_BASE}.Compact"
+    _ICON_ROW_PADDING = 2
+    _COMPACT_ROW_PADDING = 0
+    _ICON_PLACEHOLDER_SIZE = (MAX_ICON_HEIGHT, MAX_ICON_HEIGHT)
+    _CONFIGURED_STYLES: Set[str] = set()
 
-    def __init__(self, master: Optional[tk.Widget] = None, **kw):
+    def __init__(
+        self,
+        master: Optional[tk.Widget] = None,
+        *,
+        icon_mode: bool = False,
+        **kw,
+    ) -> None:
+        self._icon_mode = icon_mode
+        if icon_mode:
+            self._icon_placeholder_size = tuple(self._ICON_PLACEHOLDER_SIZE)
+        else:
+            self._icon_placeholder_size = (0, 0)
+        self._placeholder_images: Dict[str, ImageTk.PhotoImage] = {}
         super().__init__(master, **kw)
         style = ttk.Style(master)
-        row_height = max(img.height for img in _CHECKBOX_BASE_IMAGES.values())
-        row_height = max(row_height, MAX_ICON_HEIGHT) + self._ROW_PADDING
-        style.configure(self._STYLE_NAME, rowheight=row_height)
-        self.configure(style=self._STYLE_NAME)
+        checkbox_height = max(img.height for img in _CHECKBOX_BASE_IMAGES.values())
+        if icon_mode:
+            placeholder_height = max(self._icon_placeholder_size[1], checkbox_height)
+            row_height = placeholder_height + self._ICON_ROW_PADDING
+            style_name = self._STYLE_ICON
+        else:
+            row_height = checkbox_height + self._COMPACT_ROW_PADDING
+            style_name = self._STYLE_COMPACT
+        if style_name not in self._CONFIGURED_STYLES:
+            style.configure(style_name, rowheight=row_height)
+            self._CONFIGURED_STYLES.add(style_name)
+        self.configure(style=style_name)
         self._item_icons: Dict[str, Image.Image] = {}
         self._composite_images: Dict[str, Dict[str, ImageTk.PhotoImage]] = {}
 
     def set_item_icon(self, item_id: str, icon: SecretIcon) -> None:
         self._item_icons[item_id] = icon.pil_image
+        if self._icon_mode:
+            placeholder_width, placeholder_height = self._icon_placeholder_size
+            new_width = max(placeholder_width, icon.pil_image.width)
+            new_height = max(placeholder_height, icon.pil_image.height)
+            if (new_width, new_height) != self._icon_placeholder_size:
+                self._icon_placeholder_size = (new_width, new_height)
+                self._placeholder_images.clear()
+                self._refresh_placeholder_items()
         self._composite_images.pop(item_id, None)
         self._apply_item_image(item_id)
 
@@ -112,8 +145,10 @@ class IconCheckboxTreeview(CheckboxTreeview):
 
     def _get_state_image(self, item_id: str, state: str) -> ImageTk.PhotoImage:
         icon_image = self._item_icons.get(item_id)
-        if icon_image is None:
+        if icon_image is None and not self._icon_mode:
             return getattr(self, f"im_{state}")
+        if icon_image is None:
+            return self._get_placeholder_state_image(state)
         composites = self._composite_images.setdefault(item_id, {})
         existing = composites.get(state)
         if existing is not None:
@@ -124,16 +159,50 @@ class IconCheckboxTreeview(CheckboxTreeview):
         composites[state] = photo
         return photo
 
-    def _compose_images(self, checkbox: Image.Image, icon: Image.Image) -> Image.Image:
-        spacing = self._ICON_SPACING if icon.width > 0 else 0
-        width = checkbox.width + spacing + icon.width
-        height = max(checkbox.height, icon.height)
+    def _get_placeholder_state_image(self, state: str) -> ImageTk.PhotoImage:
+        existing = self._placeholder_images.get(state)
+        if existing is not None:
+            return existing
+        base = _CHECKBOX_BASE_IMAGES[state]
+        composite = self._compose_images(base, None)
+        photo = ImageTk.PhotoImage(composite, master=self)
+        self._placeholder_images[state] = photo
+        return photo
+
+    def _compose_images(self, checkbox: Image.Image, icon: Optional[Image.Image]) -> Image.Image:
+        placeholder_width, placeholder_height = self._icon_placeholder_size
+        icon_width = icon.width if icon is not None else 0
+        icon_height = icon.height if icon is not None else 0
+        if self._icon_mode:
+            icon_area_width = max(icon_width, placeholder_width)
+            icon_area_height = max(icon_height, placeholder_height)
+            spacing = self._ICON_SPACING if icon_area_width > 0 else 0
+        else:
+            icon_area_width = icon_width
+            icon_area_height = icon_height
+            spacing = self._ICON_SPACING if icon_area_width > 0 else 0
+        width = checkbox.width + spacing + icon_area_width
+        height = max(checkbox.height, icon_area_height)
         result = Image.new("RGBA", (width, height), (255, 255, 255, 0))
         checkbox_y = (height - checkbox.height) // 2
-        icon_y = (height - icon.height) // 2
         result.paste(checkbox, (0, checkbox_y), checkbox)
-        result.paste(icon, (checkbox.width + spacing, icon_y), icon)
+        if icon is not None:
+            icon_x = checkbox.width + spacing + (icon_area_width - icon_width) // 2
+            icon_y = (height - icon_height) // 2
+            result.paste(icon, (icon_x, icon_y), icon)
         return result
+
+    def _refresh_placeholder_items(self) -> None:
+        if not self._icon_mode:
+            return
+        for item_id in self.get_children(""):
+            self._refresh_placeholder_item_recursive(item_id)
+
+    def _refresh_placeholder_item_recursive(self, item_id: str) -> None:
+        if item_id not in self._item_icons:
+            self._apply_item_image(item_id)
+        for child in self.get_children(item_id):
+            self._refresh_placeholder_item_recursive(child)
 
 
 class TreeManager:
@@ -956,7 +1025,8 @@ class IsaacSaveEditor(tk.Tk):
             columns = ("unlock", "quality")
         else:
             columns = ("unlock",)
-        tree = self._create_tree(tree_container, columns)
+        icon_mode = secret_type in {"Item.Passive", "Item.Active", "Trinket"}
+        tree = self._create_tree(tree_container, columns, icon_mode=icon_mode)
         tree.column("#0", anchor="w", width=360, stretch=True)
         tree.column("unlock", anchor="center", width=140, stretch=False)
         if include_quality:
@@ -1067,7 +1137,8 @@ class IsaacSaveEditor(tk.Tk):
         tree_container.grid(column=0, row=1, sticky="nsew", pady=(12, 0))
         tree_container.columnconfigure(0, weight=1)
         tree_container.rowconfigure(0, weight=1)
-        tree = self._create_tree(tree_container, ("unlock", "quality"))
+        icon_mode = item_type in {"Passive", "Active"}
+        tree = self._create_tree(tree_container, ("unlock", "quality"), icon_mode=icon_mode)
         tree.column("#0", anchor="w", width=360, stretch=True)
         tree.column("unlock", anchor="center", width=140, stretch=False)
         tree.column("quality", anchor="center", width=120, stretch=False)
@@ -1217,8 +1288,20 @@ class IsaacSaveEditor(tk.Tk):
         tree.configure(xscrollcommand=xscroll.set)
         return tree
 
-    def _create_tree(self, container: ttk.Frame, columns: tuple[str, ...]) -> IconCheckboxTreeview:
-        tree = IconCheckboxTreeview(container, columns=columns, show="tree headings", selectmode="none")
+    def _create_tree(
+        self,
+        container: ttk.Frame,
+        columns: tuple[str, ...],
+        *,
+        icon_mode: bool = False,
+    ) -> IconCheckboxTreeview:
+        tree = IconCheckboxTreeview(
+            container,
+            columns=columns,
+            show="tree headings",
+            selectmode="none",
+            icon_mode=icon_mode,
+        )
         tree.grid(column=0, row=0, sticky="nsew")
         yscroll = ttk.Scrollbar(container, orient="vertical", command=tree.yview)
         yscroll.grid(column=1, row=0, sticky="ns")
