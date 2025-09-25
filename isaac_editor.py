@@ -46,9 +46,13 @@ DEFAULT_SETTINGS: Dict[str, object] = {
 }
 
 LOCKED_ITEM_TAG = "locked_highlight"
-LOCKED_ITEM_BACKGROUND = "#fce8e6"
+LOCKED_ITEM_BACKGROUND = "#f8d7da"
+UNLOCKED_ITEM_TAG = "unlocked_highlight"
+UNLOCKED_ITEM_BACKGROUND = "#e6f4ea"
 LOCKED_SECRET_TAG = "secret_locked_highlight"
+UNLOCKED_SECRET_TAG = "secret_unlocked_highlight"
 LOCKED_SECRET_BACKGROUND = LOCKED_ITEM_BACKGROUND
+UNLOCKED_SECRET_BACKGROUND = UNLOCKED_ITEM_BACKGROUND
 
 TOTAL_COMPLETION_MARKS = 12
 
@@ -1258,8 +1262,8 @@ class IsaacSaveEditor(tk.Tk):
         highlight_check.grid(column=len(buttons), row=0, sticky="e", padx=(12, 0))
         self._register_text(
             highlight_check,
-            "해금되지 않은 것 붉게 표시",
-            "Highlight Locked Secrets in Red",
+            "해금 강조",
+            "Highlight Unlock Status",
         )
 
         include_quality = secret_type.startswith("Item.")
@@ -1396,8 +1400,8 @@ class IsaacSaveEditor(tk.Tk):
         highlight_check.grid(column=len(buttons), row=0, sticky="e", padx=(12, 0))
         self._register_text(
             highlight_check,
-            "미해금된 아이템 붉게 표시하기",
-            "Highlight Locked Items in Red",
+            "해금 강조",
+            "Highlight Unlock Status",
         )
 
         tree_container = ttk.Frame(container)
@@ -2310,16 +2314,23 @@ class IsaacSaveEditor(tk.Tk):
         if enabled is None:
             enabled = bool(self._highlight_locked_secrets_var.get())
         tags = set(tree.item(secret_id, "tags"))
-        if enabled and not unlocked:
-            tags.add(LOCKED_SECRET_TAG)
+        if enabled:
+            if unlocked:
+                tags.discard(LOCKED_SECRET_TAG)
+                tags.add(UNLOCKED_SECRET_TAG)
+            else:
+                tags.discard(UNLOCKED_SECRET_TAG)
+                tags.add(LOCKED_SECRET_TAG)
         else:
             tags.discard(LOCKED_SECRET_TAG)
+            tags.discard(UNLOCKED_SECRET_TAG)
         tree.item(secret_id, tags=tuple(tags))
 
     def _update_secret_highlighting(self) -> None:
         enabled = bool(self._highlight_locked_secrets_var.get())
         for secret_type, tree in self._secret_trees.items():
             tree.tag_configure(LOCKED_SECRET_TAG, background=LOCKED_SECRET_BACKGROUND)
+            tree.tag_configure(UNLOCKED_SECRET_TAG, background=UNLOCKED_SECRET_BACKGROUND)
             manager = self._secret_managers.get(secret_type)
             if manager is None:
                 continue
@@ -2348,16 +2359,23 @@ class IsaacSaveEditor(tk.Tk):
         if enabled is None:
             enabled = bool(self._highlight_locked_items_var.get())
         tags = set(tree.item(item_id, "tags"))
-        if enabled and not unlocked:
-            tags.add(LOCKED_ITEM_TAG)
+        if enabled:
+            if unlocked:
+                tags.discard(LOCKED_ITEM_TAG)
+                tags.add(UNLOCKED_ITEM_TAG)
+            else:
+                tags.discard(UNLOCKED_ITEM_TAG)
+                tags.add(LOCKED_ITEM_TAG)
         else:
             tags.discard(LOCKED_ITEM_TAG)
+            tags.discard(UNLOCKED_ITEM_TAG)
         tree.item(item_id, tags=tuple(tags))
 
     def _update_item_highlighting(self) -> None:
         enabled = bool(self._highlight_locked_items_var.get())
         for item_type, tree in self._item_trees.items():
             tree.tag_configure(LOCKED_ITEM_TAG, background=LOCKED_ITEM_BACKGROUND)
+            tree.tag_configure(UNLOCKED_ITEM_TAG, background=UNLOCKED_ITEM_BACKGROUND)
             manager = self._item_managers.get(item_type)
             if manager is None:
                 continue
