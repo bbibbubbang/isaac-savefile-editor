@@ -112,6 +112,9 @@ class IconCheckboxTreeview(CheckboxTreeview):
             row_height = checkbox_height + self._COMPACT_ROW_PADDING
             style_name = self._STYLE_COMPACT
         if style_name not in self._CONFIGURED_STYLES:
+            base_layout = style.layout("Treeview")
+            if base_layout:
+                style.layout(style_name, base_layout)
             style.configure(style_name, rowheight=row_height)
             self._CONFIGURED_STYLES.add(style_name)
         self.configure(style=style_name)
