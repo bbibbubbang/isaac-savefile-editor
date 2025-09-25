@@ -29,6 +29,7 @@ import script
 
 DATA_DIR = Path(__file__).resolve().parent
 SETTINGS_PATH = DATA_DIR / "settings.json"
+LANGUAGE_DIR = DATA_DIR / "language"
 DEFAULT_SETTINGS: Dict[str, object] = {
     "remember_path": False,
     "last_path": "",
@@ -37,7 +38,12 @@ DEFAULT_SETTINGS: Dict[str, object] = {
     "source_save_path": "",
     "target_save_path": "",
     "english_ui": False,
+    "language": "ko_kr",
+    "highlight_locked_items": False,
 }
+
+LOCKED_ITEM_TAG = "locked_highlight"
+LOCKED_ITEM_BACKGROUND = "#fce8e6"
 
 TOTAL_COMPLETION_MARKS = 12
 
@@ -283,9 +289,9 @@ class IsaacSaveEditor(tk.Tk):
     def _text(self, korean: str, english: str | None = None) -> str:
         english = english or korean
         korean = korean or english
-        if self._english_ui_enabled:
-            return english or ""
-        return korean or english or ""
+        if getattr(self, "_language_code", "ko_kr") == "ko_kr":
+            return korean or english or ""
+        return english or korean or ""
 
     def _register_language_binding(self, callback: Callable[[], None]) -> None:
         self._language_bindings.append(callback)
@@ -349,8 +355,7 @@ class IsaacSaveEditor(tk.Tk):
         tree: IconCheckboxTreeview,
         item_id: str,
         category: str,
-        korean: str,
-        english: str,
+        translations: Dict[str, str] | None,
         *,
         is_secret: bool = True,
     ) -> Callable[[], None]:
@@ -362,25 +367,134 @@ class IsaacSaveEditor(tk.Tk):
                 english_first = self._item_alphabetical.get(category, False)
             tree.item(
                 item_id,
-                text=self._format_display_name(korean, english, english_first=english_first),
+                text=self._format_display_name(translations or {}, english_first=english_first),
             )
 
         return updater
 
     def _format_display_name(
         self,
-        korean: str,
-        english: str,
+        korean_or_translations: object,
+        english: str | None = None,
         *,
         english_first: bool = False,
     ) -> str:
-        if self._english_ui_enabled:
-            return english or korean or ""
-        primary = english if english_first else korean
-        secondary = korean if english_first else english
-        if primary and secondary and primary != secondary:
-            return f"{primary} ({secondary})"
-        return primary or secondary or ""
+        language_code = getattr(self, "_language_code", "ko_kr")
+        translations: Dict[str, str]
+        if isinstance(korean_or_translations, dict):
+            translations = {
+                str(key): str(value)
+                for key, value in korean_or_translations.items()
+                if value is not None and str(value).strip()
+            }
+            korean_text = translations.get("ko_kr") or translations.get("korean") or ""
+            english_text = (
+                translations.get("en_us")
+                or translations.get("english")
+                or english
+                or ""
+            )
+        else:
+            korean_text = str(korean_or_translations or "")
+            english_text = str(english or "")
+            translations = {
+                "ko_kr": korean_text,
+                "korean": korean_text,
+                "en_us": english_text,
+                "english": english_text,
+            }
+
+        primary_text = translations.get(language_code, "").strip()
+        if not primary_text:
+            if language_code == "ko_kr":
+                primary_text = korean_text or english_text
+            elif language_code == "en_us":
+                primary_text = english_text or korean_text
+            else:
+                primary_text = translations.get(language_code.split("_", 1)[0], "").strip()
+        if not primary_text:
+            primary_text = english_text or korean_text
+
+        secondary_text = ""
+        if english_first:
+            primary = english_text or primary_text
+            secondary_text = primary_text if primary != primary_text else ""
+        else:
+            primary = primary_text
+            comparison = english_text
+            if language_code == "ko_kr":
+                comparison = english_text
+            elif language_code != "en_us":
+                comparison = english_text or korean_text
+            if comparison and comparison != primary:
+                secondary_text = comparison
+
+        if primary and secondary_text:
+            return f"{primary} ({secondary_text})"
+        return primary or secondary_text or english_text or korean_text or ""
+
+    def _load_available_languages(self) -> Dict[str, Dict[str, str]]:
+        languages: Dict[str, Dict[str, str]] = {}
+        if LANGUAGE_DIR.is_dir():
+            code_pattern = re.compile(r"local\s+languageCode\s*=\s*\"([^\"]+)\"")
+            name_pattern = re.compile(r"languageName\s*=\s*\"([^\"]+)\"")
+            for path in sorted(LANGUAGE_DIR.glob("*.lua")):
+                try:
+                    text = path.read_text(encoding="utf-8")
+                except OSError:
+                    continue
+                code_match = code_pattern.search(text)
+                if not code_match:
+                    continue
+                code = code_match.group(1).strip()
+                if not code or code in languages:
+                    continue
+                name_match = name_pattern.search(text)
+                display_name = name_match.group(1).strip() if name_match else code
+                languages[code] = {"code": code, "name": display_name}
+        languages.setdefault("en_us", {"code": "en_us", "name": "English"})
+        languages.setdefault("ko_kr", {"code": "ko_kr", "name": "Korean"})
+        return languages
+
+    def _determine_initial_language(self) -> str:
+        requested = str(self.settings.get("language") or "").strip()
+        if requested in self._available_languages:
+            return requested
+        requested_lower = requested.lower()
+        if requested_lower in self._available_languages:
+            return requested_lower
+        if bool(self.settings.get("english_ui", False)) and "en_us" in self._available_languages:
+            return "en_us"
+        if "ko_kr" in self._available_languages:
+            return "ko_kr"
+        if self._available_languages:
+            return next(iter(sorted(self._available_languages)))
+        return "en_us"
+
+    def _prepare_language_options(
+        self,
+    ) -> tuple[List[str], Dict[str, str], Dict[str, str]]:
+        options: List[str] = []
+        display_by_code: Dict[str, str] = {}
+        code_by_display: Dict[str, str] = {}
+        for code in sorted(self._available_languages):
+            info = self._available_languages[code]
+            base_name = str(info.get("name", code)) or code
+            display = self._format_language_display(code, base_name)
+            if display in code_by_display:
+                display = f"{display} ({code})"
+            options.append(display)
+            display_by_code[code] = display
+            code_by_display[display] = code
+        return options, display_by_code, code_by_display
+
+    @staticmethod
+    def _format_language_display(code: str, base_name: str) -> str:
+        special_names = {
+            "ko_kr": "한국어",
+            "en_us": "English",
+        }
+        return special_names.get(code.lower(), base_name or code)
 
     def _update_default_loaded_text(self) -> None:
         self._default_loaded_text = self._text(
@@ -403,6 +517,44 @@ class IsaacSaveEditor(tk.Tk):
         self._update_secret_tree_language()
         self._update_item_tree_language()
         self._update_challenge_tree_language()
+        self._update_language_selector()
+
+    def _set_language(self, code: str) -> None:
+        if not code or code not in self._available_languages:
+            return
+        if code == getattr(self, "_language_code", None):
+            return
+        self._language_code = code
+        self._english_ui_enabled = code != "ko_kr"
+        display_value = self._language_display_by_code.get(code, code)
+        self._language_display_var.set(display_value)
+        self.settings["language"] = code
+        self.settings["english_ui"] = self._english_ui_enabled
+        self._apply_language_preferences()
+        self._save_settings()
+
+    def _on_language_selection(self, event: object | None = None) -> None:
+        display_value = self._language_display_var.get()
+        code = self._language_code_by_display.get(display_value)
+        if not code:
+            normalized = display_value.strip().lower()
+            for display, candidate in self._language_code_by_display.items():
+                if display.lower() == normalized:
+                    code = candidate
+                    break
+        if code:
+            self._set_language(code)
+
+    def _update_language_selector(self) -> None:
+        selector = getattr(self, "_language_selector", None)
+        if selector is None:
+            return
+        selector.configure(values=self._language_display_options)
+        display_value = self._language_display_by_code.get(
+            self._language_code,
+            self._language_code,
+        )
+        self._language_display_var.set(display_value)
 
     def _refresh_completion_character_options(self) -> None:
         box = getattr(self, "_completion_character_box", None)
@@ -470,9 +622,25 @@ class IsaacSaveEditor(tk.Tk):
 
         self.settings_path = SETTINGS_PATH
         self.settings = self._load_settings()
-        self._english_ui_enabled = bool(self.settings.get("english_ui", False))
+        self._available_languages = self._load_available_languages()
+        self._language_code = self._determine_initial_language()
+        self._english_ui_enabled = self._language_code != "ko_kr"
+        (
+            self._language_display_options,
+            self._language_display_by_code,
+            self._language_code_by_display,
+        ) = self._prepare_language_options()
+        display_value = self._language_display_by_code.get(
+            self._language_code,
+            self._language_code,
+        )
+        self._language_display_var = tk.StringVar(value=display_value)
         self._language_bindings: List[Callable[[], None]] = []
-        self._english_ui_var = tk.BooleanVar(value=self._english_ui_enabled)
+        self._highlight_locked_items_var = tk.BooleanVar(
+            value=bool(self.settings.get("highlight_locked_items", False))
+        )
+        self.settings["language"] = self._language_code
+        self.settings["english_ui"] = self._english_ui_enabled
 
         self._auto_set_999_default = bool(self.settings.get("auto_set_999", False))
         self._auto_overwrite_default = bool(self.settings.get("auto_overwrite", False))
@@ -823,6 +991,7 @@ class IsaacSaveEditor(tk.Tk):
         auto_999_frame.columnconfigure(0, weight=1)
         auto_999_frame.columnconfigure(1, weight=0)
         auto_999_frame.columnconfigure(2, weight=0)
+        auto_999_frame.columnconfigure(3, weight=0)
 
         auto_999_check = ttk.Checkbutton(
             auto_999_frame,
@@ -847,13 +1016,19 @@ class IsaacSaveEditor(tk.Tk):
             "Set Donation/Greed/Eden Tokens to 999",
         )
 
-        english_ui_check = ttk.Checkbutton(
+        language_label = ttk.Label(auto_999_frame)
+        language_label.grid(column=2, row=0, sticky="e", padx=(10, 0))
+        self._register_text(language_label, "언어", "Language")
+
+        language_box = ttk.Combobox(
             auto_999_frame,
-            variable=self._english_ui_var,
-            command=self._on_english_ui_toggle,
+            state="readonly",
+            textvariable=self._language_display_var,
         )
-        english_ui_check.grid(column=2, row=0, sticky="e", padx=(10, 0))
-        self._register_text(english_ui_check, "English UI", "English UI")
+        language_box.grid(column=3, row=0, sticky="e", padx=(6, 0))
+        language_box.bind("<<ComboboxSelected>>", self._on_language_selection)
+        self._language_selector = language_box
+        self._update_language_selector()
 
         self._update_source_display()
         self._update_target_display()
@@ -935,9 +1110,16 @@ class IsaacSaveEditor(tk.Tk):
                 self._completion_tree.state(("disabled",))
 
     def _format_completion_character_display(self, info: Dict[str, object]) -> str:
-        english = str(info.get("english", "")).strip()
-        korean = str(info.get("korean", "")).strip()
-        display = self._format_display_name(korean, english)
+        translations = {
+            "ko_kr": str(info.get("korean", "")).strip(),
+            "en_us": str(info.get("english", "")).strip(),
+        }
+        extra = info.get("translations")
+        if isinstance(extra, dict):
+            for key, value in extra.items():
+                if value:
+                    translations[str(key)] = str(value)
+        display = self._format_display_name(translations)
         if display:
             return display
         return f"Character {info.get('index', '')}"
@@ -1057,9 +1239,11 @@ class IsaacSaveEditor(tk.Tk):
                 quality_display = "-" if quality_value is None else str(quality_value)
                 values.append(quality_display)
             item_id = record["iid"]
+            translations = dict(record.get("translations", {}))
+            translations.setdefault("ko_kr", str(record.get("korean", "")))
+            translations.setdefault("en_us", str(record.get("english", "")))
             display_text = self._format_display_name(
-                str(record.get("korean", "")),
-                str(record.get("english", "")),
+                translations,
                 english_first=english_first,
             )
             icon = self._get_secret_icon(
@@ -1089,8 +1273,7 @@ class IsaacSaveEditor(tk.Tk):
                     tree,
                     item_id,
                     secret_type,
-                    str(record.get("korean", "")),
-                    str(record.get("english", "")),
+                    translations,
                 )
             )
         manager.records = records
@@ -1140,6 +1323,19 @@ class IsaacSaveEditor(tk.Tk):
             button.grid(column=index, row=0, padx=(0 if index == 0 else 6, 0))
             self._register_text(button, *texts)
 
+        button_frame.columnconfigure(len(buttons), weight=1)
+        highlight_check = ttk.Checkbutton(
+            button_frame,
+            variable=self._highlight_locked_items_var,
+            command=self._on_highlight_locked_items_toggle,
+        )
+        highlight_check.grid(column=len(buttons), row=0, sticky="e", padx=(12, 0))
+        self._register_text(
+            highlight_check,
+            "미해금된 아이템 붉게 표시하기",
+            "Highlight Locked Items in Red",
+        )
+
         tree_container = ttk.Frame(container)
         tree_container.grid(column=0, row=1, sticky="nsew", pady=(12, 0))
         tree_container.columnconfigure(0, weight=1)
@@ -1149,6 +1345,7 @@ class IsaacSaveEditor(tk.Tk):
         tree.column("#0", anchor="w", width=360, stretch=True)
         tree.column("unlock", anchor="center", width=140, stretch=False)
         tree.column("quality", anchor="center", width=120, stretch=False)
+        tree.tag_configure(LOCKED_ITEM_TAG, background=LOCKED_ITEM_BACKGROUND)
 
         manager = TreeManager(tree, {})
         tree.heading("#0", command=lambda m=manager: m.sort("name"))
@@ -1163,9 +1360,11 @@ class IsaacSaveEditor(tk.Tk):
         for item_id, record in self._item_records.get(item_type, {}).items():
             quality = record.get("quality")
             quality_display = "-" if quality is None else str(quality)
+            translations = dict(record.get("translations", {}))
+            translations.setdefault("ko_kr", str(record.get("korean", "")))
+            translations.setdefault("en_us", str(record.get("english", "")))
             display_text = self._format_display_name(
-                str(record.get("korean", "")),
-                str(record.get("english", "")),
+                translations,
                 english_first=english_first,
             )
             tree.insert("", "end", iid=item_id, text=display_text, values=("X", quality_display))
@@ -1189,8 +1388,7 @@ class IsaacSaveEditor(tk.Tk):
                     tree,
                     item_id,
                     item_type,
-                    str(record.get("korean", "")),
-                    str(record.get("english", "")),
+                    translations,
                     is_secret=False,
                 )
             )
@@ -1200,6 +1398,7 @@ class IsaacSaveEditor(tk.Tk):
         self._item_trees[item_type] = tree
         self._item_managers[item_type] = manager
         self._item_alphabetical.setdefault(item_type, False)
+        self._update_item_highlighting()
 
     def _build_challenges_tab(self, container: ttk.Frame) -> None:
         button_frame = ttk.Frame(container)
@@ -1255,10 +1454,14 @@ class IsaacSaveEditor(tk.Tk):
         records: Dict[str, Dict[str, object]] = {}
         for record in self._challenge_records:
             item_id = record["iid"]
-            display_text = self._format_display_name(
-                str(record.get("korean", "")),
-                str(record.get("english", "")),
-            )
+            translations = {
+                "ko_kr": str(record.get("korean", "")),
+                "en_us": str(record.get("english", "")),
+            }
+            extra = record.get("translations")
+            if isinstance(extra, dict):
+                translations.update({str(k): str(v) for k, v in extra.items() if v})
+            display_text = self._format_display_name(translations)
             tree.insert("", "end", iid=item_id, text=display_text, values=("X",))
             records[record["iid"]] = {
                 "iid": record["iid"],
@@ -1273,8 +1476,7 @@ class IsaacSaveEditor(tk.Tk):
                     tree,
                     item_id,
                     "challenge",
-                    str(record.get("korean", "")),
-                    str(record.get("english", "")),
+                    translations,
                     is_secret=False,
                 )
             )
@@ -1519,6 +1721,20 @@ class IsaacSaveEditor(tk.Tk):
         map_duplicate_secret_ids = {"57", "78"}
         with csv_path.open(encoding="utf-8-sig") as file:
             reader = csv.DictReader(file)
+            fieldnames = reader.fieldnames or []
+            base_columns = {
+                "SecretID",
+                "SecretName",
+                "UnlockName",
+                "Type",
+                "Korean",
+                "UnlockedFlag",
+            }
+            language_columns = [
+                name
+                for name in fieldnames
+                if name not in base_columns and name is not None
+            ]
             for row in reader:
                 secret_id = (row.get("SecretID") or "").strip()
                 if not secret_id:
@@ -1563,8 +1779,16 @@ class IsaacSaveEditor(tk.Tk):
                 else:
                     english_name = secret_name or unlock_name
                 korean_name = korean
+                translations: Dict[str, str] = {
+                    "ko_kr": korean_name,
+                    "en_us": english_name,
+                }
+                for column in language_columns:
+                    value = (row.get(column) or "").strip()
+                    if value:
+                        translations[column] = value
+                display = self._format_display_name(translations)
                 primary_name = korean_name or english_name or secret_id
-                display = self._format_display_name(korean_name, english_name)
                 record = {
                     "iid": secret_id,
                     "display": display,
@@ -1574,6 +1798,7 @@ class IsaacSaveEditor(tk.Tk):
                     "secret_name": secret_name,
                     "korean": korean,
                     "english": english_name,
+                    "translations": translations,
                     "sort_default": self._normalize_sort_key(korean_name or english_name or secret_id),
                     "sort_english": self._normalize_sort_key(english_name or korean_name or secret_id),
                 }
@@ -1584,6 +1809,7 @@ class IsaacSaveEditor(tk.Tk):
                     "secret_name": secret_name,
                     "korean": korean,
                     "display": display,
+                    "translations": translations,
                     "secret_type": secret_type,
                 }
                 if secret_type == "Item.Passive" and secret_id in map_duplicate_secret_ids:
@@ -1679,7 +1905,8 @@ class IsaacSaveEditor(tk.Tk):
                     quality_value = int(quality_text) if quality_text else None
                 except ValueError:
                     quality_value = None
-                display = self._format_display_name(korean, english)
+                translations = {"ko_kr": korean, "en_us": english}
+                display = self._format_display_name(translations)
                 record = {
                     "iid": item_id,
                     "display": display,
@@ -1688,6 +1915,7 @@ class IsaacSaveEditor(tk.Tk):
                     "english": english,
                     "korean": korean,
                     "item_type": item_type,
+                    "translations": translations,
                     "sort_default": self._normalize_sort_key(korean or english or item_id),
                     "sort_english": self._normalize_sort_key(english or korean or item_id),
                 }
@@ -1710,7 +1938,8 @@ class IsaacSaveEditor(tk.Tk):
                     continue
                 korean = (row.get("Korean") or "").strip()
                 challenge_name = (row.get("ChallengeName") or "").strip()
-                display = self._format_display_name(korean, challenge_name)
+                translations = {"ko_kr": korean, "en_us": challenge_name}
+                display = self._format_display_name(translations)
                 records.append(
                     {
                         "iid": challenge_id,
@@ -1720,6 +1949,7 @@ class IsaacSaveEditor(tk.Tk):
                         ),
                         "english": challenge_name,
                         "korean": korean,
+                        "translations": translations,
                         "sort_default": self._normalize_sort_key(
                             korean or challenge_name or challenge_id
                         ),
@@ -1928,8 +2158,7 @@ class IsaacSaveEditor(tk.Tk):
             tree.item(
                 item_id,
                 text=self._format_display_name(
-                    str(record.get("korean", "")),
-                    str(record.get("english", "")),
+                    record.get("translations", {}),
                     english_first=new_state,
                 ),
             )
@@ -2006,6 +2235,44 @@ class IsaacSaveEditor(tk.Tk):
                     unlocked.add(secret_id)
         return unlocked
 
+    def _apply_item_highlight(
+        self,
+        tree: IconCheckboxTreeview,
+        item_id: str,
+        unlocked: bool,
+        *,
+        enabled: Optional[bool] = None,
+    ) -> None:
+        if enabled is None:
+            enabled = bool(self._highlight_locked_items_var.get())
+        tags = set(tree.item(item_id, "tags"))
+        if enabled and not unlocked:
+            tags.add(LOCKED_ITEM_TAG)
+        else:
+            tags.discard(LOCKED_ITEM_TAG)
+        tree.item(item_id, tags=tuple(tags))
+
+    def _update_item_highlighting(self) -> None:
+        enabled = bool(self._highlight_locked_items_var.get())
+        for item_type, tree in self._item_trees.items():
+            tree.tag_configure(LOCKED_ITEM_TAG, background=LOCKED_ITEM_BACKGROUND)
+            manager = self._item_managers.get(item_type)
+            if manager is None:
+                continue
+            for item_id, info in manager.records.items():
+                self._apply_item_highlight(
+                    tree,
+                    item_id,
+                    bool(info.get("unlock")),
+                    enabled=enabled,
+                )
+
+    def _on_highlight_locked_items_toggle(self) -> None:
+        enabled = bool(self._highlight_locked_items_var.get())
+        self.settings["highlight_locked_items"] = enabled
+        self._save_settings()
+        self._update_item_highlighting()
+
     def _select_all_items(self, item_type: str) -> None:
         tree = self._item_trees.get(item_type)
         if tree is None:
@@ -2043,8 +2310,7 @@ class IsaacSaveEditor(tk.Tk):
             tree.item(
                 item_id,
                 text=self._format_display_name(
-                    str(record.get("korean", "")),
-                    str(record.get("english", "")),
+                    record.get("translations", {}),
                     english_first=new_state,
                 ),
             )
@@ -2329,6 +2595,7 @@ class IsaacSaveEditor(tk.Tk):
                 for index, value in enumerate(items)
                 if value & ITEM_UNLOCK_MASK
             }
+        highlight_enabled = bool(self._highlight_locked_items_var.get())
         for item_type, tree in self._item_trees.items():
             manager = self._item_managers.get(item_type)
             if manager is None:
@@ -2339,6 +2606,12 @@ class IsaacSaveEditor(tk.Tk):
                     unlocked = item_id in unlocked_ids
                     manager.set_unlock(item_id, unlocked)
                     tree.change_state(item_id, "unchecked")
+                    self._apply_item_highlight(
+                        tree,
+                        item_id,
+                        unlocked,
+                        enabled=highlight_enabled,
+                    )
             finally:
                 self._unlock_tree(tree)
             manager.resort()
@@ -2473,15 +2746,6 @@ class IsaacSaveEditor(tk.Tk):
         self._save_settings()
         if enabled:
             self._apply_auto_overwrite_if_enabled(show_message=True)
-
-    def _on_english_ui_toggle(self) -> None:
-        enabled = bool(self._english_ui_var.get())
-        if enabled == self._english_ui_enabled:
-            return
-        self._english_ui_enabled = enabled
-        self.settings["english_ui"] = enabled
-        self._save_settings()
-        self._apply_language_preferences()
 
     def _show_auto_overwrite_help(self) -> None:
         help_window = tk.Toplevel(self)
@@ -2725,6 +2989,12 @@ class IsaacSaveEditor(tk.Tk):
             english_ui = loaded.get("english_ui")
             if isinstance(english_ui, bool):
                 settings["english_ui"] = english_ui
+            language_code = loaded.get("language")
+            if isinstance(language_code, str):
+                settings["language"] = language_code
+            highlight_setting = loaded.get("highlight_locked_items")
+            if isinstance(highlight_setting, bool):
+                settings["highlight_locked_items"] = highlight_setting
         return settings
 
     def _save_settings(self) -> None:
@@ -2739,7 +3009,13 @@ class IsaacSaveEditor(tk.Tk):
         settings_to_save["auto_overwrite"] = bool(auto_overwrite_var.get()) if auto_overwrite_var else False
         settings_to_save["source_save_path"] = self.source_save_path
         settings_to_save["target_save_path"] = self.target_save_path
-        settings_to_save["english_ui"] = bool(self._english_ui_var.get())
+        language_code = getattr(self, "_language_code", "ko_kr")
+        settings_to_save["english_ui"] = language_code != "ko_kr"
+        settings_to_save["language"] = language_code
+        highlight_var = getattr(self, "_highlight_locked_items_var", None)
+        settings_to_save["highlight_locked_items"] = (
+            bool(highlight_var.get()) if highlight_var else False
+        )
         self.settings = settings_to_save
         try:
             with self.settings_path.open("w", encoding="utf-8") as file:
