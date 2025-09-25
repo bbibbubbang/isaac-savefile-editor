@@ -61,7 +61,8 @@ checklist_order = ["Isaac's Heart", "Isaac", "Satan", "Boss Rush", "Chest", "Dar
 
 ITEM_FLAG_SEEN = 0x01
 ITEM_FLAG_TOUCHED = 0x02
-ITEM_UNLOCK_CLEAR_MASK = ITEM_FLAG_SEEN | ITEM_FLAG_TOUCHED
+ITEM_FLAG_COLLECTED = 0x04
+ITEM_UNLOCK_CLEAR_MASK = ITEM_FLAG_SEEN | ITEM_FLAG_TOUCHED | ITEM_FLAG_COLLECTED
 
 COMPLETION_FLAG_NORMAL = 0x01
 COMPLETION_FLAG_HARD = 0x02
@@ -321,7 +322,7 @@ def updateItems(data, item_list):
             continue
         current_val = getInt(data, offs + item_id, num_bytes=1)
         if item_id in selected_ids:
-            new_val = current_val | ITEM_FLAG_SEEN | ITEM_FLAG_TOUCHED
+            new_val = current_val | ITEM_FLAG_SEEN | ITEM_FLAG_TOUCHED | ITEM_FLAG_COLLECTED
         else:
             new_val = current_val & ~ITEM_UNLOCK_CLEAR_MASK
         if new_val != current_val:
