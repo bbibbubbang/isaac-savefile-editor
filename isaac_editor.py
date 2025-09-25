@@ -388,6 +388,7 @@ class IsaacSaveEditor(tk.Tk):
 
         self._build_layout()
         self.refresh_current_values()
+        self._set_initial_window_size()
         self.after(0, self._perform_startup_tasks)
 
     @staticmethod
@@ -465,6 +466,7 @@ class IsaacSaveEditor(tk.Tk):
         completion_tab.columnconfigure(0, weight=1)
         completion_tab.rowconfigure(2, weight=1)
         self._build_completion_tab(completion_tab)
+        self._completion_tab_frame = completion_tab
 
         def add_secret_tab(secret_type: str) -> None:
             tab_label = self._secret_tab_labels.get(
@@ -492,6 +494,28 @@ class IsaacSaveEditor(tk.Tk):
 
         notebook.add(completion_tab)
         self._register_tab_text(notebook, completion_tab, "체크리스트", "Checklist")
+
+    def _set_initial_window_size(self) -> None:
+        notebook = getattr(self, "notebook", None)
+        completion_tab = getattr(self, "_completion_tab_frame", None)
+        if notebook is None or completion_tab is None:
+            return
+        current_tab = notebook.select()
+        try:
+            notebook.select(completion_tab)
+        except tk.TclError:
+            pass
+        self.update_idletasks()
+        notebook_width = notebook.winfo_reqwidth()
+        notebook_height = notebook.winfo_reqheight()
+        if current_tab:
+            try:
+                notebook.select(current_tab)
+            except tk.TclError:
+                pass
+        width = notebook_width + 24
+        height = notebook_height + 24
+        self.geometry(f"{width}x{height}")
 
     def _build_main_tab(self, container: ttk.Frame) -> None:
         top_frame = ttk.Frame(container)
@@ -780,40 +804,42 @@ class IsaacSaveEditor(tk.Tk):
     def _build_secrets_tab(self, container: ttk.Frame, secret_type: str) -> None:
         button_frame = ttk.Frame(container)
         button_frame.grid(column=0, row=0, sticky="w")
+
+        buttons: list[tuple[ttk.Button, tuple[str, str]]] = []
+
         select_all_button = ttk.Button(
             button_frame,
             command=lambda t=secret_type: self._select_all_secrets(t),
         )
-        select_all_button.pack(side="left", padx=(0, 6))
-        self._register_text(select_all_button, "모두 선택", "Select All")
+        buttons.append((select_all_button, ("모두 선택", "Select All")))
 
         select_none_button = ttk.Button(
             button_frame,
             command=lambda t=secret_type: self._select_none_secrets(t),
         )
-        select_none_button.pack(side="left")
-        self._register_text(select_none_button, "모두 해제", "Select None")
-
-        alpha_button = ttk.Button(
-            button_frame,
-            command=lambda t=secret_type: self._toggle_secret_alphabetical(t),
-        )
-        alpha_button.pack(side="left", padx=(12, 0))
-        self._register_text(alpha_button, "알파벳순 정렬", "Sort Alphabetically")
+        buttons.append((select_none_button, ("모두 해제", "Select None")))
 
         unlock_button = ttk.Button(
             button_frame,
             command=lambda t=secret_type: self._unlock_selected_secrets(t),
         )
-        unlock_button.pack(side="left", padx=(12, 6))
-        self._register_text(unlock_button, "선택 해금", "Unlock Selected")
+        buttons.append((unlock_button, ("선택 해금", "Unlock Selected")))
 
         lock_button = ttk.Button(
             button_frame,
             command=lambda t=secret_type: self._lock_selected_secrets(t),
         )
-        lock_button.pack(side="left")
-        self._register_text(lock_button, "선택 미해금", "Lock Selected")
+        buttons.append((lock_button, ("선택 미해금", "Lock Selected")))
+
+        alpha_button = ttk.Button(
+            button_frame,
+            command=lambda t=secret_type: self._toggle_secret_alphabetical(t),
+        )
+        buttons.append((alpha_button, ("알파벳순 정렬", "Sort Alphabetically")))
+
+        for index, (button, texts) in enumerate(buttons):
+            button.grid(column=index, row=0, padx=(0 if index == 0 else 6, 0))
+            self._register_text(button, *texts)
 
         include_quality = secret_type.startswith("Item.")
 
@@ -886,40 +912,42 @@ class IsaacSaveEditor(tk.Tk):
     def _build_item_tab(self, container: ttk.Frame, item_type: str) -> None:
         button_frame = ttk.Frame(container)
         button_frame.grid(column=0, row=0, sticky="w")
+
+        buttons: list[tuple[ttk.Button, tuple[str, str]]] = []
+
         select_all_button = ttk.Button(
             button_frame,
             command=lambda t=item_type: self._select_all_items(t),
         )
-        select_all_button.pack(side="left", padx=(0, 6))
-        self._register_text(select_all_button, "모두 선택", "Select All")
+        buttons.append((select_all_button, ("모두 선택", "Select All")))
 
         select_none_button = ttk.Button(
             button_frame,
             command=lambda t=item_type: self._select_none_items(t),
         )
-        select_none_button.pack(side="left")
-        self._register_text(select_none_button, "모두 해제", "Select None")
-
-        alpha_button = ttk.Button(
-            button_frame,
-            command=lambda t=item_type: self._toggle_item_alphabetical(t),
-        )
-        alpha_button.pack(side="left", padx=(12, 0))
-        self._register_text(alpha_button, "알파벳순 정렬", "Sort Alphabetically")
+        buttons.append((select_none_button, ("모두 해제", "Select None")))
 
         unlock_button = ttk.Button(
             button_frame,
             command=lambda t=item_type: self._unlock_selected_items(t),
         )
-        unlock_button.pack(side="left", padx=(12, 6))
-        self._register_text(unlock_button, "선택 해금", "Unlock Selected")
+        buttons.append((unlock_button, ("선택 해금", "Unlock Selected")))
 
         lock_button = ttk.Button(
             button_frame,
             command=lambda t=item_type: self._lock_selected_items(t),
         )
-        lock_button.pack(side="left")
-        self._register_text(lock_button, "선택 미해금", "Lock Selected")
+        buttons.append((lock_button, ("선택 미해금", "Lock Selected")))
+
+        alpha_button = ttk.Button(
+            button_frame,
+            command=lambda t=item_type: self._toggle_item_alphabetical(t),
+        )
+        buttons.append((alpha_button, ("알파벳순 정렬", "Sort Alphabetically")))
+
+        for index, (button, texts) in enumerate(buttons):
+            button.grid(column=index, row=0, padx=(0 if index == 0 else 6, 0))
+            self._register_text(button, *texts)
 
         tree_container = ttk.Frame(container)
         tree_container.grid(column=0, row=1, sticky="nsew", pady=(12, 0))
@@ -977,33 +1005,36 @@ class IsaacSaveEditor(tk.Tk):
     def _build_challenges_tab(self, container: ttk.Frame) -> None:
         button_frame = ttk.Frame(container)
         button_frame.grid(column=0, row=0, sticky="w")
+
+        buttons: list[tuple[ttk.Button, tuple[str, str]]] = []
+
         select_all_button = ttk.Button(
             button_frame,
             command=self._select_all_challenges,
         )
-        select_all_button.pack(side="left", padx=(0, 6))
-        self._register_text(select_all_button, "모두 선택", "Select All")
+        buttons.append((select_all_button, ("모두 선택", "Select All")))
 
         select_none_button = ttk.Button(
             button_frame,
             command=self._select_none_challenges,
         )
-        select_none_button.pack(side="left")
-        self._register_text(select_none_button, "모두 해제", "Select None")
+        buttons.append((select_none_button, ("모두 해제", "Select None")))
 
         unlock_button = ttk.Button(
             button_frame,
             command=self._unlock_selected_challenges,
         )
-        unlock_button.pack(side="left", padx=(12, 6))
-        self._register_text(unlock_button, "선택 해금", "Unlock Selected")
+        buttons.append((unlock_button, ("선택 해금", "Unlock Selected")))
 
         lock_button = ttk.Button(
             button_frame,
             command=self._lock_selected_challenges,
         )
-        lock_button.pack(side="left")
-        self._register_text(lock_button, "선택 미해금", "Lock Selected")
+        buttons.append((lock_button, ("선택 미해금", "Lock Selected")))
+
+        for index, (button, texts) in enumerate(buttons):
+            button.grid(column=index, row=0, padx=(0 if index == 0 else 6, 0))
+            self._register_text(button, *texts)
 
         tree_row = 1
         container.rowconfigure(tree_row, weight=1)
