@@ -1735,10 +1735,6 @@ class IsaacSaveEditor(tk.Tk):
 
     def _create_completion_tree(self, container: ttk.Frame) -> IconCheckboxTreeview:
         tree = IconCheckboxTreeview(container, columns=(), show="tree", selectmode="none")
-        try:
-            tree.configure(takefocus=0)
-        except tk.TclError:
-            pass
         tree.grid(column=0, row=0, sticky="nsew")
         yscroll = ttk.Scrollbar(container, orient="vertical", command=tree.yview)
         yscroll.grid(column=1, row=0, sticky="ns")
@@ -1762,10 +1758,6 @@ class IsaacSaveEditor(tk.Tk):
             selectmode="none",
             icon_mode=icon_mode,
         )
-        try:
-            tree.configure(takefocus=0)
-        except tk.TclError:
-            pass
         tree.grid(column=0, row=0, sticky="nsew")
         yscroll = ttk.Scrollbar(container, orient="vertical", command=tree.yview)
         yscroll.grid(column=1, row=0, sticky="ns")
