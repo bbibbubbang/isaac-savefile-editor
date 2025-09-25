@@ -18,7 +18,8 @@ Isaac Savefile Editor는 The Binding of Isaac: Repentance+ 세이브 데이터�
 - **비밀, 아이템, 도전과제**: 각 탭에서 항목을 체크/해제해 잠금을 관리하고, 필요 시 일괄 해금 스위치를 사용할 수 있습니다.
 
 ## 주의 사항
-이 도구는 Repentance+ 온라인 베타 버전에서 검증되지 않았습니다. 온라인 플레이 시 Desync(동기화 오류)가 발생할 수 있습니다.
+이 도구는 해금할 아이템 등의 도전과제,챌린지를 '완료','미완료' 상태로 변경하여 해금유무를 변경하는 방식입니다.
+Repentance+ 온라인 베타 버전에서 검증되지 않았습니다. 온라인 플레이 시 Desync(동기화 오류)가 발생할 수 있습니다.
 사용 시 반드시 세이브 데이터를 백업하고 개인 책임 하에 진행하세요.
 
 ---
@@ -39,5 +40,6 @@ Isaac Savefile Editor is an open-source tool that allows you to read and modify 
 - **Secrets, Items, Challenges**: Manage unlocks by checking/unchecking entries in each tab, or use bulk unlock switches if needed.  
 
 ## Warnings
-This tool has not been tested with the Repentance+ online beta version. Using it in online play may cause desync issues.
+This tool changes the unlock status of items, achievements, and challenges by setting them to either *completed* or *not completed*.  
+It has not been tested with the Repentance+ online beta version. Using it in online play may cause desync issues.  
 Always back up your save data and use at your own risk.
