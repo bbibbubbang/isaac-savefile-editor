@@ -42,10 +42,13 @@ DEFAULT_SETTINGS: Dict[str, object] = {
     "english_ui": False,
     "language": "ko_kr",
     "highlight_locked_items": False,
+    "highlight_locked_secrets": False,
 }
 
 LOCKED_ITEM_TAG = "locked_highlight"
 LOCKED_ITEM_BACKGROUND = "#fce8e6"
+LOCKED_SECRET_TAG = "secret_locked_highlight"
+LOCKED_SECRET_BACKGROUND = LOCKED_ITEM_BACKGROUND
 
 TOTAL_COMPLETION_MARKS = 12
 
@@ -682,6 +685,9 @@ class IsaacSaveEditor(tk.Tk):
         self._highlight_locked_items_var = tk.BooleanVar(
             value=bool(self.settings.get("highlight_locked_items", False))
         )
+        self._highlight_locked_secrets_var = tk.BooleanVar(
+            value=bool(self.settings.get("highlight_locked_secrets", False))
+        )
         self.settings["language"] = self._language_code
         self.settings["english_ui"] = self._english_ui_enabled
 
@@ -1243,6 +1249,19 @@ class IsaacSaveEditor(tk.Tk):
             button.grid(column=index, row=0, padx=(0 if index == 0 else 6, 0))
             self._register_text(button, *texts)
 
+        button_frame.columnconfigure(len(buttons), weight=1)
+        highlight_check = ttk.Checkbutton(
+            button_frame,
+            variable=self._highlight_locked_secrets_var,
+            command=self._on_highlight_locked_secrets_toggle,
+        )
+        highlight_check.grid(column=len(buttons), row=0, sticky="e", padx=(12, 0))
+        self._register_text(
+            highlight_check,
+            "해금되지 않은 것 붉게 표시",
+            "Highlight Locked Secrets in Red",
+        )
+
         include_quality = secret_type.startswith("Item.")
 
         tree_row = 1
@@ -1263,6 +1282,7 @@ class IsaacSaveEditor(tk.Tk):
         tree.column("unlock", anchor="center", width=140, stretch=False)
         if include_quality:
             tree.column("quality", anchor="center", width=120, stretch=False)
+        tree.tag_configure(LOCKED_SECRET_TAG, background=LOCKED_SECRET_BACKGROUND)
 
         manager = TreeManager(tree, {})
         tree.heading("#0", command=lambda m=manager: m.sort("name"))
@@ -1325,6 +1345,7 @@ class IsaacSaveEditor(tk.Tk):
         self._secret_trees[secret_type] = tree
         self._secret_managers[secret_type] = manager
         self._secret_alphabetical.setdefault(secret_type, False)
+        self._update_secret_highlighting()
 
     def _build_item_tab(self, container: ttk.Frame, item_type: str) -> None:
         button_frame = ttk.Frame(container)
@@ -2278,6 +2299,44 @@ class IsaacSaveEditor(tk.Tk):
                     unlocked.add(secret_id)
         return unlocked
 
+    def _apply_secret_highlight(
+        self,
+        tree: IconCheckboxTreeview,
+        secret_id: str,
+        unlocked: bool,
+        *,
+        enabled: Optional[bool] = None,
+    ) -> None:
+        if enabled is None:
+            enabled = bool(self._highlight_locked_secrets_var.get())
+        tags = set(tree.item(secret_id, "tags"))
+        if enabled and not unlocked:
+            tags.add(LOCKED_SECRET_TAG)
+        else:
+            tags.discard(LOCKED_SECRET_TAG)
+        tree.item(secret_id, tags=tuple(tags))
+
+    def _update_secret_highlighting(self) -> None:
+        enabled = bool(self._highlight_locked_secrets_var.get())
+        for secret_type, tree in self._secret_trees.items():
+            tree.tag_configure(LOCKED_SECRET_TAG, background=LOCKED_SECRET_BACKGROUND)
+            manager = self._secret_managers.get(secret_type)
+            if manager is None:
+                continue
+            for secret_id, info in manager.records.items():
+                self._apply_secret_highlight(
+                    tree,
+                    secret_id,
+                    bool(info.get("unlock")),
+                    enabled=enabled,
+                )
+
+    def _on_highlight_locked_secrets_toggle(self) -> None:
+        enabled = bool(self._highlight_locked_secrets_var.get())
+        self.settings["highlight_locked_secrets"] = enabled
+        self._save_settings()
+        self._update_secret_highlighting()
+
     def _apply_item_highlight(
         self,
         tree: IconCheckboxTreeview,
@@ -2609,6 +2668,7 @@ class IsaacSaveEditor(tk.Tk):
             except Exception:
                 secrets = []
             unlocked_ids = {str(index + 1) for index, value in enumerate(secrets) if value != 0}
+        highlight_enabled = bool(self._highlight_locked_secrets_var.get())
         for secret_type, manager in self._secret_managers.items():
             tree = self._secret_trees.get(secret_type)
             if tree is None:
@@ -2619,6 +2679,12 @@ class IsaacSaveEditor(tk.Tk):
                     unlocked = secret_id in unlocked_ids
                     manager.set_unlock(secret_id, unlocked)
                     tree.change_state(secret_id, "unchecked")
+                    self._apply_secret_highlight(
+                        tree,
+                        secret_id,
+                        unlocked,
+                        enabled=highlight_enabled,
+                    )
             finally:
                 self._unlock_tree(tree)
             manager.resort()
@@ -3028,6 +3094,9 @@ class IsaacSaveEditor(tk.Tk):
             highlight_setting = loaded.get("highlight_locked_items")
             if isinstance(highlight_setting, bool):
                 settings["highlight_locked_items"] = highlight_setting
+            secret_highlight_setting = loaded.get("highlight_locked_secrets")
+            if isinstance(secret_highlight_setting, bool):
+                settings["highlight_locked_secrets"] = secret_highlight_setting
         return settings
 
     def _save_settings(self) -> None:
@@ -3048,6 +3117,10 @@ class IsaacSaveEditor(tk.Tk):
         highlight_var = getattr(self, "_highlight_locked_items_var", None)
         settings_to_save["highlight_locked_items"] = (
             bool(highlight_var.get()) if highlight_var else False
+        )
+        highlight_secret_var = getattr(self, "_highlight_locked_secrets_var", None)
+        settings_to_save["highlight_locked_secrets"] = (
+            bool(highlight_secret_var.get()) if highlight_secret_var else False
         )
         self.settings = settings_to_save
         try:

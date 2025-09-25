@@ -599,6 +599,26 @@
     "vi": "Làm nổi bật các mặt hàng bị khóa màu đỏ",
     "zh_cn": "突出显示红色的锁定物品"
   },
+  "Highlight Locked Secrets in Red": {
+    "bul": "Маркирайте заключените тайни в червено",
+    "cs_cz": "Zvýrazněte uzamčená tajemství červeně",
+    "de": "Highlight gesperrte Geheimnisse in rot",
+    "el_gr": "Επισημάνετε τα κλειδωμένα μυστικά με κόκκινο χρώμα",
+    "fr": "Mettre en surbrillance les secrets verrouillés en rouge",
+    "it": "Evidenzia i segreti bloccati in rosso",
+    "ja_jp": "ロックされたシークレットを赤で強調表示します",
+    "nl_nl": "Markeer vergrendelde geheimen in rood",
+    "pl": "Podświetl zablokowane sekrety na czerwono",
+    "pt": "Destaque segredos bloqueados a vermelho",
+    "pt_br": "Destaque segredos bloqueados em vermelho",
+    "ro_ro": "Evidențiați secretele blocate în roșu",
+    "ru": "Выделите заблокированные секреты в красном",
+    "spa": "Resaltar los secretos bloqueados en rojo",
+    "tr_tr": "Kilitli sırları kırmızı vurgulayın",
+    "uk_ua": "Виділіть заблоковані секрети червоним",
+    "vi": "Làm nổi bật các bí mật bị khóa bằng màu đỏ",
+    "zh_cn": "突出显示红色的锁定秘密"
+  },
   "How to Use Auto Overwrite": {
     "bul": "Как да използвате автоматично презаписване",
     "cs_cz": "Jak používat automatické přepsání",
