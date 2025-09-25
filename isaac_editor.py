@@ -109,6 +109,35 @@ def _suppress_focus_indicators(root: tk.Misc) -> None:
             root.option_add(option, default_bg)
 
     style = ttk.Style(root)
+
+    def _normalize_focus_color(style_name: str) -> None:
+        """Force focus rings to blend into the background for ``style_name``."""
+
+        focus_background = ""
+        for option in ("background", "fieldbackground", "lightcolor", "darkcolor"):
+            try:
+                value = style.lookup(style_name, option)
+            except tk.TclError:
+                continue
+            if value:
+                focus_background = value
+                break
+        configure: dict[str, object] = {"focuswidth": 0}
+        if focus_background:
+            configure["focuscolor"] = focus_background
+        try:
+            style.configure(style_name, **configure)
+        except tk.TclError:
+            pass
+        if focus_background:
+            try:
+                style.map(
+                    style_name,
+                    focuscolor=[("!focus", focus_background), ("focus", focus_background)],
+                )
+            except tk.TclError:
+                pass
+
     focus_free_styles = [
         "TNotebook",
         "TNotebook.Tab",
@@ -137,6 +166,7 @@ def _suppress_focus_indicators(root: tk.Misc) -> None:
             style.layout(style_name, _strip_focus_elements(list(layout)))
         except tk.TclError:
             continue
+        _normalize_focus_color(style_name)
 
 TOTAL_COMPLETION_MARKS = 12
 
