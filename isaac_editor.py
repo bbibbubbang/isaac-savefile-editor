@@ -110,6 +110,52 @@ def _suppress_focus_indicators(root: tk.Misc) -> None:
 
     style = ttk.Style(root)
 
+    def _collect_style_names(widget: tk.Misc) -> set[str]:
+        names: set[str] = set()
+        try:
+            widget_style = widget.cget("style")
+        except tk.TclError:
+            widget_style = ""
+        if widget_style:
+            names.add(str(widget_style))
+        try:
+            class_name = widget.winfo_class()
+        except tk.TclError:
+            class_name = ""
+        if class_name and class_name not in {"Tk"}:
+            names.add(class_name)
+        for child in widget.winfo_children():
+            names.update(_collect_style_names(child))
+        return names
+
+    def _expand_style_name(style_name: str) -> set[str]:
+        variants: set[str] = set()
+        if not style_name:
+            return variants
+        variants.add(style_name)
+        if "." in style_name:
+            prefix, suffix = style_name.split(".", 1)
+            prefix_candidates = {prefix}
+            suffix_candidates = {suffix}
+            if prefix.startswith("T") and len(prefix) > 1:
+                prefix_candidates.add(prefix[1:])
+            elif prefix:
+                prefix_candidates.add(f"T{prefix}")
+            if suffix.startswith("T") and len(suffix) > 1:
+                suffix_candidates.add(suffix[1:])
+            elif suffix:
+                suffix_candidates.add(f"T{suffix}")
+            for pre in prefix_candidates:
+                for suf in suffix_candidates:
+                    if pre and suf:
+                        variants.add(f"{pre}.{suf}")
+        else:
+            if style_name.startswith("T") and len(style_name) > 1:
+                variants.add(style_name[1:])
+            else:
+                variants.add(f"T{style_name}")
+        return {variant for variant in variants if variant}
+
     def _normalize_focus_color(style_name: str) -> None:
         """Force focus rings to blend into the background for ``style_name``."""
 
@@ -138,7 +184,7 @@ def _suppress_focus_indicators(root: tk.Misc) -> None:
             except tk.TclError:
                 pass
 
-    focus_free_styles = [
+    base_styles = {
         "TNotebook",
         "TNotebook.Tab",
         "TButton",
@@ -154,8 +200,19 @@ def _suppress_focus_indicators(root: tk.Misc) -> None:
         "Treeview.Item",
         "IconCheckboxTreeview.Treeview.Icon",
         "IconCheckboxTreeview.Treeview.Compact",
-    ]
-    for style_name in focus_free_styles:
+    }
+    style_names: set[str] = set(base_styles)
+    style_names.update(_collect_style_names(root))
+    expanded_styles: set[str] = set()
+    for candidate in list(style_names):
+        expanded_styles.update(_expand_style_name(candidate))
+    style_names.update(expanded_styles)
+
+    processed: set[str] = set()
+    for style_name in sorted(style_names):
+        if not style_name or style_name in processed:
+            continue
+        processed.add(style_name)
         try:
             layout = style.layout(style_name)
         except tk.TclError:
