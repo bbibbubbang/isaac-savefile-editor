@@ -84,7 +84,7 @@ class IconCheckboxTreeview(CheckboxTreeview):
     _STYLE_ICON = f"{_STYLE_BASE}.Icon"
     _STYLE_COMPACT = f"{_STYLE_BASE}.Compact"
     _ICON_ROW_PADDING = 2
-    _COMPACT_ROW_PADDING = 0
+    _COMPACT_ROW_PADDING = 2
     _ICON_PLACEHOLDER_SIZE = (MAX_ICON_HEIGHT, MAX_ICON_HEIGHT)
     _CONFIGURED_STYLES: Set[str] = set()
 
@@ -1620,7 +1620,10 @@ class IsaacSaveEditor(tk.Tk):
                 icon_asset = SecretIcon(pil_image=image, tk_image=tk_image)
                 self._secret_icon_store.append(icon_asset)
                 base_name = path.stem
-                base_name = re.sub(r"__.*$", "", base_name)
+                if "__" in base_name:
+                    prefix, _ = base_name.rsplit("__", 1)
+                    if prefix:
+                        base_name = prefix
                 if "___" in base_name:
                     base_name = base_name.replace("___", "???")
                 base_name = re.sub(r"^(Collectible|Trinket)_", "", base_name)
