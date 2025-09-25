@@ -23,10 +23,6 @@ def _strip_focus_elements(layout):
     cleaned_layout = []
     for element, options in layout:
         if 'focus' in element.lower():
-            if isinstance(options, dict) and 'children' in options:
-                cleaned_layout.extend(
-                    _strip_focus_elements(options.get('children', ()))
-                )
             continue
         new_options = dict(options)
         if 'children' in new_options:

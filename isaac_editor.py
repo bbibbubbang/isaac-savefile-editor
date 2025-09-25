@@ -61,6 +61,10 @@ def _strip_focus_elements(layout: list[tuple[str, dict]]) -> list[tuple[str, dic
     cleaned: list[tuple[str, dict]] = []
     for element, options in layout:
         if "focus" in element.lower():
+            if isinstance(options, dict):
+                children = options.get("children")
+                if isinstance(children, (list, tuple)):
+                    cleaned.extend(_strip_focus_elements(list(children)))
             continue
         new_options = dict(options)
         children = new_options.get("children")
