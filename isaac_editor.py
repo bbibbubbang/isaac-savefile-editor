@@ -161,22 +161,6 @@ class IsaacSaveEditor(tk.Tk):
 
         self._register_language_binding(updater)
 
-    def _configure_styles(self) -> None:
-        """Ensure ttk widgets have enough room for larger assets."""
-
-        style = ttk.Style(self)
-
-        # The item and secret trees display 32x32 icons. Add a small buffer so the
-        # full image remains visible regardless of the current platform theme.
-        desired_row_height = 40
-        current_row_height = style.lookup("Treeview", "rowheight")
-        try:
-            current_row_height = int(current_row_height)
-        except (TypeError, ValueError):
-            current_row_height = 0
-        if current_row_height < desired_row_height:
-            style.configure("Treeview", rowheight=desired_row_height)
-
     def _register_variable_text(
         self, variable: tk.StringVar, korean: str, english: str
     ) -> None:
@@ -313,7 +297,6 @@ class IsaacSaveEditor(tk.Tk):
     def __init__(self) -> None:
         super().__init__()
         self.title("Isaac Savefile Editor")
-        self._configure_styles()
 
         self.filename: str = ""
         self.data: bytes | None = None
