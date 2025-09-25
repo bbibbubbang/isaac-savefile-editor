@@ -710,21 +710,25 @@ class IsaacSaveEditor(tk.Tk):
                 "offset": 0x4C,
                 "title": ("기부 기계", "Donation Machine"),
                 "description": ("기부 기계", "Donation Machine"),
+                "num_bytes": 4,
             },
             "greed": {
                 "offset": 0x1B0,
                 "title": ("그리드 기계", "Greed Machine"),
                 "description": ("그리드 기계", "Greed Machine"),
+                "num_bytes": 4,
             },
             "streak": {
                 "offset": 0x54,
                 "title": ("연승", "Win Streak"),
                 "description": ("연승", "Win Streak"),
+                "num_bytes": 4,
             },
             "eden": {
                 "offset": 0x50,
                 "title": ("에덴 토큰", "Eden Tokens"),
                 "description": ("에덴 토큰", "Eden Tokens"),
+                "num_bytes": 4,
             },
         }
         self._numeric_order: List[str] = ["donation", "greed", "streak", "eden"]
@@ -3158,8 +3162,14 @@ class IsaacSaveEditor(tk.Tk):
         except Exception:
             return None
         try:
+            num_bytes = int(config.get("num_bytes", 2))
+        except (TypeError, ValueError):
+            num_bytes = 2
+        try:
             base_offset = section_offsets[1] + 0x4 + int(config["offset"])
-            return int(script.getInt(self.data, base_offset))
+            return int(
+                script.getInt(self.data, base_offset, num_bytes=num_bytes)
+            )
         except Exception:
             return None
 
@@ -3199,9 +3209,15 @@ class IsaacSaveEditor(tk.Tk):
             return False
 
         try:
+            num_bytes = int(config.get("num_bytes", 2))
+        except (TypeError, ValueError):
+            num_bytes = 2
+        try:
             section_offsets = script.getSectionOffsets(self.data)
             base_offset = section_offsets[1] + 0x4 + int(config["offset"])
-            updated = script.alterInt(self.data, base_offset, new_value)
+            updated = script.alterInt(
+                self.data, base_offset, new_value, num_bytes=num_bytes
+            )
             updated_with_checksum = script.updateChecksum(updated)
         except Exception as exc:  # pragma: no cover - defensive UI feedback
             messagebox.showerror(
@@ -3282,7 +3298,15 @@ class IsaacSaveEditor(tk.Tk):
             config = self._numeric_config[key]
             vars_map = self._numeric_vars[key]
             try:
-                value = script.getInt(self.data, base_offset + int(config["offset"]))
+                num_bytes = int(config.get("num_bytes", 2))
+            except (TypeError, ValueError):
+                num_bytes = 2
+            try:
+                value = script.getInt(
+                    self.data,
+                    base_offset + int(config["offset"]),
+                    num_bytes=num_bytes,
+                )
             except Exception:
                 value = 0
             value_str = str(value)
