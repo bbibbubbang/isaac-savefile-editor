@@ -65,10 +65,10 @@ def _style_code():
     if sys.platform == "win32":
        style.theme_use('winnative')
     focus_free_styles = [
-        'TNotebook.Tab', 'TNotebook', 'Notebook.Tab', 'Notebook', 'TButton',
-        'Button', 'Toolbutton', 'TCheckbutton', 'TRadiobutton', 'TMenubutton',
-        'TCombobox', 'TEntry', 'Horizontal.TScrollbar', 'Vertical.TScrollbar',
-        'Treeview', 'Treeview.Item'
+        'TNotebook.Tab', 'TNotebook', 'TButton', 'Toolbutton', 'TCheckbutton',
+        'TRadiobutton', 'TMenubutton', 'TCombobox', 'TEntry',
+        'Horizontal.TScrollbar', 'Vertical.TScrollbar', 'Treeview',
+        'Treeview.Item'
     ]
     for style_name in focus_free_styles:
         try:
