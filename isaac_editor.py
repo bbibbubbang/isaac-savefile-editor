@@ -83,7 +83,7 @@ class IconCheckboxTreeview(CheckboxTreeview):
     _STYLE_BASE = "IconCheckboxTreeview.Treeview"
     _STYLE_ICON = f"{_STYLE_BASE}.Icon"
     _STYLE_COMPACT = f"{_STYLE_BASE}.Compact"
-    _ICON_ROW_PADDING = 2
+    _ICON_ROW_PADDING = 0
     _COMPACT_ROW_PADDING = 6
     _ICON_PLACEHOLDER_SIZE = (MAX_ICON_HEIGHT, MAX_ICON_HEIGHT)
     _CONFIGURED_STYLES: Set[str] = set()
