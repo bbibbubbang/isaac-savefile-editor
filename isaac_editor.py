@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 import os
 import re
 import shutil
@@ -18,7 +19,7 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import tkinter.font as tkfont
-from typing import Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, List, Optional, Set
 
 from PIL import Image, ImageTk
 from ttkwidgets import CheckboxTreeview
@@ -308,6 +309,42 @@ class IsaacSaveEditor(tk.Tk):
         self._language_bindings.append(callback)
         callback()
 
+    def _adjust_widget_width(self, widget: tk.Widget, text: str) -> None:
+        if not text:
+            return
+
+        adjustable_classes: tuple[type[Any], ...] = (
+            tk.Label,
+            ttk.Label,
+            tk.Button,
+            ttk.Button,
+            tk.Checkbutton,
+            ttk.Checkbutton,
+            ttk.Combobox,
+        )
+
+        if not isinstance(widget, adjustable_classes):
+            return
+
+        try:
+            font_name = widget.cget("font") or "TkDefaultFont"
+        except tk.TclError:
+            font_name = "TkDefaultFont"
+
+        try:
+            font = tkfont.nametofont(font_name)
+        except tk.TclError:
+            font = tkfont.nametofont("TkDefaultFont")
+
+        zero_width = max(font.measure("0"), 1)
+        required_pixels = font.measure(text) + font.measure("  ")
+        required_chars = max(int(math.ceil(required_pixels / zero_width)), 1)
+
+        try:
+            widget.configure(width=required_chars)
+        except tk.TclError:
+            pass
+
     def _register_text(
         self,
         widget: tk.Widget,
@@ -317,7 +354,10 @@ class IsaacSaveEditor(tk.Tk):
         option: str = "text",
     ) -> None:
         def updater() -> None:
-            widget.configure(**{option: self._text(korean, english)})
+            translated = self._text(korean, english)
+            widget.configure(**{option: translated})
+            if option == "text":
+                self._adjust_widget_width(widget, translated)
 
         self._register_language_binding(updater)
 
