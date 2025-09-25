@@ -1,0 +1,92 @@
+{
+  "bul": [
+    "1. Щракнете върху „Изберете Източник Запазване на файл“, за да изберете файла за запазване на справка.",
+    "2. Щракнете върху „Изберете Target Save File“, за да изберете запазването на играта, за да презапишете.",
+    "3. Проверете „Презапишете автоматично“, за да запазите пътищата и копирайте автоматично изходния файл при стартиране."
+  ],
+  "cs_cz": [
+    "1. Klepnutím na tlačítko „Vyberte Source Uložit soubor“ a vyberte soubor Uložit odkaz.",
+    "2. Klepnutím na tlačítko „Vyberte cíl uložit soubor“ vyberte ve hře Uložit přepsání.",
+    "3. Zkontrolujte automaticky „Přepsat automaticky“ a uložte cesty a automaticky zkopírujte zdrojový soubor při spuštění."
+  ],
+  "de": [
+    "1. Klicken Sie auf \"Datei speichern Sie die Quelle speichern\", um die Referenzspeicherdatei auszuwählen.",
+    "2. Klicken Sie auf \"Zielspeicherdatei auswählen\", um das im Spiel gespeicherte In-Game-Speicher auf Überschreiber zu wählen.",
+    "3. Überprüfen Sie \"Überschreiben Sie automatisch\", um die Pfade zu speichern, und kopieren Sie die Quelldatei automatisch beim Start."
+  ],
+  "el_gr": [
+    "1. Κάντε κλικ στην επιλογή 'Επιλέξτε αρχείο αποθήκευσης προέλευσης' για να επιλέξετε το αρχείο αποθήκευσης αναφοράς.",
+    "2. Κάντε κλικ στην επιλογή 'Επιλέξτε το αρχείο αποθήκευσης' Για να επιλέξετε το in-game save to overwrite.",
+    "3. Ελέγξτε «Αντικαταστήστε αυτόματα» για να αποθηκεύσετε τις διαδρομές και να αντιγράψετε αυτόματα το αρχείο προέλευσης κατά την εκκίνηση."
+  ],
+  "fr": [
+    "1. Cliquez sur «Sélectionner le fichier Source Enregistrer» pour choisir le fichier de référence Enregistrer.",
+    "2. Cliquez sur «Sélectionner le fichier de sauvegarde cible» pour choisir l'enregistrement en jeu pour écraser.",
+    "3. Vérifiez automatiquement «écraser automatiquement» pour enregistrer les chemins et copier le fichier source automatiquement au démarrage."
+  ],
+  "it": [
+    "1. Fare clic su \"Seleziona il file di salvataggio di origine\" per scegliere il file di salvataggio di riferimento.",
+    "2. Fare clic su \"Seleziona il file di salvataggio di destinazione\" per scegliere il salvataggio in-game per sovrascrivere.",
+    "3. Controllare 'sovrascrivere automaticamente' per salvare i percorsi e copiare automaticamente il file di origine durante l'avvio."
+  ],
+  "ja_jp": [
+    "1. [ソースの保存ファイルを選択]をクリックして、参照保存ファイルを選択します。",
+    "2。[ターゲットの保存]をクリックして、ゲーム内の保存を選択して上書きします。",
+    "3. [自動的に上書き]を確認してパスを保存し、起動時にソースファイルを自動的にコピーします。"
+  ],
+  "nl_nl": [
+    "1. Klik op 'Selecteer Bronbestand opslaan' om het referentiebestand op te slaan.",
+    "2. Klik op 'Selecteer Doelbestand opslaan' om de in-game opslaan te kiezen om te overschrijven.",
+    "3. Controleer 'automatisch overschrijven' om de paden op te slaan en het bronbestand automatisch bij het opstarten te kopiëren."
+  ],
+  "pl": [
+    "1. Kliknij „Wybierz plik zapisz źródło”, aby wybrać plik zapisu odniesienia.",
+    "2. Kliknij „Wybierz Plik zapisz docelowy”, aby wybrać zapisz w grze, aby zastąpić.",
+    "3. Sprawdź „Oprowizowanie automatycznie”, aby zapisać ścieżki i automatycznie skopiować plik źródłowy podczas uruchamiania."
+  ],
+  "pt": [
+    "1. Clique em 'Selecione Origem Salvar arquivo' para escolher o arquivo de salvar referência.",
+    "2. Clique em 'Selecione o arquivo Salvar Target' para escolher o salvamento no jogo para substituir.",
+    "3. Verifique 'Substitua automaticamente' para salvar os caminhos e copiar o arquivo de origem automaticamente na inicialização."
+  ],
+  "pt_br": [
+    "1. Clique em 'Selecione Origem Salvar arquivo' para escolher o arquivo de salvar referência.",
+    "2. Clique em 'Selecione o arquivo Salvar Target' para escolher o salvamento no jogo para substituir.",
+    "3. Verifique 'Substitua automaticamente' para salvar os caminhos e copiar o arquivo de origem automaticamente na inicialização."
+  ],
+  "ro_ro": [
+    "1. Faceți clic pe „Selectați sursa de salvare fișier” pentru a alege fișierul de salvare de referință.",
+    "2. Faceți clic pe „Selectați Target Salvare Fișier” pentru a alege salvarea în joc pentru a rescrie.",
+    "3. Verificați „Overwrite automat” pentru a salva căile și copiați automat fișierul sursă la pornire."
+  ],
+  "ru": [
+    "1. Нажмите «Выберите исходный файл Сохранить», чтобы выбрать ссылочный файл Сохранить.",
+    "2. Нажмите «Выберите« Сохранить файл Target », чтобы выбрать внутриигровое сохранение для перезаписи.",
+    "3. Проверьте «перезапись автоматически», чтобы сохранить пути и автоматически скопировать исходный файл при запуске."
+  ],
+  "spa": [
+    "1. Haga clic en 'Seleccionar el archivo Guardar de origen' para elegir el archivo Guardar de referencia.",
+    "2. Haga clic en 'Seleccionar el archivo Guardar de destino' para elegir el Guardar en el juego para sobrescribir.",
+    "3. Verifique 'sobrescribir automáticamente' para guardar las rutas y copiar el archivo de origen automáticamente en el inicio."
+  ],
+  "tr_tr": [
+    "1. Referans Kaydet dosyasını seçmek için 'Kaynak Kaydet dosyasını seç' tıklatın.",
+    "2. Oyun içi kaydetmek için 'Hedef Kaydet dosyasını seçin' tıklayın.",
+    "3. Yolları kaydetmek ve kaynak dosyayı başlangıçta otomatik olarak kopyalamak için 'otomatik olarak yazın' kontrol edin."
+  ],
+  "uk_ua": [
+    "1. Клацніть \"Виберіть файл збереження джерела\", щоб вибрати файл \"Зберегти\".",
+    "2. Клацніть \"Виберіть цільовий файл\" Зберегти \", щоб вибрати в грі Зберегти для перезапису.",
+    "3. Перевірте \"переписати автоматично\", щоб зберегти шляхи та автоматично скопіювати вихідний файл при запуску."
+  ],
+  "vi": [
+    "1. Nhấp vào 'Chọn Nguồn Lưu tệp' để chọn Tệp Lưu tham chiếu.",
+    "2. Nhấp vào 'Chọn Tear Lưu tệp' để chọn lưu trong trò chơi để ghi đè.",
+    "3. Kiểm tra 'Ghi đè tự động' để lưu các đường dẫn và tự động sao chép tệp nguồn khi khởi động."
+  ],
+  "zh_cn": [
+    "1。单击“选择源保存文件”以选择参考保存文件。",
+    "2。单击“选择目标保存文件”以选择游戏中保存以覆盖。",
+    "3。检查“自动覆盖”以保存路径并在启动时自动复制源文件。"
+  ]
+}

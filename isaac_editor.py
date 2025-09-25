@@ -25,6 +25,7 @@ from ttkwidgets import CheckboxTreeview
 from ttkwidgets.checkboxtreeview import IM_CHECKED, IM_TRISTATE, IM_UNCHECKED
 
 import script
+import localization
 
 
 DATA_DIR = Path(__file__).resolve().parent
@@ -289,8 +290,18 @@ class IsaacSaveEditor(tk.Tk):
     def _text(self, korean: str, english: str | None = None) -> str:
         english = english or korean
         korean = korean or english
-        if getattr(self, "_language_code", "ko_kr") == "ko_kr":
+        language_code = getattr(self, "_language_code", "ko_kr")
+        translated = localization.translate_ui_string(
+            language_code,
+            english or "",
+            korean or "",
+        )
+        if translated:
+            return translated
+        if localization.is_korean(language_code):
             return korean or english or ""
+        if localization.is_english(language_code):
+            return english or korean or ""
         return english or korean or ""
 
     def _register_language_binding(self, callback: Callable[[], None]) -> None:
@@ -314,11 +325,7 @@ class IsaacSaveEditor(tk.Tk):
         self, notebook: ttk.Notebook, tab_widget: tk.Widget, korean: str, english: str
     ) -> None:
         def updater() -> None:
-            if self._english_ui_enabled:
-                text = english or korean or ""
-            else:
-                text = korean or english or ""
-            notebook.tab(tab_widget, text=text)
+            notebook.tab(tab_widget, text=self._text(korean, english))
 
         self._register_language_binding(updater)
 
@@ -490,11 +497,7 @@ class IsaacSaveEditor(tk.Tk):
 
     @staticmethod
     def _format_language_display(code: str, base_name: str) -> str:
-        special_names = {
-            "ko_kr": "한국어",
-            "en_us": "English",
-        }
-        return special_names.get(code.lower(), base_name or code)
+        return localization.get_language_display_name(code, base_name or code)
 
     def _update_default_loaded_text(self) -> None:
         self._default_loaded_text = self._text(
@@ -525,7 +528,7 @@ class IsaacSaveEditor(tk.Tk):
         if code == getattr(self, "_language_code", None):
             return
         self._language_code = code
-        self._english_ui_enabled = code != "ko_kr"
+        self._english_ui_enabled = localization.is_english(code)
         display_value = self._language_display_by_code.get(code, code)
         self._language_display_var.set(display_value)
         self.settings["language"] = code
@@ -624,7 +627,7 @@ class IsaacSaveEditor(tk.Tk):
         self.settings = self._load_settings()
         self._available_languages = self._load_available_languages()
         self._language_code = self._determine_initial_language()
-        self._english_ui_enabled = self._language_code != "ko_kr"
+        self._english_ui_enabled = localization.is_english(self._language_code)
         (
             self._language_display_options,
             self._language_display_by_code,
@@ -2774,17 +2777,7 @@ class IsaacSaveEditor(tk.Tk):
         )
         title_label.grid(column=0, row=0, sticky="w")
 
-        steps_ko = (
-            "1. '원본 세이브파일 열기' 버튼을 눌러 기준이 되는 세이브파일을 선택하세요.",
-            "2. '덮어쓰기할 세이브파일 열기' 버튼을 눌러 실제 게임 세이브파일을 선택하세요.",
-            "3. '세이브파일 자동 덮어쓰기'를 체크하면 경로가 저장되고, 프로그램 실행 시 원본 세이브파일이 자동으로 덮어쓰기 경로에 복사됩니다.",
-        )
-        steps_en = (
-            "1. Click 'Select Source Save File' to choose the reference save file.",
-            "2. Click 'Select Target Save File' to choose the in-game save to overwrite.",
-            "3. Check 'Overwrite Automatically' to save the paths and copy the source file automatically on startup.",
-        )
-        steps = steps_en if self._english_ui_enabled else steps_ko
+        steps = localization.get_auto_overwrite_steps(self._language_code)
         body_label = ttk.Label(
             container,
             text="\n\n".join(steps),
@@ -3010,7 +3003,7 @@ class IsaacSaveEditor(tk.Tk):
         settings_to_save["source_save_path"] = self.source_save_path
         settings_to_save["target_save_path"] = self.target_save_path
         language_code = getattr(self, "_language_code", "ko_kr")
-        settings_to_save["english_ui"] = language_code != "ko_kr"
+        settings_to_save["english_ui"] = localization.is_english(language_code)
         settings_to_save["language"] = language_code
         highlight_var = getattr(self, "_highlight_locked_items_var", None)
         settings_to_save["highlight_locked_items"] = (
