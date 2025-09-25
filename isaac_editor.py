@@ -1078,6 +1078,13 @@ class IsaacSaveEditor(tk.Tk):
                 english_first=english_first,
             )
             tree.insert("", "end", iid=item_id, text=display_text, values=("X", quality_display))
+            icon = self._get_secret_icon(
+                f"Item.{item_type}",
+                str(record.get("english", "")),
+                str(record.get("korean", "")),
+            )
+            if icon is not None:
+                tree.set_item_icon(item_id, icon)
             records[item_id] = {
                 "iid": item_id,
                 "name_sort": record.get("sort_default", record.get("name_sort")),
@@ -1510,6 +1517,7 @@ class IsaacSaveEditor(tk.Tk):
                 icon_asset = SecretIcon(pil_image=image, tk_image=tk_image)
                 self._secret_icon_store.append(icon_asset)
                 base_name = path.stem
+                base_name = re.sub(r"__.*$", "", base_name)
                 base_name = re.sub(r"^(Collectible|Trinket)_", "", base_name)
                 base_name = re.sub(r"_icon$", "", base_name)
                 base_name = re.sub(r"[_-]+", " ", base_name).strip()
