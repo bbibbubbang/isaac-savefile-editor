@@ -619,6 +619,26 @@
     "vi": "Làm nổi bật các bí mật bị khóa bằng màu đỏ",
     "zh_cn": "突出显示红色的锁定秘密"
   },
+  "Highlight Unlock Status": {
+    "bul": "Маркирайте състоянието на отключване",
+    "cs_cz": "Zvýraznit stav odemknutí",
+    "de": "Heben Sie den Status des Entsperrens hervor",
+    "el_gr": "Επισημάνετε την κατάσταση ξεκλειδώματος",
+    "fr": "Mettre en surbrillance le statut de déverrouillage",
+    "it": "Evidenzia lo stato di sblocco",
+    "ja_jp": "アンロック状態を強調表示します",
+    "nl_nl": "Markeer de ontgrendelingsstatus",
+    "pl": "Podświetl status odblokowania",
+    "pt": "Destaque o estado de desbloqueio",
+    "pt_br": "Destaque o status de desbloqueio",
+    "ro_ro": "Evidențiați starea de deblocare",
+    "ru": "Выделите статус разблокировки",
+    "spa": "Resaltar el estado de desbloqueo",
+    "tr_tr": "Kilit açma durumunu vurgulayın",
+    "uk_ua": "Виділіть статус розблокування",
+    "vi": "Làm nổi bật trạng thái mở khóa",
+    "zh_cn": "突出显示解锁状态"
+  },
   "How to Use Auto Overwrite": {
     "bul": "Как да използвате автоматично презаписване",
     "cs_cz": "Jak používat automatické přepsání",
