@@ -168,7 +168,7 @@ def _suppress_focus_indicators(root: tk.Misc) -> None:
             if value:
                 focus_background = value
                 break
-        configure: dict[str, object] = {"focuswidth": 0}
+        configure: dict[str, object] = {"focuswidth": 0, "focusthickness": 0}
         if focus_background:
             configure["focuscolor"] = focus_background
         try:
@@ -180,6 +180,9 @@ def _suppress_focus_indicators(root: tk.Misc) -> None:
                 style.map(
                     style_name,
                     focuscolor=[("!focus", focus_background), ("focus", focus_background)],
+                    bordercolor=[("!focus", focus_background), ("focus", focus_background)],
+                    lightcolor=[("!focus", focus_background), ("focus", focus_background)],
+                    darkcolor=[("!focus", focus_background), ("focus", focus_background)],
                 )
             except tk.TclError:
                 pass
@@ -496,8 +499,6 @@ class IsaacSaveEditor(tk.Tk):
             ttk.Label,
             tk.Button,
             ttk.Button,
-            tk.Checkbutton,
-            ttk.Checkbutton,
             ttk.Combobox,
         )
 
