@@ -64,11 +64,23 @@ def _style_code():
     style.configure('.', font = "TkDefaultFont")
     if sys.platform == "win32":
        style.theme_use('winnative')
-    try:
-        style.layout('TNotebook.Tab',
-                     _strip_focus_elements(style.layout('TNotebook.Tab')))
-    except tk.TclError:
-        pass
+    focus_free_styles = [
+        'TNotebook.Tab', 'TNotebook', 'TButton', 'Toolbutton', 'TCheckbutton',
+        'TRadiobutton', 'TMenubutton', 'TCombobox', 'TEntry',
+        'Horizontal.TScrollbar', 'Vertical.TScrollbar', 'Treeview',
+        'Treeview.Item'
+    ]
+    for style_name in focus_free_styles:
+        try:
+            layout = style.layout(style_name)
+        except tk.TclError:
+            continue
+        if not layout:
+            continue
+        try:
+            style.layout(style_name, _strip_focus_elements(layout))
+        except tk.TclError:
+            pass
     _style_code_ran = 1
 
 class Toplevel1:
