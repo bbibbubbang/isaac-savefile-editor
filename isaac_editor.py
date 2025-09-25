@@ -13,13 +13,16 @@ import json
 import os
 import re
 import shutil
+from dataclasses import dataclass
 from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import tkinter.font as tkfont
 from typing import Callable, Dict, List, Optional, Set
 
+from PIL import Image, ImageTk
 from ttkwidgets import CheckboxTreeview
+from ttkwidgets.checkboxtreeview import IM_CHECKED, IM_TRISTATE, IM_UNCHECKED
 
 import script
 
@@ -44,11 +47,92 @@ COMPLETION_GREED_MARK_INDEX = 8
 
 ITEM_UNLOCK_MASK = getattr(script, "ITEM_FLAG_SEEN", 0x01)
 
+MAX_ICON_HEIGHT = 32
+try:
+    _RESAMPLING_LANCZOS = Image.Resampling.LANCZOS  # type: ignore[attr-defined]
+except AttributeError:  # Pillow < 9.1 compatibility
+    _RESAMPLING_LANCZOS = Image.LANCZOS
+
+
+def _load_checkbox_asset(path: str) -> Image.Image:
+    with Image.open(path) as source:
+        return source.convert("RGBA")
+
+
+_CHECKBOX_BASE_IMAGES: Dict[str, Image.Image] = {
+    "checked": _load_checkbox_asset(IM_CHECKED),
+    "unchecked": _load_checkbox_asset(IM_UNCHECKED),
+    "tristate": _load_checkbox_asset(IM_TRISTATE),
+}
+
+
+@dataclass
+class SecretIcon:
+    pil_image: Image.Image
+    tk_image: ImageTk.PhotoImage
+
+
+class IconCheckboxTreeview(CheckboxTreeview):
+    """Checkbox treeview that can display custom icons alongside checkboxes."""
+
+    _ICON_SPACING = 4
+
+    def __init__(self, master: Optional[tk.Widget] = None, **kw):
+        super().__init__(master, **kw)
+        self._item_icons: Dict[str, Image.Image] = {}
+        self._composite_images: Dict[str, Dict[str, ImageTk.PhotoImage]] = {}
+
+    def set_item_icon(self, item_id: str, icon: SecretIcon) -> None:
+        self._item_icons[item_id] = icon.pil_image
+        self._composite_images.pop(item_id, None)
+        self._apply_item_image(item_id)
+
+    def change_state(self, item, state):  # type: ignore[override]
+        super().change_state(item, state)
+        if item in self._item_icons:
+            self._apply_item_image(item)
+
+    def _apply_item_image(self, item_id: str) -> None:
+        image = self._get_state_image(item_id, self._get_item_state(item_id))
+        self.item(item_id, image=image)
+
+    def _get_item_state(self, item_id: str) -> str:
+        tags = self.item(item_id, "tags")
+        for state in ("checked", "unchecked", "tristate"):
+            if state in tags:
+                return state
+        return "unchecked"
+
+    def _get_state_image(self, item_id: str, state: str) -> ImageTk.PhotoImage:
+        icon_image = self._item_icons.get(item_id)
+        if icon_image is None:
+            return getattr(self, f"im_{state}")
+        composites = self._composite_images.setdefault(item_id, {})
+        existing = composites.get(state)
+        if existing is not None:
+            return existing
+        base = _CHECKBOX_BASE_IMAGES[state]
+        composite = self._compose_images(base, icon_image)
+        photo = ImageTk.PhotoImage(composite, master=self)
+        composites[state] = photo
+        return photo
+
+    def _compose_images(self, checkbox: Image.Image, icon: Image.Image) -> Image.Image:
+        spacing = self._ICON_SPACING if icon.width > 0 else 0
+        width = checkbox.width + spacing + icon.width
+        height = max(checkbox.height, icon.height)
+        result = Image.new("RGBA", (width, height), (255, 255, 255, 0))
+        checkbox_y = (height - checkbox.height) // 2
+        icon_y = (height - icon.height) // 2
+        result.paste(checkbox, (0, checkbox_y), checkbox)
+        result.paste(icon, (checkbox.width + spacing, icon_y), icon)
+        return result
+
 
 class TreeManager:
-    """Manage sorting and column updates for :class:`CheckboxTreeview`."""
+    """Manage sorting and column updates for :class:`IconCheckboxTreeview`."""
 
-    def __init__(self, tree: CheckboxTreeview, records: Dict[str, Dict[str, object]]):
+    def __init__(self, tree: IconCheckboxTreeview, records: Dict[str, Dict[str, object]]):
         self.tree = tree
         self.records = records
         self._next_direction: Dict[str, bool] = {}
@@ -151,7 +235,7 @@ class IsaacSaveEditor(tk.Tk):
 
     def _register_heading_text(
         self,
-        tree: CheckboxTreeview,
+        tree: IconCheckboxTreeview,
         column: str,
         korean: str,
         english: str,
@@ -179,7 +263,7 @@ class IsaacSaveEditor(tk.Tk):
 
     def _make_tree_item_language_updater(
         self,
-        tree: CheckboxTreeview,
+        tree: IconCheckboxTreeview,
         item_id: str,
         category: str,
         korean: str,
@@ -351,7 +435,7 @@ class IsaacSaveEditor(tk.Tk):
         ) = self._load_completion_records()
         self._completion_character_var = tk.StringVar()
         self._completion_display_to_index: Dict[str, int] = {}
-        self._completion_tree: Optional[CheckboxTreeview] = None
+        self._completion_tree: Optional[IconCheckboxTreeview] = None
         self._completion_current_mark_ids: List[str] = []
         self._current_completion_char_index: Optional[int] = None
         self._completion_character_box: Optional[ttk.Combobox] = None
@@ -369,22 +453,22 @@ class IsaacSaveEditor(tk.Tk):
             self._secret_tab_order,
             self._secret_details_by_id,
         ) = self._load_secret_records(self._item_lookup_by_name)
-        self._secret_icon_store: List[tk.PhotoImage] = []
-        self._secret_icon_images_by_type: Dict[str, Dict[str, tk.PhotoImage]] = (
+        self._secret_icon_store: List[SecretIcon] = []
+        self._secret_icon_images_by_type: Dict[str, Dict[str, SecretIcon]] = (
             self._load_secret_icons()
         )
-        self._secret_trees: Dict[str, CheckboxTreeview] = {}
+        self._secret_trees: Dict[str, IconCheckboxTreeview] = {}
         self._secret_managers: Dict[str, TreeManager] = {}
         self._secret_alphabetical: Dict[str, bool] = {}
 
-        self._item_trees: Dict[str, CheckboxTreeview] = {}
+        self._item_trees: Dict[str, IconCheckboxTreeview] = {}
         self._item_managers: Dict[str, TreeManager] = {}
         self._item_alphabetical: Dict[str, bool] = {}
 
         self._secret_to_challenges: Dict[str, Set[str]] = {}
         self._challenge_to_secrets: Dict[str, Set[str]] = {}
         self._challenge_records = self._load_challenge_records()
-        self._challenge_tree: Optional[CheckboxTreeview] = None
+        self._challenge_tree: Optional[IconCheckboxTreeview] = None
         self._challenge_manager: Optional[TreeManager] = None
         self._challenge_ids: List[str] = [record["iid"] for record in self._challenge_records]
 
@@ -899,9 +983,9 @@ class IsaacSaveEditor(tk.Tk):
                 "text": display_text,
                 "values": tuple(values),
             }
-            if icon is not None:
-                insert_kwargs["image"] = icon
             tree.insert("", "end", **insert_kwargs)
+            if icon is not None:
+                tree.set_item_icon(item_id, icon)
             records[record["iid"]] = {
                 "iid": record["iid"],
                 "name_sort": record.get("sort_default", record.get("name_sort")),
@@ -1102,8 +1186,8 @@ class IsaacSaveEditor(tk.Tk):
         self._challenge_tree = tree
         self._challenge_manager = manager
 
-    def _create_completion_tree(self, container: ttk.Frame) -> CheckboxTreeview:
-        tree = CheckboxTreeview(container, columns=(), show="tree", selectmode="none")
+    def _create_completion_tree(self, container: ttk.Frame) -> IconCheckboxTreeview:
+        tree = IconCheckboxTreeview(container, columns=(), show="tree", selectmode="none")
         tree.grid(column=0, row=0, sticky="nsew")
         yscroll = ttk.Scrollbar(container, orient="vertical", command=tree.yview)
         yscroll.grid(column=1, row=0, sticky="ns")
@@ -1113,8 +1197,8 @@ class IsaacSaveEditor(tk.Tk):
         tree.configure(xscrollcommand=xscroll.set)
         return tree
 
-    def _create_tree(self, container: ttk.Frame, columns: tuple[str, ...]) -> CheckboxTreeview:
-        tree = CheckboxTreeview(container, columns=columns, show="tree headings", selectmode="none")
+    def _create_tree(self, container: ttk.Frame, columns: tuple[str, ...]) -> IconCheckboxTreeview:
+        tree = IconCheckboxTreeview(container, columns=columns, show="tree headings", selectmode="none")
         tree.grid(column=0, row=0, sticky="nsew")
         yscroll = ttk.Scrollbar(container, orient="vertical", command=tree.yview)
         yscroll.grid(column=1, row=0, sticky="ns")
@@ -1124,16 +1208,16 @@ class IsaacSaveEditor(tk.Tk):
         tree.configure(xscrollcommand=xscroll.set)
         return tree
 
-    def _lock_tree(self, tree: CheckboxTreeview) -> None:
+    def _lock_tree(self, tree: IconCheckboxTreeview) -> None:
         self._locked_tree_ids.add(id(tree))
 
-    def _unlock_tree(self, tree: CheckboxTreeview) -> None:
+    def _unlock_tree(self, tree: IconCheckboxTreeview) -> None:
         self._locked_tree_ids.discard(id(tree))
 
-    def _is_tree_locked(self, tree: CheckboxTreeview) -> bool:
+    def _is_tree_locked(self, tree: IconCheckboxTreeview) -> bool:
         return id(tree) in self._locked_tree_ids
 
-    def _get_checked_or_warn(self, tree: CheckboxTreeview) -> Set[str] | None:
+    def _get_checked_or_warn(self, tree: IconCheckboxTreeview) -> Set[str] | None:
         selected = set(tree.get_checked())
         if not selected:
             messagebox.showinfo(
@@ -1398,8 +1482,8 @@ class IsaacSaveEditor(tk.Tk):
                     ids_by_type["Map"].append(secret_id)
         return records_by_type, ids_by_type, tab_labels, type_order, details_by_id
 
-    def _load_secret_icons(self) -> Dict[str, Dict[str, tk.PhotoImage]]:
-        icons_by_type: Dict[str, Dict[str, tk.PhotoImage]] = {
+    def _load_secret_icons(self) -> Dict[str, Dict[str, SecretIcon]]:
+        icons_by_type: Dict[str, Dict[str, SecretIcon]] = {
             "Item.Passive": {},
             "Item.Active": {},
             "Trinket": {},
@@ -1414,10 +1498,17 @@ class IsaacSaveEditor(tk.Tk):
                 continue
             for path in sorted(folder.glob("*.png")):
                 try:
-                    image = tk.PhotoImage(file=str(path))
-                except tk.TclError:
+                    with Image.open(path) as source:
+                        image = source.convert("RGBA")
+                except (OSError, ValueError):
                     continue
-                self._secret_icon_store.append(image)
+                if image.height > MAX_ICON_HEIGHT and image.height > 0:
+                    ratio = MAX_ICON_HEIGHT / float(image.height)
+                    new_width = max(1, int(round(image.width * ratio)))
+                    image = image.resize((new_width, MAX_ICON_HEIGHT), _RESAMPLING_LANCZOS)
+                tk_image = ImageTk.PhotoImage(image)
+                icon_asset = SecretIcon(pil_image=image, tk_image=tk_image)
+                self._secret_icon_store.append(icon_asset)
                 base_name = path.stem
                 base_name = re.sub(r"^(Collectible|Trinket)_", "", base_name)
                 base_name = re.sub(r"_icon$", "", base_name)
@@ -1428,10 +1519,10 @@ class IsaacSaveEditor(tk.Tk):
                 for secret_type in secret_types:
                     mapping = icons_by_type.setdefault(secret_type, {})
                     for key in lookup_keys:
-                        mapping.setdefault(key, image)
+                        mapping.setdefault(key, icon_asset)
         return icons_by_type
 
-    def _get_secret_icon(self, secret_type: str, *names: str) -> Optional[tk.PhotoImage]:
+    def _get_secret_icon(self, secret_type: str, *names: str) -> Optional[SecretIcon]:
         mapping = self._secret_icon_images_by_type.get(secret_type)
         if not mapping:
             return None
