@@ -1558,7 +1558,7 @@ class IsaacSaveEditor(tk.Tk):
                 else:
                     secret_type = secret_type_raw
                 register_type(secret_type)
-                if secret_type_raw == "Pill":
+                if secret_type_raw in {"Item", "Pill"}:
                     english_name = unlock_name or secret_name
                 else:
                     english_name = secret_name or unlock_name
@@ -1629,6 +1629,7 @@ class IsaacSaveEditor(tk.Tk):
                 base_name = re.sub(r"^(Collectible|Trinket)_", "", base_name)
                 base_name = re.sub(r"_icon$", "", base_name)
                 base_name = re.sub(r"[_-]+", " ", base_name).strip()
+                base_name = re.sub(r"\b(item|trinket)\b$", "", base_name, flags=re.IGNORECASE).strip()
                 lookup_keys = self._build_lookup_keys(base_name)
                 if not lookup_keys:
                     continue
