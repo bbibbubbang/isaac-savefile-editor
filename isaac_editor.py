@@ -76,9 +76,16 @@ class IconCheckboxTreeview(CheckboxTreeview):
     """Checkbox treeview that can display custom icons alongside checkboxes."""
 
     _ICON_SPACING = 4
+    _STYLE_NAME = "IconCheckboxTreeview.Treeview"
+    _ROW_PADDING = 6
 
     def __init__(self, master: Optional[tk.Widget] = None, **kw):
         super().__init__(master, **kw)
+        style = ttk.Style(master)
+        row_height = max(img.height for img in _CHECKBOX_BASE_IMAGES.values())
+        row_height = max(row_height, MAX_ICON_HEIGHT) + self._ROW_PADDING
+        style.configure(self._STYLE_NAME, rowheight=row_height)
+        self.configure(style=self._STYLE_NAME)
         self._item_icons: Dict[str, Image.Image] = {}
         self._composite_images: Dict[str, Dict[str, ImageTk.PhotoImage]] = {}
 
@@ -490,6 +497,12 @@ class IsaacSaveEditor(tk.Tk):
             if not normalized:
                 continue
             candidates = {normalized, normalized.replace("'", "")}
+            hyphen_to_space = normalized.replace("-", " ")
+            if hyphen_to_space.strip():
+                candidates.add(" ".join(hyphen_to_space.split()))
+            hyphen_removed = normalized.replace("-", "")
+            if hyphen_removed.strip():
+                candidates.add(hyphen_removed)
             stripped = normalized.strip("!?.")
             if stripped:
                 candidates.add(stripped)
@@ -1518,6 +1531,8 @@ class IsaacSaveEditor(tk.Tk):
                 self._secret_icon_store.append(icon_asset)
                 base_name = path.stem
                 base_name = re.sub(r"__.*$", "", base_name)
+                if "___" in base_name:
+                    base_name = base_name.replace("___", "???")
                 base_name = re.sub(r"^(Collectible|Trinket)_", "", base_name)
                 base_name = re.sub(r"_icon$", "", base_name)
                 base_name = re.sub(r"[_-]+", " ", base_name).strip()
