@@ -28,6 +28,8 @@ def main(*args):
     '''Main entry point for the application.'''
     global root
     root = tk.Tk()
+    root.option_add('*highlightThickness', 0)
+    root.option_add('*takeFocus', 0)
     root.protocol( 'WM_DELETE_WINDOW' , root.destroy)
     # Creates a toplevel widget.
     global _top1, _w1

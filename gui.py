@@ -17,6 +17,33 @@ import gui_support
 import script
 from ttkwidgets import CheckboxTreeview
 
+
+def _strip_focus_elements(layout):
+    """Recursively remove focus related elements from a ttk layout."""
+    cleaned_layout = []
+    for element, options in layout:
+        if 'focus' in element.lower():
+            continue
+        new_options = dict(options)
+        if 'children' in new_options:
+            new_options['children'] = _strip_focus_elements(new_options['children'])
+        cleaned_layout.append((element, new_options))
+    return cleaned_layout
+
+
+def _remove_focus_highlight(widget):
+    """Recursively remove focus highlights from standard Tk widgets."""
+    try:
+        widget.configure(highlightthickness=0)
+    except tk.TclError:
+        pass
+    try:
+        widget.configure(takefocus=0)
+    except tk.TclError:
+        pass
+    for child in widget.winfo_children():
+        _remove_focus_highlight(child)
+
 _bgcolor = '#d9d9d9'
 _fgcolor = '#000000'
 _tabfg1 = 'black' 
@@ -36,7 +63,12 @@ def _style_code():
     style.theme_use('default')
     style.configure('.', font = "TkDefaultFont")
     if sys.platform == "win32":
-       style.theme_use('winnative')    
+       style.theme_use('winnative')
+    try:
+        style.layout('TNotebook.Tab',
+                     _strip_focus_elements(style.layout('TNotebook.Tab')))
+    except tk.TclError:
+        pass
     _style_code_ran = 1
 
 class Toplevel1:
@@ -402,7 +434,9 @@ class Toplevel1:
             self.Scrolledtreeview3.insert("", "end", str(num+1), text=challenge)
         gui_support.setInfo("challenges_widget", self.Scrolledtreeview3)
 
-        
+        _remove_focus_highlight(self.top)
+
+
 
 # The following code is added to facilitate the Scrolled widgets you specified.
 class AutoScroll(object):
