@@ -369,6 +369,10 @@ class IsaacSaveEditor(tk.Tk):
             self._secret_tab_order,
             self._secret_details_by_id,
         ) = self._load_secret_records(self._item_lookup_by_name)
+        self._secret_icon_store: List[tk.PhotoImage] = []
+        self._secret_icon_images_by_type: Dict[str, Dict[str, tk.PhotoImage]] = (
+            self._load_secret_icons()
+        )
         self._secret_trees: Dict[str, CheckboxTreeview] = {}
         self._secret_managers: Dict[str, TreeManager] = {}
         self._secret_alphabetical: Dict[str, bool] = {}
@@ -884,7 +888,20 @@ class IsaacSaveEditor(tk.Tk):
                 str(record.get("english", "")),
                 english_first=english_first,
             )
-            tree.insert("", "end", iid=item_id, text=display_text, values=tuple(values))
+            icon = self._get_secret_icon(
+                secret_type,
+                str(record.get("unlock_name") or ""),
+                str(record.get("secret_name") or ""),
+                str(record.get("english") or ""),
+            )
+            insert_kwargs = {
+                "iid": item_id,
+                "text": display_text,
+                "values": tuple(values),
+            }
+            if icon is not None:
+                insert_kwargs["image"] = icon
+            tree.insert("", "end", **insert_kwargs)
             records[record["iid"]] = {
                 "iid": record["iid"],
                 "name_sort": record.get("sort_default", record.get("name_sort")),
@@ -1380,6 +1397,52 @@ class IsaacSaveEditor(tk.Tk):
                     records_by_type["Map"].append(record.copy())
                     ids_by_type["Map"].append(secret_id)
         return records_by_type, ids_by_type, tab_labels, type_order, details_by_id
+
+    def _load_secret_icons(self) -> Dict[str, Dict[str, tk.PhotoImage]]:
+        icons_by_type: Dict[str, Dict[str, tk.PhotoImage]] = {
+            "Item.Passive": {},
+            "Item.Active": {},
+            "Trinket": {},
+        }
+        icon_root = DATA_DIR / "icons"
+        icon_sets = [
+            (icon_root / "items", ("Item.Passive", "Item.Active")),
+            (icon_root / "trinkets", ("Trinket",)),
+        ]
+        for folder, secret_types in icon_sets:
+            if not folder.is_dir():
+                continue
+            for path in sorted(folder.glob("*.png")):
+                try:
+                    image = tk.PhotoImage(file=str(path))
+                except tk.TclError:
+                    continue
+                self._secret_icon_store.append(image)
+                base_name = path.stem
+                base_name = re.sub(r"^(Collectible|Trinket)_", "", base_name)
+                base_name = re.sub(r"_icon$", "", base_name)
+                base_name = re.sub(r"[_-]+", " ", base_name).strip()
+                lookup_keys = self._build_lookup_keys(base_name)
+                if not lookup_keys:
+                    continue
+                for secret_type in secret_types:
+                    mapping = icons_by_type.setdefault(secret_type, {})
+                    for key in lookup_keys:
+                        mapping.setdefault(key, image)
+        return icons_by_type
+
+    def _get_secret_icon(self, secret_type: str, *names: str) -> Optional[tk.PhotoImage]:
+        mapping = self._secret_icon_images_by_type.get(secret_type)
+        if not mapping:
+            return None
+        for name in names:
+            if not name:
+                continue
+            for key in self._build_lookup_keys(name):
+                icon = mapping.get(key)
+                if icon is not None:
+                    return icon
+        return None
 
     def _load_item_records(
         self,
