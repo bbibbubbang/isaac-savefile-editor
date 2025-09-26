@@ -840,7 +840,7 @@ class IsaacSaveEditor(tk.Tk):
 
     def __init__(self) -> None:
         super().__init__()
-        self.title("Isaac Savefile Editor")
+        self.title("Isaac Savefile Editor v1.0.0")
 
         _suppress_focus_indicators(self)
 
