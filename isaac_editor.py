@@ -1065,7 +1065,11 @@ class IsaacSaveEditor(tk.Tk):
             if self._secret_ids_by_type.get(secret_type)
         ]
         boss_tab_type: Optional[str] = None
+        none_tab_type: Optional[str] = None
         for secret_type in secret_order:
+            if secret_type == "None" and none_tab_type is None:
+                none_tab_type = secret_type
+                continue
             if secret_type == "Boss" and boss_tab_type is None:
                 boss_tab_type = secret_type
                 continue
@@ -1075,6 +1079,9 @@ class IsaacSaveEditor(tk.Tk):
 
         notebook.add(completion_tab)
         self._register_tab_text(notebook, completion_tab, "체크리스트", "Checklist")
+
+        if none_tab_type:
+            add_secret_tab(none_tab_type)
 
     def _set_initial_window_size(self) -> None:
         notebook = getattr(self, "notebook", None)
