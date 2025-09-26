@@ -2067,6 +2067,22 @@ class IsaacSaveEditor(tk.Tk):
                     register_type("Map")
                     records_by_type["Map"].append(record.copy())
                     ids_by_type["Map"].append(secret_id)
+        if "Pickup" in type_order:
+            type_order.remove("Pickup")
+            if "Pill" in type_order:
+                pill_index = type_order.index("Pill")
+                type_order.insert(pill_index + 1, "Pickup")
+            elif "None" in type_order:
+                type_order.insert(type_order.index("None"), "Pickup")
+            else:
+                type_order.append("Pickup")
+        if "None" in type_order:
+            type_order = [
+                secret_type
+                for secret_type in type_order
+                if secret_type != "None"
+            ]
+            type_order.append("None")
         return records_by_type, ids_by_type, tab_labels, type_order, details_by_id
 
     def _load_secret_icons(self) -> Dict[str, Dict[str, SecretIcon]]:
