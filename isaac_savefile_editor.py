@@ -2832,6 +2832,7 @@ class IsaacSaveEditor(tk.Tk):
             return False
         self.data = updated_with_checksum
         self.refresh_current_values()
+        self._apply_auto_overwrite_if_enabled()
         return True
     # ------------------------------------------------------------------
     # Tree refresh helpers
@@ -3445,6 +3446,7 @@ class IsaacSaveEditor(tk.Tk):
             return False
 
         self.refresh_current_values(update_entry=not preserve_entry)
+        self._apply_auto_overwrite_if_enabled()
         return True
 
     def set_donation_greed_eden_to_max(self, *, auto_trigger: bool = False) -> None:
