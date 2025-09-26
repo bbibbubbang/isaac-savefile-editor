@@ -1,0 +1,10 @@
+pyinstaller --onedir --windowed --name isaac_savefile_editor `
+  --add-data "ui_completion_marks.csv;." `
+  --add-data "ui_secrets.csv;." `
+  --add-data "ui_items.csv;." `
+  --add-data "ui_challenges.csv;." `
+  --add-data "language;language" `
+  --add-data "i18n;i18n" `
+  --add-data "icons/items;icons/items" `
+  --add-data "icons/trinkets;icons/trinkets" `
+  isaac_savefile_editor.py
