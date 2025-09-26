@@ -190,7 +190,8 @@ def getItems(data):
     item_data = []
     offs = getSectionOffsets(data)[3]
     for i in range(1, 733):
-        item_data.append(getInt(data, offs+i, num_bytes=1))
+        entry_offset = offs + (i - 1) * _ITEM_ENTRY_STRIDE + 1
+        item_data.append(getInt(data, entry_offset, num_bytes=1))
     return item_data
 
 def getChallenges(data):
@@ -300,6 +301,7 @@ def updateChallenges(data, challenge_list):
     return data
 
 _SKIPPED_ITEM_IDS = {43, 59, 61, 235, 587, 613, 620, 630, 648, 656, 662, 666, 718}
+_ITEM_ENTRY_STRIDE = 4
 
 
 def _normalize_item_ids(item_list):
@@ -320,13 +322,17 @@ def updateItems(data, item_list):
     for item_id in range(1, 733):
         if item_id in _SKIPPED_ITEM_IDS:
             continue
-        current_val = getInt(data, offs + item_id, num_bytes=1)
-        if item_id in selected_ids:
-            new_val = current_val | ITEM_FLAG_SEEN | ITEM_FLAG_TOUCHED | ITEM_FLAG_COLLECTED
-        else:
-            new_val = current_val & ~ITEM_UNLOCK_CLEAR_MASK
-        if new_val != current_val:
-            data = alterInt(data, offs + item_id, new_val, num_bytes=1)
+        entry_base = offs + (item_id - 1) * _ITEM_ENTRY_STRIDE
+        unlock = item_id in selected_ids
+        for offset in (entry_base, entry_base + 1):
+            current_val = getInt(data, offset, num_bytes=1)
+            if unlock:
+                new_val = current_val | ITEM_FLAG_SEEN | ITEM_FLAG_TOUCHED | ITEM_FLAG_COLLECTED
+            else:
+                new_val = current_val & ~ITEM_UNLOCK_CLEAR_MASK
+            if new_val != current_val:
+                new_byte = bytes((new_val & 0xFF,))
+                data = data[:offset] + new_byte + data[offset + 1:]
     return data
 
 def updateChecksum(data):
