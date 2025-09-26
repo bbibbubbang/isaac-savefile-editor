@@ -2,10 +2,10 @@
 ![](./image/2.png)
 ![](./image/3.png)
 ![](./image/4.png)
-# Isaac Savefile Editor v1.0.0
+# Isaac Savefile Editor
 
 ## 소개
-Isaac Savefile Editor v1.0.0는 *The Binding of Isaac: Repentance+* 세이브 데이터를 읽고 수정할 수 있는 오픈 소스 도구입니다.
+Isaac Savefile Editor는 *The Binding of Isaac: Repentance+* 세이브 데이터를 읽고 수정할 수 있는 오픈 소스 도구입니다.
 이 도구는 해금할 아이템 등의 도전과제, 챌린지를 *완료* 또는 *미완료* 상태로 변경하여 해금유무를 변경하는 방식입니다.
 
 ## 설치 및 실행
@@ -24,10 +24,10 @@ Repentance+ 온라인 베타 버전에서 검증되지 않았습니다. 온라�
 
 ---
 
-# Isaac Savefile Editor v1.0.0
+# Isaac Savefile Editor
 
 ## Introduction
-Isaac Savefile Editor v1.0.0 is an open-source tool that allows you to read and modify save data for *The Binding of Isaac: Repentance+*.
+Isaac Savefile Editor is an open-source tool that allows you to read and modify save data for *The Binding of Isaac: Repentance+*.
 This tool changes the unlock status of items, achievements, and challenges by setting them to either *completed* or *not completed*.
 
 ## Installation & Execution
