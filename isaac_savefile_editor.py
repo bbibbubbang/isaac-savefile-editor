@@ -3002,11 +3002,16 @@ class IsaacSaveEditor(tk.Tk):
         new_value_label = ttk.Label(section)
         new_value_label.grid(column=0, row=1, sticky="w", pady=(8, 0))
         self._register_text(new_value_label, "새 값:", "New Value:")
-        entry = ttk.Entry(section, textvariable=entry_var, width=12)
-        entry.grid(column=1, row=1, sticky="w", pady=(8, 0))
+        entry_button_frame = ttk.Frame(section)
+        entry_button_frame.grid(
+            column=1, row=1, columnspan=2, sticky="w", pady=(8, 0)
+        )
 
-        apply_button = ttk.Button(section, command=command)
-        apply_button.grid(column=2, row=1, sticky="e", padx=(10, 0), pady=(8, 0))
+        entry = ttk.Entry(entry_button_frame, textvariable=entry_var, width=12)
+        entry.pack(side="left")
+
+        apply_button = ttk.Button(entry_button_frame, command=command)
+        apply_button.pack(side="left", padx=(6, 0))
         self._register_text(apply_button, "적용", "Apply")
 
     def _select_source_save_file(self) -> None:
