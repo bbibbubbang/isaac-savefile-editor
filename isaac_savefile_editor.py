@@ -1035,6 +1035,15 @@ class IsaacSaveEditor(tk.Tk):
         return ""
 
     @staticmethod
+    def _paths_equal(first: str, second: str) -> bool:
+        if not first or not second:
+            return False
+        try:
+            return os.path.samefile(first, second)
+        except OSError:
+            return os.path.abspath(first) == os.path.abspath(second)
+
+    @staticmethod
     def _path_contains_steam(path: str) -> bool:
         normalized = path.replace("\\", "/").casefold()
         return "steam" in normalized
@@ -2850,7 +2859,7 @@ class IsaacSaveEditor(tk.Tk):
             return False
         self.data = updated_with_checksum
         self.refresh_current_values()
-        self._apply_auto_overwrite_if_enabled()
+        self._apply_auto_overwrite_if_enabled(prefer_loaded_file=True)
         return True
     # ------------------------------------------------------------------
     # Tree refresh helpers
@@ -3170,17 +3179,25 @@ class IsaacSaveEditor(tk.Tk):
             return
         self.set_donation_greed_eden_to_max(auto_trigger=True)
 
-    def _apply_auto_overwrite_if_enabled(self, *, show_message: bool = False) -> None:
+    def _apply_auto_overwrite_if_enabled(
+        self, *, show_message: bool = False, prefer_loaded_file: bool = False
+    ) -> None:
         if not _variable_to_bool(self.auto_overwrite_var):
             return
-        if not self.source_save_path or not self.target_save_path:
+        has_source = bool(self.source_save_path)
+        if prefer_loaded_file and self.filename:
+            has_source = has_source or os.path.exists(self.filename)
+        if not has_source or not self.target_save_path:
             return
-        self._overwrite_target_save(show_message=show_message)
+        self._overwrite_target_save(
+            show_message=show_message, prefer_loaded_file=prefer_loaded_file
+        )
 
-    def _overwrite_target_save(self, *, show_message: bool) -> None:
-        source = self.source_save_path
+    def _overwrite_target_save(
+        self, *, show_message: bool, prefer_loaded_file: bool
+    ) -> None:
         target = self.target_save_path
-        if not source or not target:
+        if not target:
             if show_message:
                 messagebox.showwarning(
                     self._text("경로 없음", "Missing Paths"),
@@ -3190,6 +3207,33 @@ class IsaacSaveEditor(tk.Tk):
                     ),
                 )
             return
+
+        source = self.source_save_path
+
+        if prefer_loaded_file and self.filename:
+            loaded_source = self.filename
+            if os.path.exists(loaded_source):
+                if not source or not self._paths_equal(source, loaded_source):
+                    source = loaded_source
+                if not self._paths_equal(self.source_save_path, loaded_source):
+                    self.source_save_path = loaded_source
+                    self.settings["source_save_path"] = loaded_source
+                    self._update_source_display()
+                    self._save_settings()
+            else:
+                loaded_source = ""
+
+        if not source:
+            if show_message:
+                messagebox.showwarning(
+                    self._text("경로 없음", "Missing Paths"),
+                    self._text(
+                        "원본과 덮어쓸 세이브파일을 모두 선택해주세요.",
+                        "Please select both the source and target save files.",
+                    ),
+                )
+            return
+
         if not os.path.exists(source):
             messagebox.showerror(
                 self._text("덮어쓰기 실패", "Overwrite Failed"),
@@ -3468,7 +3512,7 @@ class IsaacSaveEditor(tk.Tk):
             return False
 
         self.refresh_current_values(update_entry=not preserve_entry)
-        self._apply_auto_overwrite_if_enabled()
+        self._apply_auto_overwrite_if_enabled(prefer_loaded_file=True)
         return True
 
     def set_donation_greed_eden_to_max(self, *, auto_trigger: bool = False) -> None:
