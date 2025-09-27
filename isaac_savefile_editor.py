@@ -892,6 +892,7 @@ class IsaacSaveEditor(tk.Tk):
 
         self._auto_set_999_default = bool(self.settings.get("auto_set_999", False))
         self._auto_overwrite_default = bool(self.settings.get("auto_overwrite", False))
+        self._auto_overwrite_executed = False
         self.source_save_path = self._normalize_save_path(self.settings.get("source_save_path"))
         self.target_save_path = self._normalize_save_path(self.settings.get("target_save_path"))
         self.settings["source_save_path"] = self.source_save_path
@@ -3184,18 +3185,22 @@ class IsaacSaveEditor(tk.Tk):
     ) -> None:
         if not _variable_to_bool(self.auto_overwrite_var):
             return
+        if getattr(self, "_auto_overwrite_executed", False):
+            return
         has_source = bool(self.source_save_path)
         if prefer_loaded_file and self.filename:
             has_source = has_source or os.path.exists(self.filename)
         if not has_source or not self.target_save_path:
             return
-        self._overwrite_target_save(
+        success = self._overwrite_target_save(
             show_message=show_message, prefer_loaded_file=prefer_loaded_file
         )
+        if success:
+            self._auto_overwrite_executed = True
 
     def _overwrite_target_save(
         self, *, show_message: bool, prefer_loaded_file: bool
-    ) -> None:
+    ) -> bool:
         target = self.target_save_path
         if not target:
             if show_message:
@@ -3206,7 +3211,7 @@ class IsaacSaveEditor(tk.Tk):
                         "Please select both the source and target save files.",
                     ),
                 )
-            return
+            return False
 
         source = self.source_save_path
 
@@ -3232,14 +3237,14 @@ class IsaacSaveEditor(tk.Tk):
                         "Please select both the source and target save files.",
                     ),
                 )
-            return
+            return False
 
         if not os.path.exists(source):
             messagebox.showerror(
                 self._text("덮어쓰기 실패", "Overwrite Failed"),
                 self._text("원본 세이브파일을 찾을 수 없습니다.", "The source save file could not be found."),
             )
-            return
+            return False
         target_dir = os.path.dirname(target)
         if target_dir and not os.path.exists(target_dir):
             messagebox.showerror(
@@ -3249,7 +3254,7 @@ class IsaacSaveEditor(tk.Tk):
                     "The target save path could not be found.",
                 ),
             )
-            return
+            return False
         try:
             shutil.copyfile(source, target)
         except OSError as exc:
@@ -3258,12 +3263,13 @@ class IsaacSaveEditor(tk.Tk):
                 self._text("세이브파일을 덮어쓰지 못했습니다.", "Could not overwrite the save file.")
                 + f"\n{exc}",
             )
-            return
+            return False
         if show_message:
             messagebox.showinfo(
                 self._text("덮어쓰기 완료", "Overwrite Complete"),
                 self._text("원본 세이브파일을 덮어썼습니다.", "The source save file has been copied."),
             )
+        return True
 
     def open_save_file(self) -> None:
         filename = filedialog.askopenfilename(
