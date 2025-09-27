@@ -229,6 +229,24 @@ def _suppress_focus_indicators(root: tk.Misc) -> None:
             continue
         _normalize_focus_color(style_name)
 
+
+def _variable_to_bool(var: Optional[tk.Variable]) -> bool:
+    """Safely convert a Tkinter variable value to ``bool``."""
+
+    if var is None:
+        return False
+    try:
+        value = var.get()
+    except tk.TclError:
+        return False
+    if isinstance(value, str):
+        normalized = value.strip().lower()
+        if normalized in {"1", "true", "yes", "on"}:
+            return True
+        if normalized in {"0", "false", "no", "off", ""}:
+            return False
+    return bool(value)
+
 TOTAL_COMPLETION_MARKS = 12
 
 DEFAULT_COMPLETION_UNLOCK_MASK = getattr(script, "COMPLETION_DEFAULT_UNLOCK_MASK", 0x03)
@@ -2518,7 +2536,7 @@ class IsaacSaveEditor(tk.Tk):
         enabled: Optional[bool] = None,
     ) -> None:
         if enabled is None:
-            enabled = bool(self._highlight_locked_secrets_var.get())
+            enabled = _variable_to_bool(self._highlight_locked_secrets_var)
         tags = set(tree.item(secret_id, "tags"))
         if enabled:
             if unlocked:
@@ -2533,7 +2551,7 @@ class IsaacSaveEditor(tk.Tk):
         tree.item(secret_id, tags=tuple(tags))
 
     def _update_secret_highlighting(self) -> None:
-        enabled = bool(self._highlight_locked_secrets_var.get())
+        enabled = _variable_to_bool(self._highlight_locked_secrets_var)
         for secret_type, tree in self._secret_trees.items():
             tree.tag_configure(LOCKED_SECRET_TAG, background=LOCKED_SECRET_BACKGROUND)
             tree.tag_configure(UNLOCKED_SECRET_TAG, background=UNLOCKED_SECRET_BACKGROUND)
@@ -2549,7 +2567,7 @@ class IsaacSaveEditor(tk.Tk):
                 )
 
     def _on_highlight_locked_secrets_toggle(self) -> None:
-        enabled = bool(self._highlight_locked_secrets_var.get())
+        enabled = _variable_to_bool(self._highlight_locked_secrets_var)
         self.settings["highlight_locked_secrets"] = enabled
         self._save_settings()
         self._update_secret_highlighting()
@@ -2563,7 +2581,7 @@ class IsaacSaveEditor(tk.Tk):
         enabled: Optional[bool] = None,
     ) -> None:
         if enabled is None:
-            enabled = bool(self._highlight_locked_items_var.get())
+            enabled = _variable_to_bool(self._highlight_locked_items_var)
         tags = set(tree.item(item_id, "tags"))
         if enabled:
             if unlocked:
@@ -2578,7 +2596,7 @@ class IsaacSaveEditor(tk.Tk):
         tree.item(item_id, tags=tuple(tags))
 
     def _update_item_highlighting(self) -> None:
-        enabled = bool(self._highlight_locked_items_var.get())
+        enabled = _variable_to_bool(self._highlight_locked_items_var)
         for item_type, tree in self._item_trees.items():
             tree.tag_configure(LOCKED_ITEM_TAG, background=LOCKED_ITEM_BACKGROUND)
             tree.tag_configure(UNLOCKED_ITEM_TAG, background=UNLOCKED_ITEM_BACKGROUND)
@@ -2594,7 +2612,7 @@ class IsaacSaveEditor(tk.Tk):
                 )
 
     def _on_highlight_locked_items_toggle(self) -> None:
-        enabled = bool(self._highlight_locked_items_var.get())
+        enabled = _variable_to_bool(self._highlight_locked_items_var)
         self.settings["highlight_locked_items"] = enabled
         self._save_settings()
         self._update_item_highlighting()
@@ -2893,7 +2911,7 @@ class IsaacSaveEditor(tk.Tk):
             except Exception:
                 secrets = []
             unlocked_ids = {str(index + 1) for index, value in enumerate(secrets) if value != 0}
-        highlight_enabled = bool(self._highlight_locked_secrets_var.get())
+        highlight_enabled = _variable_to_bool(self._highlight_locked_secrets_var)
         for secret_type, manager in self._secret_managers.items():
             tree = self._secret_trees.get(secret_type)
             if tree is None:
@@ -2929,7 +2947,7 @@ class IsaacSaveEditor(tk.Tk):
                 for index, value in enumerate(items)
                 if value & ITEM_UNLOCK_MASK
             }
-        highlight_enabled = bool(self._highlight_locked_items_var.get())
+        highlight_enabled = _variable_to_bool(self._highlight_locked_items_var)
         for item_type, tree in self._item_trees.items():
             manager = self._item_managers.get(item_type)
             if manager is None:
@@ -3073,14 +3091,14 @@ class IsaacSaveEditor(tk.Tk):
         self._apply_auto_overwrite_if_enabled(show_message=True)
 
     def _on_auto_set_999_toggle(self) -> None:
-        enabled = bool(self.auto_set_999_var.get())
+        enabled = _variable_to_bool(self.auto_set_999_var)
         self.settings["auto_set_999"] = enabled
         self._save_settings()
         if enabled:
             self._apply_auto_999_if_needed()
 
     def _on_auto_overwrite_toggle(self) -> None:
-        enabled = bool(self.auto_overwrite_var.get())
+        enabled = _variable_to_bool(self.auto_overwrite_var)
         self.settings["auto_overwrite"] = enabled
         self._save_settings()
         if enabled:
@@ -3146,14 +3164,14 @@ class IsaacSaveEditor(tk.Tk):
         help_window.geometry(f"+{pos_x}+{pos_y}")
 
     def _apply_auto_999_if_needed(self) -> None:
-        if not bool(self.auto_set_999_var.get()):
+        if not _variable_to_bool(self.auto_set_999_var):
             return
         if self.data is None or not self.filename:
             return
         self.set_donation_greed_eden_to_max(auto_trigger=True)
 
     def _apply_auto_overwrite_if_enabled(self, *, show_message: bool = False) -> None:
-        if not bool(self.auto_overwrite_var.get()):
+        if not _variable_to_bool(self.auto_overwrite_var):
             return
         if not self.source_save_path or not self.target_save_path:
             return
@@ -3254,13 +3272,14 @@ class IsaacSaveEditor(tk.Tk):
         return True
 
     def _on_remember_path_toggle(self) -> None:
-        self.settings["remember_path"] = bool(self.remember_path_var.get())
-        if self.settings["remember_path"] and self.filename:
+        remember_enabled = _variable_to_bool(self.remember_path_var)
+        self.settings["remember_path"] = remember_enabled
+        if remember_enabled and self.filename:
             self.settings["last_path"] = self.filename
         self._save_settings()
 
     def _open_remembered_file_if_available(self) -> None:
-        if not bool(self.remember_path_var.get()):
+        if not _variable_to_bool(self.remember_path_var):
             return
         last_path_setting = self.settings.get("last_path")
         if not isinstance(last_path_setting, str) or not last_path_setting:
@@ -3331,26 +3350,24 @@ class IsaacSaveEditor(tk.Tk):
 
     def _save_settings(self) -> None:
         settings_to_save = DEFAULT_SETTINGS.copy()
-        settings_to_save["remember_path"] = bool(self.remember_path_var.get())
+        settings_to_save["remember_path"] = _variable_to_bool(self.remember_path_var)
         last_path_setting = self.settings.get("last_path")
         if isinstance(last_path_setting, str):
             settings_to_save["last_path"] = last_path_setting
         auto_set_var = getattr(self, "auto_set_999_var", None)
         auto_overwrite_var = getattr(self, "auto_overwrite_var", None)
-        settings_to_save["auto_set_999"] = bool(auto_set_var.get()) if auto_set_var else False
-        settings_to_save["auto_overwrite"] = bool(auto_overwrite_var.get()) if auto_overwrite_var else False
+        settings_to_save["auto_set_999"] = _variable_to_bool(auto_set_var)
+        settings_to_save["auto_overwrite"] = _variable_to_bool(auto_overwrite_var)
         settings_to_save["source_save_path"] = self.source_save_path
         settings_to_save["target_save_path"] = self.target_save_path
         language_code = getattr(self, "_language_code", "ko_kr")
         settings_to_save["english_ui"] = localization.is_english(language_code)
         settings_to_save["language"] = language_code
         highlight_var = getattr(self, "_highlight_locked_items_var", None)
-        settings_to_save["highlight_locked_items"] = (
-            bool(highlight_var.get()) if highlight_var else False
-        )
+        settings_to_save["highlight_locked_items"] = _variable_to_bool(highlight_var)
         highlight_secret_var = getattr(self, "_highlight_locked_secrets_var", None)
-        settings_to_save["highlight_locked_secrets"] = (
-            bool(highlight_secret_var.get()) if highlight_secret_var else False
+        settings_to_save["highlight_locked_secrets"] = _variable_to_bool(
+            highlight_secret_var
         )
         self.settings = settings_to_save
         try:
