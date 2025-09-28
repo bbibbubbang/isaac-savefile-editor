@@ -3531,11 +3531,19 @@ class IsaacSaveEditor(tk.Tk):
             return
         original_streak = self._read_numeric_value("streak")
 
+        updated_fields: list[str] = []
         for field_key in ("donation", "greed", "eden"):
             if not self.apply_field(
                 field_key, preset=999, preserve_entry=not auto_trigger
             ):
                 break
+            updated_fields.append(field_key)
+
+        if not auto_trigger:
+            for field_key in updated_fields:
+                entry_var = self._numeric_vars.get(field_key, {}).get("entry")
+                if entry_var is not None:
+                    entry_var.set("999")
 
         if original_streak is None:
             return
