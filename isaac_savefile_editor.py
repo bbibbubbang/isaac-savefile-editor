@@ -1155,8 +1155,8 @@ class IsaacSaveEditor(tk.Tk):
         remember_check.grid(column=0, row=1, columnspan=2, sticky="w", pady=(8, 0))
         self._register_text(
             remember_check,
-            "세이브파일 경로 기억",
-            "Remember Save File Path",
+            "세이브파일 자동 불러오기",
+            "Auto Load Save File",
         )
 
         self.auto_set_999_var = tk.BooleanVar(value=self._auto_set_999_default)
@@ -3368,6 +3368,52 @@ class IsaacSaveEditor(tk.Tk):
             )
             self.loaded_file_var.set(self._default_loaded_text)
 
+    def _reload_save_file_if_enabled(self) -> bool:
+        if not _variable_to_bool(self.remember_path_var):
+            return True
+
+        candidate_paths: list[str] = []
+        if self.filename:
+            candidate_paths.append(self.filename)
+
+        last_path_setting = self.settings.get("last_path")
+        if (
+            isinstance(last_path_setting, str)
+            and last_path_setting
+            and not any(
+                self._paths_equal(last_path_setting, candidate)
+                for candidate in candidate_paths
+            )
+        ):
+            candidate_paths.append(last_path_setting)
+
+        existing_path: str | None = None
+        for path in candidate_paths:
+            if not path:
+                continue
+            if not os.path.exists(path):
+                continue
+            existing_path = path
+            if self._load_file(path, show_errors=False):
+                return True
+
+        if existing_path is None:
+            message = self._text(
+                "저장된 세이브 파일 경로를 찾을 수 없습니다. 새로 선택해주세요.",
+                "The stored save file path could not be found. Please choose a new file.",
+            )
+        else:
+            message = self._text(
+                "저장된 세이브 파일을 불러오지 못했습니다. 파일이 사용 중인지 확인해주세요.",
+                "Could not open the stored save file. Please ensure it is not in use.",
+            )
+
+        messagebox.showwarning(
+            self._text("자동 불러오기 실패", "Auto Load Failed"),
+            message,
+        )
+        return False
+
     def _perform_startup_tasks(self) -> None:
         self._open_remembered_file_if_available()
         self._apply_auto_overwrite_if_enabled()
@@ -3463,8 +3509,15 @@ class IsaacSaveEditor(tk.Tk):
             return None
 
     def apply_field(
-        self, key: str, preset: int | None = None, *, preserve_entry: bool = False
+        self,
+        key: str,
+        preset: int | None = None,
+        *,
+        preserve_entry: bool = False,
+        reload_before_apply: bool = True,
     ) -> bool:
+        if reload_before_apply and not self._reload_save_file_if_enabled():
+            return False
         if key not in self._numeric_config:
             return False
 
@@ -3546,9 +3599,15 @@ class IsaacSaveEditor(tk.Tk):
         original_streak = self._read_numeric_value("streak")
 
         updated_fields: list[str] = []
+        if not auto_trigger and not self._reload_save_file_if_enabled():
+            return
+
         for field_key in ("donation", "greed", "eden"):
             if not self.apply_field(
-                field_key, preset=999, preserve_entry=not auto_trigger
+                field_key,
+                preset=999,
+                preserve_entry=not auto_trigger,
+                reload_before_apply=False,
             ):
                 break
             updated_fields.append(field_key)
@@ -3565,7 +3624,10 @@ class IsaacSaveEditor(tk.Tk):
         current_streak = self._read_numeric_value("streak")
         if current_streak is not None and current_streak != original_streak:
             self.apply_field(
-                "streak", preset=original_streak, preserve_entry=not auto_trigger
+                "streak",
+                preset=original_streak,
+                preserve_entry=not auto_trigger,
+                reload_before_apply=False,
             )
 
     def refresh_current_values(self, *, update_entry: bool = True) -> None:
