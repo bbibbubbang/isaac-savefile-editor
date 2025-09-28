@@ -1236,6 +1236,17 @@ class IsaacSaveEditor(tk.Tk):
         )
         target_label.grid(column=1, row=2, sticky="w", padx=(10, 0), pady=(8, 0))
 
+        overwrite_button = ttk.Button(
+            overwrite_frame,
+            command=self._overwrite_target_save_from_button,
+        )
+        overwrite_button.grid(column=0, row=3, sticky="w", pady=(8, 0))
+        self._register_text(
+            overwrite_button,
+            "세이브파일 덮어쓰기",
+            "Overwrite Save File",
+        )
+
         numeric_start_row = 2
         for index, key in enumerate(self._numeric_order):
             row_index = numeric_start_row + index
@@ -3197,6 +3208,9 @@ class IsaacSaveEditor(tk.Tk):
         )
         if success:
             self._auto_overwrite_executed = True
+
+    def _overwrite_target_save_from_button(self) -> None:
+        self._overwrite_target_save(show_message=True, prefer_loaded_file=False)
 
     def _overwrite_target_save(
         self, *, show_message: bool, prefer_loaded_file: bool
