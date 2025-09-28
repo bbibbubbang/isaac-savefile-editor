@@ -924,7 +924,7 @@ class IsaacSaveEditor(tk.Tk):
                 "offset": 0x50,
                 "title": ("에덴 토큰", "Eden Tokens"),
                 "description": ("에덴 토큰", "Eden Tokens"),
-                "num_bytes": 4,
+                "num_bytes": 2,
             },
         }
         self._numeric_order: List[str] = ["donation", "greed", "streak", "eden"]
