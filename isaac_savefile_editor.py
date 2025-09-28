@@ -1287,9 +1287,9 @@ class IsaacSaveEditor(tk.Tk):
             "Set Donation/Greed/Eden Tokens to 999",
         )
 
-        language_label = ttk.Label(auto_999_frame)
+        language_label = ttk.Label(auto_999_frame, text="Language")
         language_label.grid(column=2, row=0, sticky="e", padx=(10, 0))
-        self._register_text(language_label, "언어", "Language")
+        self._adjust_widget_width(language_label, "Language")
 
         language_box = ttk.Combobox(
             auto_999_frame,
