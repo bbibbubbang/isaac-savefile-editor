@@ -45,6 +45,12 @@ DEFAULT_SETTINGS: Dict[str, object] = {
     "highlight_locked_secrets": False,
 }
 
+SAVE_FILENAME_VARIANTS: tuple[str, ...] = (
+    "rep_persistentgamedata",
+    "rep+persistentgamedata",
+    "rep+_persistentgamedata",
+)
+
 LOCKED_ITEM_TAG = "locked_highlight"
 LOCKED_ITEM_BACKGROUND = "#f8d7da"
 UNLOCKED_ITEM_TAG = "unlocked_highlight"
@@ -3595,34 +3601,16 @@ class IsaacSaveEditor(tk.Tk):
         if not self.filename:
             return
 
+        if self.data is None:
+            return
+
         related_paths = self._related_save_paths()
         if not related_paths:
             return
 
-        try:
-            config = self._numeric_config[key]
-            offset = int(config["offset"])
-        except (KeyError, ValueError, TypeError):
-            return
-
         for path in related_paths:
             try:
-                data = path.read_bytes()
-            except OSError:
-                continue
-
-            try:
-                section_offsets = script.getSectionOffsets(data)
-                base_offset = section_offsets[1] + 0x4 + offset
-                updated = script.alterInt(
-                    data, base_offset, value, num_bytes=num_bytes
-                )
-                updated = script.updateChecksum(updated)
-            except Exception:
-                continue
-
-            try:
-                path.write_bytes(updated)
+                path.write_bytes(self.data)
             except OSError:
                 continue
 
@@ -3633,10 +3621,10 @@ class IsaacSaveEditor(tk.Tk):
         current_path = Path(self.filename)
         candidates: set[Path] = set()
 
-        def _maybe_add(path: Path) -> None:
+        def _maybe_add(path: Path, *, require_exists: bool = True) -> None:
             if path == current_path:
                 return
-            if not path.exists():
+            if require_exists and not path.exists():
                 return
             candidates.add(path)
 
@@ -3645,16 +3633,14 @@ class IsaacSaveEditor(tk.Tk):
         _maybe_add(current_backup)
 
         base_name = current_path.name
-        variants = {
-            "rep+persistentgamedata": "rep_persistentgamedata",
-            "rep_persistentgamedata": "rep+persistentgamedata",
-        }
-
-        for source, replacement in variants.items():
-            if source in base_name:
+        for source in SAVE_FILENAME_VARIANTS:
+            if source not in base_name:
+                continue
+            for replacement in SAVE_FILENAME_VARIANTS:
+                if replacement == source:
+                    continue
                 alt_name = base_name.replace(source, replacement, 1)
-                _maybe_add(current_path.with_name(alt_name))
-                _maybe_add(current_path.with_name(alt_name + ".backup"))
+                _maybe_add(current_path.with_name(alt_name), require_exists=False)
 
         # Also check backup for any alternate path we have already gathered.
         additional_backups: list[Path] = []
