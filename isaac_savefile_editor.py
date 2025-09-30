@@ -1318,6 +1318,17 @@ class IsaacSaveEditor(tk.Tk):
         self._language_selector = language_box
         self._update_language_selector()
 
+        bestiary_button = ttk.Button(
+            auto_999_frame,
+            command=self.set_bestiary_encounters_to_one,
+        )
+        bestiary_button.grid(column=0, row=1, columnspan=2, sticky="w", pady=(10, 0))
+        self._register_text(
+            bestiary_button,
+            "베스티어리 조우 수 1로 설정",
+            "Set Bestiary Encounters to 1",
+        )
+
         self._update_source_display()
         self._update_target_display()
 
@@ -1610,6 +1621,12 @@ class IsaacSaveEditor(tk.Tk):
         )
         buttons.append((unlock_button, ("선택 해금", "Unlock Selected")))
 
+        mark_seen_button = ttk.Button(
+            button_frame,
+            command=lambda t=item_type: self._mark_selected_items_seen(t),
+        )
+        buttons.append((mark_seen_button, ("선택 본 것으로 표시", "Mark Selected Seen")))
+
         lock_button = ttk.Button(
             button_frame,
             command=lambda t=item_type: self._lock_selected_items(t),
@@ -1726,6 +1743,12 @@ class IsaacSaveEditor(tk.Tk):
             command=self._unlock_selected_challenges,
         )
         buttons.append((unlock_button, ("선택 해금", "Unlock Selected")))
+
+        unlock_all_button = ttk.Button(
+            button_frame,
+            command=self._unlock_all_challenges,
+        )
+        buttons.append((unlock_all_button, ("모두 완료", "Complete All")))
 
         lock_button = ttk.Button(
             button_frame,
@@ -2724,6 +2747,22 @@ class IsaacSaveEditor(tk.Tk):
             self._text("아이템을 업데이트하지 못했습니다.", "Failed to update items."),
         )
 
+    def _mark_selected_items_seen(self, item_type: str) -> None:
+        if not self._ensure_data_loaded():
+            return
+        tree = self._item_trees.get(item_type)
+        manager = self._item_managers.get(item_type)
+        if tree is None or manager is None:
+            return
+        selected = self._get_checked_or_warn(tree)
+        if not selected:
+            return
+        ids_sorted = sorted(selected, key=lambda value: int(value))
+        self._apply_update(
+            lambda data: script.markItemsSeen(data, ids_sorted),
+            self._text("아이템을 업데이트하지 못했습니다.", "Failed to update items."),
+        )
+
     def _collect_unlocked_items(self) -> Set[str]:
         unlocked: Set[str] = set()
         for manager in self._item_managers.values():
@@ -2809,6 +2848,25 @@ class IsaacSaveEditor(tk.Tk):
             updater,
             self._text("도전과제를 업데이트하지 못했습니다.", "Failed to update challenges."),
         )
+
+    def _unlock_all_challenges(self) -> None:
+        if not self._ensure_data_loaded():
+            return
+        if not self._challenge_ids:
+            return
+        challenge_list = sorted(self._challenge_ids, key=lambda value: int(value))
+
+        def updater(data: bytes) -> bytes:
+            return script.updateChallenges(data, challenge_list)
+
+        if self._apply_update(
+            updater,
+            self._text("도전과제를 업데이트하지 못했습니다.", "Failed to update challenges."),
+        ):
+            messagebox.showinfo(
+                self._text("완료", "Done"),
+                self._text("모든 도전과제를 완료했습니다.", "All challenges have been marked as complete."),
+            )
 
     def _collect_unlocked_challenges(self) -> Set[str]:
         if self._challenge_manager is None:
@@ -3694,6 +3752,25 @@ class IsaacSaveEditor(tk.Tk):
                 preset=original_streak,
                 preserve_entry=not auto_trigger,
                 reload_before_apply=False,
+            )
+
+    def set_bestiary_encounters_to_one(self) -> None:
+        if not self._ensure_data_loaded():
+            return
+
+        def updater(data: bytes) -> bytes:
+            return script.ensureBestiaryEncounterMinimum(data, minimum=1)
+
+        if self._apply_update(
+            updater,
+            self._text("베스티어리를 업데이트하지 못했습니다.", "Failed to update the bestiary."),
+        ):
+            messagebox.showinfo(
+                self._text("완료", "Done"),
+                self._text(
+                    "모든 베스티어리 조우 수를 1로 설정했습니다.",
+                    "All bestiary encounters have been set to 1.",
+                ),
             )
 
     def refresh_current_values(self, *, update_entry: bool = True) -> None:
