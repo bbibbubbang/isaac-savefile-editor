@@ -3584,9 +3584,89 @@ class IsaacSaveEditor(tk.Tk):
             )
             return False
 
+        self._propagate_numeric_update(key, new_value, num_bytes)
         self.refresh_current_values(update_entry=not preserve_entry)
         self._apply_auto_overwrite_if_enabled(prefer_loaded_file=True)
         return True
+
+    def _propagate_numeric_update(
+        self, key: str, value: int, num_bytes: int
+    ) -> None:
+        if not self.filename:
+            return
+
+        related_paths = self._related_save_paths()
+        if not related_paths:
+            return
+
+        try:
+            config = self._numeric_config[key]
+            offset = int(config["offset"])
+        except (KeyError, ValueError, TypeError):
+            return
+
+        for path in related_paths:
+            try:
+                data = path.read_bytes()
+            except OSError:
+                continue
+
+            try:
+                section_offsets = script.getSectionOffsets(data)
+                base_offset = section_offsets[1] + 0x4 + offset
+                updated = script.alterInt(
+                    data, base_offset, value, num_bytes=num_bytes
+                )
+                updated = script.updateChecksum(updated)
+            except Exception:
+                continue
+
+            try:
+                path.write_bytes(updated)
+            except OSError:
+                continue
+
+    def _related_save_paths(self) -> list[Path]:
+        if not self.filename:
+            return []
+
+        current_path = Path(self.filename)
+        candidates: set[Path] = set()
+
+        def _maybe_add(path: Path) -> None:
+            if path == current_path:
+                return
+            if not path.exists():
+                return
+            candidates.add(path)
+
+        # Include backup for the currently loaded file if present.
+        current_backup = current_path.with_name(current_path.name + ".backup")
+        _maybe_add(current_backup)
+
+        base_name = current_path.name
+        variants = {
+            "rep+persistentgamedata": "rep_persistentgamedata",
+            "rep_persistentgamedata": "rep+persistentgamedata",
+        }
+
+        for source, replacement in variants.items():
+            if source in base_name:
+                alt_name = base_name.replace(source, replacement, 1)
+                _maybe_add(current_path.with_name(alt_name))
+                _maybe_add(current_path.with_name(alt_name + ".backup"))
+
+        # Also check backup for any alternate path we have already gathered.
+        additional_backups: list[Path] = []
+        for path in list(candidates):
+            backup_path = path.with_name(path.name + ".backup")
+            if backup_path.exists():
+                additional_backups.append(backup_path)
+
+        for backup in additional_backups:
+            _maybe_add(backup)
+
+        return sorted(candidates)
 
     def set_donation_greed_eden_to_max(self, *, auto_trigger: bool = False) -> None:
         if self.data is None or not self.filename:
