@@ -71,8 +71,12 @@ COMPLETION_FLAG_GREEDIER = 0x08
 COMPLETION_DEFAULT_UNLOCK_MASK = COMPLETION_FLAG_NORMAL | COMPLETION_FLAG_HARD
 COMPLETION_GREED_UNLOCK_MASK = COMPLETION_FLAG_GREED | COMPLETION_FLAG_GREEDIER
 
-_ENTRY_LENGTHS = [1, 4, 4, 1, 1, 1, 1, 4, 4, 1]
+_ENTRY_LENGTHS = [1, 4, 4, 1, 1, 1, 1, 4, 4, 1, 546]
 _SECRET_SECTION_INDEX = 0
+_BESTIARY_SECTION_INDEX = 10
+_BESTIARY_GROUP_COUNT = 4
+_BESTIARY_HEADER_SIZE = 8
+_BESTIARY_ENTRY_SIZE = 8
 
 def rshift(val, n): 
     return val>>n if val >= 0 else (val+0x100000000)>>n
@@ -80,7 +84,7 @@ def rshift(val, n):
 def getSectionOffsets(data):
     ofs = 0x14
     sectData = [-1, -1, -1]
-    sectionOffsets = [0] * 10
+    sectionOffsets = [0] * len(_ENTRY_LENGTHS)
     for i in range(len(_ENTRY_LENGTHS)):
         for j in range(3):
             sectData[j] = int.from_bytes(data[ofs:ofs+2], 'little', signed=False)
@@ -108,6 +112,25 @@ def _get_section_entry_count(data, section_index):
 
 def getSecretCount(data):
     return _get_section_entry_count(data, _SECRET_SECTION_INDEX)
+
+
+def getBestiaryOffsets(data):
+    section_offsets = getSectionOffsets(data)
+    if len(section_offsets) <= _BESTIARY_SECTION_INDEX:
+        raise IndexError("Bestiary section offset not available")
+    base_offset = section_offsets[_BESTIARY_SECTION_INDEX]
+    offsets: list[int] = []
+    current = base_offset
+    for _ in range(_BESTIARY_GROUP_COUNT):
+        if current + _BESTIARY_HEADER_SIZE > len(data):
+            raise ValueError("Bestiary data is truncated")
+        offsets.append(current)
+        encoded_count = int.from_bytes(
+            data[current + 4 : current + 8], "little", signed=False
+        )
+        entry_count = encoded_count // 4
+        current += _BESTIARY_HEADER_SIZE + entry_count * _BESTIARY_ENTRY_SIZE
+    return offsets
 
 def updateCheckListUnlocks(data, char_index, new_checklist_data):
     if char_index == 14:
@@ -335,10 +358,60 @@ def updateItems(data, item_list):
                 data = data[:offset] + new_byte + data[offset + 1:]
     return data
 
+
+def markItemsSeen(data, item_list):
+    selected_ids = _normalize_item_ids(item_list)
+    if not selected_ids:
+        return data
+    offs = getSectionOffsets(data)[3]
+    for item_id in selected_ids:
+        if item_id in _SKIPPED_ITEM_IDS:
+            continue
+        entry_base = offs + (item_id - 1) * _ITEM_ENTRY_STRIDE
+        for offset in (entry_base, entry_base + 1):
+            current_val = getInt(data, offset, num_bytes=1)
+            new_val = current_val | ITEM_FLAG_SEEN
+            if new_val != current_val:
+                new_byte = bytes((new_val & 0xFF,))
+                data = data[:offset] + new_byte + data[offset + 1:]
+    return data
+
 def updateChecksum(data):
     offset = 0x10
     length = len(data) - offset - 4
     return data[:offset + length] + calcAfterbirthChecksum(data, offset, length).to_bytes(5, 'little', signed=True)[:4]
+
+
+def ensureBestiaryEncounterMinimum(data, minimum=1):
+    try:
+        offsets = getBestiaryOffsets(data)
+    except (IndexError, ValueError):
+        return data
+    if minimum < 0:
+        minimum = 0
+    encounter_offset = offsets[3]
+    header_value = int.from_bytes(
+        data[encounter_offset + 4 : encounter_offset + 8], "little", signed=False
+    )
+    entry_count = header_value // 4
+    if entry_count <= 0:
+        return data
+    mutable = bytearray(data)
+    position = encounter_offset + _BESTIARY_HEADER_SIZE
+    changed = False
+    for _ in range(entry_count):
+        current_value = int.from_bytes(
+            mutable[position + 4 : position + 8], "little", signed=False
+        )
+        if current_value < minimum:
+            mutable[position + 4 : position + 8] = minimum.to_bytes(
+                4, "little", signed=False
+            )
+            changed = True
+        position += _BESTIARY_ENTRY_SIZE
+    if not changed:
+        return data
+    return bytes(mutable)
 
 # updateWinStreak: alterInt(data, getSectionOffsets(data)[1] + 0x4 + 0x54, 30)
 # updateGreedMachine: alterInt(data, getSectionOffsets(data)[1] + 0x4 + 0x54, 30)
