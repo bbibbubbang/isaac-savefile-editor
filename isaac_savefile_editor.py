@@ -435,26 +435,19 @@ class TreeManager:
         self._next_direction: Dict[str, bool] = {}
         self._last_sort_column: Optional[str] = None
         self._last_sort_ascending: bool = True
+        self._hidden_ids: Set[str] = set()
 
     def sort(self, column: str, ascending: Optional[bool] = None, update_toggle: bool = True) -> None:
         if not self.records:
             return
         if ascending is None:
             ascending = self._next_direction.get(column, True)
-        entries = list(self.records.values())
-        if column == "name":
-            entries.sort(key=lambda info: str(info.get("name_sort", "")))
-            if not ascending:
-                entries.reverse()
-        elif column == "unlock":
-            entries.sort(key=lambda info: str(info.get("name_sort", "")))
-            entries.sort(key=lambda info: 1 if info.get("unlock") else 0, reverse=not ascending)
-        elif column == "quality":
-            entries.sort(key=lambda info: str(info.get("name_sort", "")))
-            entries.sort(
-                key=lambda info: info.get("quality") if info.get("quality") is not None else -1,
-                reverse=not ascending,
-            )
+        entries = [
+            info
+            for info in self.records.values()
+            if str(info.get("iid")) not in self._hidden_ids
+        ]
+        self._sort_entries(entries, column, ascending)
         for index, info in enumerate(entries):
             self.tree.move(str(info["iid"]), "", index)
         if update_toggle:
@@ -467,6 +460,51 @@ class TreeManager:
     def resort(self) -> None:
         if self._last_sort_column:
             self.sort(self._last_sort_column, ascending=self._last_sort_ascending, update_toggle=False)
+
+    def _sort_entries(self, entries: List[Dict[str, object]], column: str, ascending: bool) -> None:
+        if column == "name":
+            entries.sort(key=lambda info: str(info.get("name_sort", "")))
+            if not ascending:
+                entries.reverse()
+            return
+        if column == "unlock":
+            entries.sort(key=lambda info: str(info.get("name_sort", "")))
+            entries.sort(key=lambda info: 1 if info.get("unlock") else 0, reverse=not ascending)
+            return
+        if column == "quality":
+            entries.sort(key=lambda info: str(info.get("name_sort", "")))
+            entries.sort(
+                key=lambda info: info.get("quality") if info.get("quality") is not None else -1,
+                reverse=not ascending,
+            )
+
+    def sorted_ids(self, include_ids: Optional[Set[str]] = None) -> List[str]:
+        if not self.records:
+            return []
+        column = self._last_sort_column or "name"
+        ascending = self._last_sort_ascending if self._last_sort_column else True
+        entries = list(self.records.values())
+        if include_ids is None:
+            include: Set[str] = {
+                str(info.get("iid"))
+                for info in entries
+                if str(info.get("iid")) not in self._hidden_ids
+            }
+        else:
+            include = {str(value) for value in include_ids}
+            include.difference_update(self._hidden_ids)
+        entries = [info for info in entries if str(info.get("iid")) in include]
+        self._sort_entries(entries, column, ascending)
+        return [str(info.get("iid")) for info in entries]
+
+    def set_hidden_ids(self, hidden_ids: Set[str]) -> None:
+        self._hidden_ids = {str(value) for value in hidden_ids if str(value)}
+
+    def has_hidden_items(self) -> bool:
+        return bool(self._hidden_ids)
+
+    def get_visible_ids(self) -> List[str]:
+        return self.sorted_ids()
 
     def set_unlock(self, iid: str, unlocked: bool) -> None:
         if iid in self.records:
@@ -493,6 +531,7 @@ class IsaacSaveEditor(tk.Tk):
         "Pill": ("알약", "Pills"),
     }
     SECRET_FALLBACK_TYPE = "Other"
+    SECRET_SEARCH_TYPES = frozenset({"Item.Passive", "Item.Active", "Trinket"})
 
     def _text(self, korean: str, english: str | None = None) -> str:
         english = english or korean
@@ -842,6 +881,8 @@ class IsaacSaveEditor(tk.Tk):
     def _update_secret_tree_language(self) -> None:
         for secret_type, manager in self._secret_managers.items():
             manager.sort("name", ascending=True, update_toggle=False)
+            if secret_type in self.SECRET_SEARCH_TYPES:
+                self._apply_secret_search_filter(secret_type)
 
     def _update_item_tree_language(self) -> None:
         for manager in self._item_managers.values():
@@ -970,6 +1011,8 @@ class IsaacSaveEditor(tk.Tk):
         self._secret_trees: Dict[str, IconCheckboxTreeview] = {}
         self._secret_managers: Dict[str, TreeManager] = {}
         self._secret_alphabetical: Dict[str, bool] = {}
+        self._secret_search_vars: Dict[str, tk.StringVar] = {}
+        self._secret_search_filters: Dict[str, str] = {}
 
         self._item_trees: Dict[str, IconCheckboxTreeview] = {}
         self._item_managers: Dict[str, TreeManager] = {}
@@ -1499,18 +1542,53 @@ class IsaacSaveEditor(tk.Tk):
             button.grid(column=index, row=0, padx=(0 if index == 0 else 6, 0))
             self._register_text(button, *texts)
 
-        button_frame.columnconfigure(len(buttons), weight=1)
+        spacer_column = len(buttons)
+        button_frame.columnconfigure(spacer_column, weight=1)
         highlight_check = ttk.Checkbutton(
             button_frame,
             variable=self._highlight_locked_secrets_var,
             command=self._on_highlight_locked_secrets_toggle,
         )
-        highlight_check.grid(column=len(buttons), row=0, sticky="e", padx=(12, 0))
+        highlight_column = spacer_column + 1
+        highlight_check.grid(column=highlight_column, row=0, sticky="e", padx=(12, 0))
         self._register_text(
             highlight_check,
             "해금 강조",
             "Highlight Unlock Status",
         )
+
+        if secret_type in self.SECRET_SEARCH_TYPES:
+            existing_query = self._secret_search_filters.get(secret_type, "")
+            search_var = self._secret_search_vars.get(secret_type)
+            if search_var is None:
+                search_var = tk.StringVar(value=existing_query)
+                self._secret_search_vars[secret_type] = search_var
+            else:
+                search_var.set(existing_query)
+            entry_column = highlight_column + 1
+            button_frame.columnconfigure(entry_column, weight=1)
+            search_entry = ttk.Entry(
+                button_frame,
+                textvariable=search_var,
+                width=24,
+            )
+            search_entry.grid(column=entry_column, row=0, sticky="ew", padx=(6, 0))
+            search_entry.bind(
+                "<Return>",
+                lambda _event, t=secret_type: self._on_secret_search(t),
+            )
+            search_button = ttk.Button(
+                button_frame,
+                command=lambda t=secret_type: self._on_secret_search(t),
+            )
+            search_button.grid(column=entry_column + 1, row=0, sticky="e", padx=(6, 0))
+            self._register_text(search_button, "검색", "Search")
+            reset_button = ttk.Button(
+                button_frame,
+                command=lambda t=secret_type: self._reset_secret_search(t),
+            )
+            reset_button.grid(column=entry_column + 2, row=0, sticky="e", padx=(6, 0))
+            self._register_text(reset_button, "초기화", "Reset")
 
         include_quality = secret_type.startswith("Item.")
 
@@ -1595,6 +1673,8 @@ class IsaacSaveEditor(tk.Tk):
         self._secret_trees[secret_type] = tree
         self._secret_managers[secret_type] = manager
         self._secret_alphabetical.setdefault(secret_type, False)
+        if secret_type in self.SECRET_SEARCH_TYPES:
+            self._apply_secret_search_filter(secret_type, update_var=True)
         self._update_secret_highlighting()
 
     def _build_item_tab(self, container: ttk.Frame, item_type: str) -> None:
@@ -2460,22 +2540,32 @@ class IsaacSaveEditor(tk.Tk):
 
     def _select_all_secrets(self, secret_type: str) -> None:
         tree = self._secret_trees.get(secret_type)
+        manager = self._secret_managers.get(secret_type)
         if tree is None:
             return
         self._lock_tree(tree)
         try:
-            for secret_id in self._secret_ids_by_type.get(secret_type, []):
+            if manager is not None:
+                target_ids = manager.get_visible_ids()
+            else:
+                target_ids = self._secret_ids_by_type.get(secret_type, [])
+            for secret_id in target_ids:
                 tree.change_state(secret_id, "checked")
         finally:
             self._unlock_tree(tree)
 
     def _select_none_secrets(self, secret_type: str) -> None:
         tree = self._secret_trees.get(secret_type)
+        manager = self._secret_managers.get(secret_type)
         if tree is None:
             return
         self._lock_tree(tree)
         try:
-            for secret_id in self._secret_ids_by_type.get(secret_type, []):
+            if manager is not None:
+                target_ids = manager.get_visible_ids()
+            else:
+                target_ids = self._secret_ids_by_type.get(secret_type, [])
+            for secret_id in target_ids:
                 tree.change_state(secret_id, "unchecked")
         finally:
             self._unlock_tree(tree)
@@ -2506,6 +2596,114 @@ class IsaacSaveEditor(tk.Tk):
             )
         manager.sort("name", ascending=True, update_toggle=False)
         tree.yview_moveto(0)
+
+    def _on_secret_search(self, secret_type: str) -> None:
+        if secret_type not in self.SECRET_SEARCH_TYPES:
+            return
+        var = self._secret_search_vars.get(secret_type)
+        query = var.get() if var is not None else self._secret_search_filters.get(secret_type, "")
+        self._apply_secret_search_filter(secret_type, query)
+
+    def _reset_secret_search(self, secret_type: str) -> None:
+        if secret_type not in self.SECRET_SEARCH_TYPES:
+            return
+        self._apply_secret_search_filter(secret_type, "", update_var=True)
+
+    def _apply_secret_search_filter(
+        self,
+        secret_type: str,
+        query: Optional[str] = None,
+        *,
+        update_var: bool = False,
+    ) -> None:
+        if secret_type not in self.SECRET_SEARCH_TYPES:
+            return
+        var = self._secret_search_vars.get(secret_type)
+        if query is None:
+            if var is not None:
+                raw_query = var.get()
+            else:
+                raw_query = self._secret_search_filters.get(secret_type, "")
+        else:
+            raw_query = query
+        raw_query = str(raw_query or "")
+        if update_var and var is not None:
+            var.set(raw_query)
+        normalized = self._normalize_search_text(raw_query)
+        manager = self._secret_managers.get(secret_type)
+        tree = self._secret_trees.get(secret_type)
+        if not normalized:
+            self._secret_search_filters.pop(secret_type, None)
+            if manager is not None and manager.has_hidden_items() and tree is not None:
+                self._filter_secret_tree(secret_type, None)
+            return
+        self._secret_search_filters[secret_type] = raw_query
+        if manager is None or tree is None:
+            return
+        language_code = getattr(self, "_language_code", "ko_kr")
+        allowed_ids: Set[str] = set()
+        for record in self._secret_records_by_type.get(secret_type, []):
+            item_id = str(record.get("iid") or "").strip()
+            if not item_id:
+                continue
+            translations = dict(record.get("translations", {}))
+            english_value = str(translations.get("en_us") or record.get("english") or "")
+            if language_code == "en_us":
+                local_value = english_value
+            else:
+                local_value = str(translations.get(language_code) or "")
+                if not local_value:
+                    if localization.is_korean(language_code):
+                        local_value = str(translations.get("ko_kr") or record.get("korean") or "")
+                    if not local_value:
+                        local_value = english_value
+            candidates = []
+            if english_value:
+                candidates.append(english_value)
+            if local_value and local_value not in candidates:
+                candidates.append(local_value)
+            for candidate in candidates:
+                normalized_candidate = self._normalize_search_text(candidate)
+                if normalized_candidate and normalized in normalized_candidate:
+                    allowed_ids.add(item_id)
+                    break
+        self._filter_secret_tree(secret_type, allowed_ids)
+
+    def _filter_secret_tree(
+        self, secret_type: str, allowed_ids: Optional[Set[str]]
+    ) -> None:
+        tree = self._secret_trees.get(secret_type)
+        manager = self._secret_managers.get(secret_type)
+        if tree is None or manager is None:
+            return
+        all_ids = [str(secret_id) for secret_id in self._secret_ids_by_type.get(secret_type, [])]
+        all_ids_set = set(all_ids)
+        if allowed_ids is None:
+            manager.set_hidden_ids(set())
+            order = manager.sorted_ids()
+        else:
+            allowed_set = {str(value) for value in allowed_ids if str(value)}
+            manager.set_hidden_ids(all_ids_set - allowed_set)
+            order = manager.sorted_ids(include_ids=allowed_set)
+        for secret_id in all_ids:
+            tree.detach(secret_id)
+        for secret_id in order:
+            tree.reattach(secret_id, "", "end")
+        tree.yview_moveto(0)
+        highlight_enabled = _variable_to_bool(self._highlight_locked_secrets_var)
+        for secret_id, info in manager.records.items():
+            self._apply_secret_highlight(
+                tree,
+                secret_id,
+                bool(info.get("unlock")),
+                enabled=highlight_enabled,
+            )
+
+    @staticmethod
+    def _normalize_search_text(value: str) -> str:
+        if not value:
+            return ""
+        return re.sub(r"\s+", "", value).casefold()
 
     def _unlock_selected_secrets(self, secret_type: str) -> None:
         if not self._ensure_data_loaded():
