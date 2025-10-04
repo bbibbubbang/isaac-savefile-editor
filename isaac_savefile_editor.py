@@ -3318,7 +3318,9 @@ class IsaacSaveEditor(tk.Tk):
     def _select_source_save_file(self) -> None:
         filename = filedialog.askopenfilename(
             title=self._text("원본 세이브파일 선택", "Select Source Save File"),
-            initialdir=self._get_initial_directory(),
+            initialdir=self._get_savefile_initial_directory(
+                self.source_save_path, self.target_save_path
+            ),
             filetypes=(("dat files", "*.dat"), ("all files", "*.*")),
         )
         if not filename:
@@ -3342,7 +3344,9 @@ class IsaacSaveEditor(tk.Tk):
     def _select_target_save_file(self) -> None:
         filename = filedialog.askopenfilename(
             title=self._text("덮어쓰기할 세이브파일 선택", "Select Target Save File"),
-            initialdir=self._get_initial_directory(),
+            initialdir=self._get_savefile_initial_directory(
+                self.target_save_path, self.source_save_path
+            ),
             filetypes=(("dat files", "*.dat"), ("all files", "*.*")),
         )
         if not filename:
@@ -3572,6 +3576,15 @@ class IsaacSaveEditor(tk.Tk):
             if os.path.exists(candidate):
                 return candidate
         return initdir
+
+    def _get_savefile_initial_directory(self, *paths: str) -> str:
+        for path in paths:
+            if not path:
+                continue
+            directory = os.path.dirname(path)
+            if directory and os.path.exists(directory):
+                return directory
+        return self._get_initial_directory()
 
     def _load_file(self, filename: str, *, show_errors: bool = True) -> bool:
         normalized = os.path.abspath(filename)
