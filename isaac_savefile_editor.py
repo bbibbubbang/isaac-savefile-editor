@@ -1377,9 +1377,16 @@ class IsaacSaveEditor(tk.Tk):
             "Overwrite Save File",
         )
 
-        numeric_start_row = 2
+        numeric_and_tools_frame = ttk.Frame(container)
+        numeric_and_tools_frame.grid(column=0, row=2, sticky="ew", pady=(15, 0))
+        numeric_and_tools_frame.columnconfigure(0, weight=0)
+        numeric_and_tools_frame.columnconfigure(1, weight=1)
+
+        numeric_column = ttk.Frame(numeric_and_tools_frame)
+        numeric_column.grid(column=0, row=0, sticky="nw")
+        numeric_column.columnconfigure(0, weight=1)
+
         for index, key in enumerate(self._numeric_order):
-            row_index = numeric_start_row + index
             config = self._numeric_config[key]
             current_var = tk.StringVar(value="0")
             entry_var = tk.StringVar(value="0")
@@ -1388,8 +1395,8 @@ class IsaacSaveEditor(tk.Tk):
                 "entry": entry_var,
             }
             self._build_numeric_section(
-                container=container,
-                row=row_index,
+                container=numeric_column,
+                row=index,
                 title=config.get("title"),
                 current_var=current_var,
                 entry_var=entry_var,
@@ -1397,9 +1404,42 @@ class IsaacSaveEditor(tk.Tk):
                 is_first=index == 0,
             )
 
-        auto_999_row = numeric_start_row + len(self._numeric_order)
+        bestiary_tools_frame = ttk.LabelFrame(
+            numeric_and_tools_frame, padding=(12, 10)
+        )
+        bestiary_tools_frame.grid(column=1, row=0, sticky="new", padx=(12, 0))
+        bestiary_tools_frame.columnconfigure(0, weight=1)
+        self._register_text(
+            bestiary_tools_frame,
+            "베스티어리 도구",
+            "Bestiary Tools",
+        )
+
+        bestiary_description = ttk.Label(
+            bestiary_tools_frame,
+            wraplength=260,
+            justify="left",
+        )
+        bestiary_description.grid(column=0, row=0, sticky="w")
+        self._register_text(
+            bestiary_description,
+            "Dead God 세이브 데이터를 참고하여 등록된 모든 몬스터의 조우 수를 최소 1로 만듭니다.",
+            "Uses the Dead God reference save to ensure every registered monster has at least one encounter.",
+        )
+
+        bestiary_button = ttk.Button(
+            bestiary_tools_frame,
+            command=self.set_bestiary_encounters_to_one,
+        )
+        bestiary_button.grid(column=0, row=1, sticky="ew", pady=(10, 0))
+        self._register_text(
+            bestiary_button,
+            "모든 몬스터 조우 수 1로 설정",
+            "Set All Monster Encounters to 1",
+        )
+
         auto_999_frame = ttk.Frame(container)
-        auto_999_frame.grid(column=0, row=auto_999_row, sticky="ew", pady=(12, 0))
+        auto_999_frame.grid(column=0, row=3, sticky="ew", pady=(12, 0))
         auto_999_frame.columnconfigure(0, weight=1)
         auto_999_frame.columnconfigure(1, weight=0)
         auto_999_frame.columnconfigure(2, weight=0)
@@ -1441,17 +1481,6 @@ class IsaacSaveEditor(tk.Tk):
         language_box.bind("<<ComboboxSelected>>", self._on_language_selection)
         self._language_selector = language_box
         self._update_language_selector()
-
-        bestiary_button = ttk.Button(
-            auto_999_frame,
-            command=self.set_bestiary_encounters_to_one,
-        )
-        bestiary_button.grid(column=0, row=1, columnspan=2, sticky="w", pady=(10, 0))
-        self._register_text(
-            bestiary_button,
-            "베스티어리 조우 수 1로 설정",
-            "Set Bestiary Encounters to 1",
-        )
 
         self._update_source_display()
         self._update_target_display()
@@ -4301,8 +4330,8 @@ class IsaacSaveEditor(tk.Tk):
             messagebox.showinfo(
                 self._text("완료", "Done"),
                 self._text(
-                    "모든 베스티어리 조우 수를 1로 설정했습니다.",
-                    "All bestiary encounters have been set to 1.",
+                    "모든 몬스터의 베스티어리 조우 수를 1로 설정했습니다.",
+                    "Set every bestiary monster encounter count to 1.",
                 ),
             )
 
