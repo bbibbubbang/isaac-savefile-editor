@@ -298,15 +298,22 @@ def alterItem(data, item_index, unlock=True):
         val = 0
     return alterInt(data, getSectionOffsets(data)[3]+item_index, val, num_bytes=1)
 
-def alterInt(data, offset, new_val, debug=False, num_bytes=2):
+def alterInt(data, offset, new_val, debug=False, num_bytes=2, signed=False):
     if debug:
-        print(f"current value: {int.from_bytes(data[offset:offset+num_bytes], 'little')}")
+        current_val = int.from_bytes(
+            data[offset:offset+num_bytes], 'little', signed=signed
+        )
+        print(f"current value: {current_val}")
         print(f"new value: {new_val}")
-    return data[:offset] + new_val.to_bytes(num_bytes, 'little', signed=True) + data[offset + num_bytes:]
+    return data[:offset] + int(new_val).to_bytes(num_bytes, 'little', signed=signed) + data[offset + num_bytes:]
 
-def getInt(data, offset, debug=False, num_bytes=2):
-    if debug: print(f"current value: {int.from_bytes(data[offset:offset+num_bytes], 'little', signed=False)}")
-    return int.from_bytes(data[offset:offset+num_bytes], 'little')
+def getInt(data, offset, debug=False, num_bytes=2, signed=False):
+    if debug:
+        current_val = int.from_bytes(
+            data[offset:offset+num_bytes], 'little', signed=signed
+        )
+        print(f"current value: {current_val}")
+    return int.from_bytes(data[offset:offset+num_bytes], 'little', signed=signed)
 
 def updateSecrets(data, secret_list):
     secret_count = getSecretCount(data)

@@ -954,29 +954,98 @@ class IsaacSaveEditor(tk.Tk):
                 "title": ("기부 기계", "Donation Machine"),
                 "description": ("기부 기계", "Donation Machine"),
                 "num_bytes": 4,
+                "signed": False,
             },
             "greed": {
                 "offset": 0x1B0,
                 "title": ("그리드 기계", "Greed Machine"),
                 "description": ("그리드 기계", "Greed Machine"),
                 "num_bytes": 4,
+                "signed": False,
             },
             "streak": {
                 "offset": 0x54,
                 "title": ("연승", "Win Streak"),
                 "description": ("연승", "Win Streak"),
                 "num_bytes": 4,
+                "signed": True,
             },
             "eden": {
                 "offset": 0x50,
                 "title": ("에덴 토큰", "Eden Tokens"),
                 "description": ("에덴 토큰", "Eden Tokens"),
                 "num_bytes": 2,
+                "signed": False,
+            },
+            "mom_kills": {
+                "offset": 0x0,
+                "title": ("맘 처치", "Mom Kills"),
+                "description": ("맘 처치", "Mom Kills"),
+                "num_bytes": 4,
+                "signed": False,
+            },
+            "deaths": {
+                "offset": 0x24,
+                "title": ("죽은 횟수", "Deaths"),
+                "description": ("죽은 횟수", "Deaths"),
+                "num_bytes": 4,
+                "signed": False,
+            },
+            "best_streak": {
+                "offset": 0x58,
+                "title": ("최고 연승", "Best Streak"),
+                "description": ("최고 연승", "Best Streak"),
+                "num_bytes": 4,
+                "signed": False,
+            },
+            "best_online_streak": {
+                "offset": 0xA0,
+                "title": ("온라인 최고 연승", "Best Online Streak"),
+                "description": ("온라인 최고 연승", "Best Online Streak"),
+                "num_bytes": 4,
+                "signed": False,
             },
         }
         self._numeric_order: List[str] = ["donation", "greed", "streak", "eden"]
+        self._stat_order: List[str] = [
+            "mom_kills",
+            "deaths",
+            "best_streak",
+            "best_online_streak",
+        ]
 
         self._numeric_vars: Dict[str, Dict[str, tk.StringVar]] = {}
+        self._bestiary_entries: List[Dict[str, object]] = [
+            {
+                "key": "frowning_gaper",
+                "prefix": bytes.fromhex("0000a000"),
+                "name": ("Frowning Gaper", "Frowning Gaper"),
+            },
+            {
+                "key": "hopper",
+                "prefix": bytes.fromhex("0000d001"),
+                "name": ("Hopper", "Hopper"),
+            },
+        ]
+        self._bestiary_prefix_map: Dict[bytes, Dict[str, object]] = {
+            entry["prefix"]: entry for entry in self._bestiary_entries
+        }
+        self._bestiary_stat_order: tuple[str, ...] = (
+            "hp",
+            "deaths",
+            "kills",
+            "hits",
+            "encounters",
+        )
+        self._bestiary_stat_labels: Dict[str, tuple[str, str]] = {
+            "hp": ("체력", "HP"),
+            "deaths": ("사망", "Deaths"),
+            "kills": ("처치", "Kills"),
+            "hits": ("피격", "Hits"),
+            "encounters": ("조우", "Encounters"),
+        }
+        self._bestiary_vars: Dict[bytes, Dict[str, Dict[str, tk.StringVar]]] = {}
+        self._bestiary_positions: Dict[bytes, Dict[int, int]] = {}
 
         self._locked_tree_ids: Set[int] = set()
 
@@ -1119,6 +1188,18 @@ class IsaacSaveEditor(tk.Tk):
         notebook.add(main_tab)
         self._register_tab_text(notebook, main_tab, "메인", "Main")
         self._build_main_tab(main_tab)
+
+        stats_tab = ttk.Frame(notebook, padding=12)
+        stats_tab.columnconfigure(0, weight=1)
+        notebook.add(stats_tab)
+        self._register_tab_text(notebook, stats_tab, "통계", "Stats")
+        self._build_stats_tab(stats_tab)
+
+        bestiary_tab = ttk.Frame(notebook, padding=12)
+        bestiary_tab.columnconfigure(0, weight=1)
+        notebook.add(bestiary_tab)
+        self._register_tab_text(notebook, bestiary_tab, "베스티어리", "Bestiary")
+        self._build_bestiary_tab(bestiary_tab)
 
         completion_tab = ttk.Frame(notebook, padding=12)
         completion_tab.columnconfigure(0, weight=1)
@@ -1374,6 +1455,78 @@ class IsaacSaveEditor(tk.Tk):
 
         self._update_source_display()
         self._update_target_display()
+
+    def _build_stats_tab(self, container: ttk.Frame) -> None:
+        container.columnconfigure(0, weight=1)
+        for index, key in enumerate(self._stat_order):
+            config = self._numeric_config[key]
+            current_var = tk.StringVar(value="0")
+            entry_var = tk.StringVar(value="0")
+            self._numeric_vars[key] = {
+                "current": current_var,
+                "entry": entry_var,
+            }
+            self._build_numeric_section(
+                container=container,
+                row=index,
+                title=config.get("title"),
+                current_var=current_var,
+                entry_var=entry_var,
+                command=lambda field_key=key: self.apply_field(
+                    field_key, preserve_entry=True
+                ),
+                is_first=index == 0,
+            )
+
+    def _build_bestiary_tab(self, container: ttk.Frame) -> None:
+        container.columnconfigure(0, weight=1)
+        for index, entry in enumerate(self._bestiary_entries):
+            frame = ttk.LabelFrame(container, padding=(12, 10))
+            frame.grid(
+                column=0,
+                row=index,
+                sticky="ew",
+                pady=(0 if index == 0 else 12, 0),
+            )
+            frame.columnconfigure(0, weight=0)
+            frame.columnconfigure(1, weight=0)
+            frame.columnconfigure(2, weight=1)
+            name_ko, name_en = entry.get("name", ("", ""))
+            frame.configure(text=name_ko)
+            self._register_text(frame, name_ko, name_en)
+
+            prefix = entry["prefix"]
+            current_vars: Dict[str, tk.StringVar] = {}
+            entry_vars: Dict[str, tk.StringVar] = {}
+            for row, stat_key in enumerate(self._bestiary_stat_order):
+                label = ttk.Label(frame)
+                label.grid(column=0, row=row, sticky="w")
+                label_text = self._bestiary_stat_labels.get(stat_key, (stat_key, stat_key))
+                self._register_text(label, label_text[0], label_text[1])
+
+                current_var = tk.StringVar(value="0")
+                current_label = ttk.Label(frame, textvariable=current_var, width=10)
+                current_label.grid(column=1, row=row, sticky="w", padx=(8, 0))
+
+                entry_var = tk.StringVar(value="0")
+                entry_box = ttk.Entry(frame, textvariable=entry_var, width=12)
+                entry_box.grid(column=2, row=row, sticky="w", padx=(8, 0))
+
+                current_vars[stat_key] = current_var
+                entry_vars[stat_key] = entry_var
+
+            button_row = len(self._bestiary_stat_order)
+            apply_button = ttk.Button(
+                frame,
+                command=lambda p=prefix: self._apply_bestiary_entry(p),
+            )
+            apply_button.grid(column=2, row=button_row, sticky="e", pady=(10, 0))
+            self._register_text(apply_button, "적용", "Apply")
+
+            self._bestiary_vars[prefix] = {
+                "current": current_vars,
+                "entry": entry_vars,
+            }
 
     def _update_source_display(self) -> None:
         if hasattr(self, "source_save_display_var"):
@@ -3775,10 +3928,13 @@ class IsaacSaveEditor(tk.Tk):
             num_bytes = int(config.get("num_bytes", 2))
         except (TypeError, ValueError):
             num_bytes = 2
+        signed = bool(config.get("signed", False))
         try:
             base_offset = section_offsets[1] + 0x4 + int(config["offset"])
             return int(
-                script.getInt(self.data, base_offset, num_bytes=num_bytes)
+                script.getInt(
+                    self.data, base_offset, num_bytes=num_bytes, signed=signed
+                )
             )
         except Exception:
             return None
@@ -3829,11 +3985,16 @@ class IsaacSaveEditor(tk.Tk):
             num_bytes = int(config.get("num_bytes", 2))
         except (TypeError, ValueError):
             num_bytes = 2
+        signed = bool(config.get("signed", False))
         try:
             section_offsets = script.getSectionOffsets(self.data)
             base_offset = section_offsets[1] + 0x4 + int(config["offset"])
             updated = script.alterInt(
-                self.data, base_offset, new_value, num_bytes=num_bytes
+                self.data,
+                base_offset,
+                new_value,
+                num_bytes=num_bytes,
+                signed=signed,
             )
             updated_with_checksum = script.updateChecksum(updated)
         except Exception as exc:  # pragma: no cover - defensive UI feedback
@@ -3923,6 +4084,167 @@ class IsaacSaveEditor(tk.Tk):
 
         return sorted(candidates)
 
+    @staticmethod
+    def _decode_u32_from_chunk(chunk: bytes) -> int:
+        low = int.from_bytes(chunk[4:6], "little", signed=False)
+        high = int.from_bytes(chunk[6:8], "little", signed=False)
+        return low | (high << 16)
+
+    @staticmethod
+    def _split_u32(value: int) -> tuple[int, int]:
+        if value < 0:
+            value = 0
+        value = int(value)
+        return value & 0xFFFF, (value >> 16) & 0xFFFF
+
+    def _collect_bestiary_positions(self, data: bytes | None) -> Dict[bytes, Dict[int, int]]:
+        positions: Dict[bytes, Dict[int, int]] = {}
+        if not data:
+            return positions
+        tracked_prefixes = set(self._bestiary_prefix_map.keys())
+        if not tracked_prefixes:
+            return positions
+        try:
+            offsets = script.getBestiaryOffsets(data)
+        except Exception:
+            return positions
+        for group_index, base in enumerate(offsets):
+            try:
+                entry_header = data[base : base + 8]
+                entry_count = int.from_bytes(
+                    entry_header[4:8], "little", signed=False
+                ) // 4
+            except Exception:
+                continue
+            pos = base + 8
+            for _ in range(entry_count):
+                prefix = bytes(data[pos : pos + 4])
+                if prefix in tracked_prefixes:
+                    positions.setdefault(prefix, {})[group_index] = pos
+                pos += 8
+        return positions
+
+    def _read_bestiary_stats(self, prefix: bytes) -> Dict[str, int]:
+        stats = {key: 0 for key in self._bestiary_stat_order}
+        if self.data is None:
+            return stats
+        positions = self._bestiary_positions.get(prefix)
+        if not positions:
+            return stats
+        hp_raw: Optional[int] = None
+        for group_index in range(4):
+            pos = positions.get(group_index)
+            if pos is None:
+                continue
+            chunk = self.data[pos : pos + 8]
+            if hp_raw is None:
+                hp_raw = int.from_bytes(chunk[2:4], "little", signed=False)
+            value = self._decode_u32_from_chunk(chunk)
+            if group_index == 0:
+                stats["deaths"] = value
+            elif group_index == 1:
+                stats["kills"] = value
+            elif group_index == 2:
+                stats["hits"] = value
+            elif group_index == 3:
+                stats["encounters"] = value
+        if hp_raw is None:
+            hp_raw = 0
+        stats["hp"] = hp_raw // 16
+        return stats
+
+    def _write_bestiary_stats(
+        self, data: bytes, prefix: bytes, stats: Dict[str, int]
+    ) -> bytes:
+        positions = self._collect_bestiary_positions(data)
+        target_positions = positions.get(prefix)
+        if not target_positions:
+            return data
+        try:
+            hp_value = int(stats.get("hp", 0))
+        except (TypeError, ValueError):
+            hp_value = 0
+        hp_value = max(hp_value, 0)
+        hp_raw = min(hp_value * 16, 0xFFFF)
+        mutable = bytearray(data)
+        for group_index, pos in target_positions.items():
+            mutable[pos + 2 : pos + 4] = int(hp_raw).to_bytes(
+                2, "little", signed=False
+            )
+            if group_index == 0:
+                stat_key = "deaths"
+            elif group_index == 1:
+                stat_key = "kills"
+            elif group_index == 2:
+                stat_key = "hits"
+            elif group_index == 3:
+                stat_key = "encounters"
+            else:
+                stat_key = ""
+            if not stat_key:
+                continue
+            try:
+                stat_value = int(stats.get(stat_key, 0))
+            except (TypeError, ValueError):
+                stat_value = 0
+            stat_value = max(stat_value, 0)
+            low, high = self._split_u32(stat_value)
+            mutable[pos + 4 : pos + 6] = low.to_bytes(2, "little", signed=False)
+            mutable[pos + 6 : pos + 8] = high.to_bytes(2, "little", signed=False)
+        return bytes(mutable)
+
+    def _apply_bestiary_entry(self, prefix: bytes) -> None:
+        if not self._ensure_data_loaded():
+            return
+        if not self._reload_save_file_if_enabled():
+            return
+        vars_map = self._bestiary_vars.get(prefix)
+        if not vars_map:
+            return
+        stats: Dict[str, int] = {}
+        for stat_key in self._bestiary_stat_order:
+            raw_value = vars_map["entry"][stat_key].get()
+            try:
+                stats[stat_key] = int(raw_value)
+            except (TypeError, ValueError):
+                messagebox.showerror(
+                    self._text("유효하지 않은 값", "Invalid Value"),
+                    self._text(
+                        "정수를 입력해주세요.", "Please enter a valid integer."
+                    ),
+                )
+                return
+
+        def updater(data: bytes) -> bytes:
+            return self._write_bestiary_stats(data, prefix, stats)
+
+        self._apply_update(
+            updater,
+            self._text(
+                "베스티어리 값을 업데이트하지 못했습니다.",
+                "Failed to update the bestiary entry.",
+            ),
+        )
+
+    def _refresh_bestiary_tab(self, update_entry: bool = True) -> None:
+        if not self._bestiary_vars:
+            return
+        if self.data is None:
+            for vars_map in self._bestiary_vars.values():
+                for stat_key in self._bestiary_stat_order:
+                    vars_map["current"][stat_key].set("0")
+                    if update_entry:
+                        vars_map["entry"][stat_key].set("0")
+            return
+        for prefix, vars_map in self._bestiary_vars.items():
+            stats = self._read_bestiary_stats(prefix)
+            for stat_key in self._bestiary_stat_order:
+                value = stats.get(stat_key, 0)
+                value_str = str(value)
+                vars_map["current"][stat_key].set(value_str)
+                if update_entry:
+                    vars_map["entry"][stat_key].set(value_str)
+
     def set_donation_greed_eden_to_max(self, *, auto_trigger: bool = False) -> None:
         if self.data is None or not self.filename:
             if not auto_trigger:
@@ -3986,7 +4308,7 @@ class IsaacSaveEditor(tk.Tk):
 
     def refresh_current_values(self, *, update_entry: bool = True) -> None:
         if self.data is None:
-            for key in self._numeric_order:
+            for key in self._numeric_order + self._stat_order:
                 vars_map = self._numeric_vars[key]
                 vars_map["current"].set("0")
                 if update_entry:
@@ -3995,6 +4317,8 @@ class IsaacSaveEditor(tk.Tk):
             self._refresh_secrets_tab()
             self._refresh_items_tab()
             self._refresh_challenges_tab()
+            self._bestiary_positions = {}
+            self._refresh_bestiary_tab(update_entry=update_entry)
             return
 
         try:
@@ -4008,18 +4332,20 @@ class IsaacSaveEditor(tk.Tk):
             )
             return
 
-        for key in self._numeric_order:
+        for key in self._numeric_order + self._stat_order:
             config = self._numeric_config[key]
             vars_map = self._numeric_vars[key]
             try:
                 num_bytes = int(config.get("num_bytes", 2))
             except (TypeError, ValueError):
                 num_bytes = 2
+            signed = bool(config.get("signed", False))
             try:
                 value = script.getInt(
                     self.data,
                     base_offset + int(config["offset"]),
                     num_bytes=num_bytes,
+                    signed=signed,
                 )
             except Exception:
                 value = 0
@@ -4028,6 +4354,8 @@ class IsaacSaveEditor(tk.Tk):
             if update_entry:
                 vars_map["entry"].set(value_str)
 
+        self._bestiary_positions = self._collect_bestiary_positions(self.data)
+        self._refresh_bestiary_tab(update_entry=update_entry)
         self._refresh_completion_tab()
         self._refresh_secrets_tab()
         self._refresh_items_tab()
