@@ -3977,10 +3977,27 @@ class IsaacSaveEditor(tk.Tk):
         preserve_entry: bool = False,
         reload_before_apply: bool = True,
     ) -> bool:
-        if reload_before_apply and not self._reload_save_file_if_enabled():
-            return False
         if key not in self._numeric_config:
             return False
+
+        vars_map = self._numeric_vars.get(key)
+        if vars_map is None:
+            return False
+
+        entry_var = vars_map["entry"]
+        original_entry_value = entry_var.get()
+
+        if reload_before_apply and not self._reload_save_file_if_enabled():
+            return False
+
+        if preset is None:
+            # Reloading the save file refreshes all entry widgets, which can
+            # erase the value the user just typed. Restore the user's entry so
+            # we apply what they requested instead of the reloaded value.
+            entry_var.set(original_entry_value)
+            raw_value = original_entry_value
+        else:
+            raw_value = preset
 
         if self.data is None or not self.filename:
             messagebox.showwarning(
@@ -3989,8 +4006,6 @@ class IsaacSaveEditor(tk.Tk):
             )
             return False
 
-        vars_map = self._numeric_vars[key]
-        entry_var = vars_map["entry"]
         config = self._numeric_config[key]
         description_value = config.get("description")
         if isinstance(description_value, tuple):
@@ -3998,7 +4013,6 @@ class IsaacSaveEditor(tk.Tk):
         else:
             description_ko = description_en = str(description_value)
 
-        raw_value = preset if preset is not None else entry_var.get()
         try:
             new_value = int(raw_value)
         except (TypeError, ValueError):
