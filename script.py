@@ -132,6 +132,29 @@ def getBestiaryOffsets(data):
         current += _BESTIARY_HEADER_SIZE + entry_count * _BESTIARY_ENTRY_SIZE
     return offsets
 
+
+def _read_bestiary_groups(data, offsets):
+    headers = []
+    maps = []
+    orders = []
+    for offset in offsets:
+        header = bytearray(data[offset : offset + _BESTIARY_HEADER_SIZE])
+        encoded_count = int.from_bytes(header[4:8], "little", signed=False)
+        entry_count = encoded_count // 4
+        mapping = {}
+        order = []
+        position = offset + _BESTIARY_HEADER_SIZE
+        for _ in range(entry_count):
+            chunk = bytes(data[position : position + _BESTIARY_ENTRY_SIZE])
+            prefix = chunk[:4]
+            mapping[prefix] = chunk
+            order.append(prefix)
+            position += _BESTIARY_ENTRY_SIZE
+        headers.append(header)
+        maps.append(mapping)
+        orders.append(order)
+    return headers, maps, orders
+
 def updateCheckListUnlocks(data, char_index, new_checklist_data):
     if char_index == 14:
         clu_ofs = getSectionOffsets(data)[1] + 0x32C
@@ -389,36 +412,105 @@ def updateChecksum(data):
     return data[:offset + length] + calcAfterbirthChecksum(data, offset, length).to_bytes(5, 'little', signed=True)[:4]
 
 
-def ensureBestiaryEncounterMinimum(data, minimum=1):
+def ensureBestiaryEncounterMinimum(data, minimum=1, reference_data=None):
     try:
         offsets = getBestiaryOffsets(data)
     except (IndexError, ValueError):
         return data
     if minimum < 0:
         minimum = 0
-    encounter_offset = offsets[3]
-    header_value = int.from_bytes(
-        data[encounter_offset + 4 : encounter_offset + 8], "little", signed=False
-    )
-    entry_count = header_value // 4
-    if entry_count <= 0:
-        return data
-    mutable = bytearray(data)
-    position = encounter_offset + _BESTIARY_HEADER_SIZE
-    changed = False
-    for _ in range(entry_count):
-        current_value = int.from_bytes(
-            mutable[position + 4 : position + 8], "little", signed=False
-        )
-        if current_value < minimum:
-            mutable[position + 4 : position + 8] = minimum.to_bytes(
-                4, "little", signed=False
+
+    player_headers, player_maps, player_orders = _read_bestiary_groups(data, offsets)
+
+    ref_headers = ref_maps = ref_orders = None
+    if reference_data:
+        try:
+            ref_offsets = getBestiaryOffsets(reference_data)
+        except (IndexError, ValueError):
+            ref_offsets = []
+        if ref_offsets:
+            ref_headers, ref_maps, ref_orders = _read_bestiary_groups(
+                reference_data, ref_offsets
             )
-            changed = True
-        position += _BESTIARY_ENTRY_SIZE
+    ref_order = []
+    if ref_orders:
+        ref_order = ref_orders[3]
+
+    player_order = player_orders[3] if player_orders else []
+    final_order = []
+    seen = set()
+    for prefix in ref_order + player_order:
+        if prefix not in seen:
+            final_order.append(prefix)
+            seen.add(prefix)
+    if not final_order:
+        return data
+
+    changed = False
+    group_chunks = []
+    for index, offset in enumerate(offsets):
+        header = bytearray(player_headers[index])
+        if len(header) < _BESTIARY_HEADER_SIZE:
+            header.extend(b"\x00" * (_BESTIARY_HEADER_SIZE - len(header)))
+        player_map = player_maps[index]
+        ref_map = ref_maps[index] if ref_maps else {}
+
+        if not any(header[:4]) and ref_headers and index < len(ref_headers):
+            header[:4] = ref_headers[index][:4]
+
+        chunks = []
+        for prefix in final_order:
+            current_chunk_bytes = player_map.get(prefix)
+            ref_chunk_bytes = ref_map.get(prefix) if ref_map else None
+            if current_chunk_bytes is not None:
+                chunk = bytearray(current_chunk_bytes)
+            elif ref_chunk_bytes is not None:
+                chunk = bytearray(ref_chunk_bytes)
+                changed = True
+            else:
+                continue
+
+            if ref_chunk_bytes is not None and (
+                current_chunk_bytes is None or chunk[2:4] == b"\x00\x00"
+            ):
+                hp_bytes = ref_chunk_bytes[2:4]
+                if chunk[2:4] != hp_bytes:
+                    chunk[2:4] = hp_bytes
+                    changed = True
+
+            if index == 3:
+                current_value = int.from_bytes(chunk[4:8], "little", signed=False)
+                if current_chunk_bytes is None:
+                    new_value = max(minimum, 1)
+                else:
+                    new_value = current_value if current_value >= minimum else minimum
+                if new_value != current_value:
+                    chunk[4:8] = new_value.to_bytes(4, "little", signed=False)
+                    changed = True
+            else:
+                if current_chunk_bytes is None:
+                    if any(chunk[4:8]):
+                        chunk[4:8] = (0).to_bytes(4, "little", signed=False)
+                        changed = True
+
+            chunks.append(bytes(chunk))
+
+        entry_count = len(chunks)
+        header[4:8] = (entry_count * 4).to_bytes(4, "little", signed=False)
+        group_chunks.append(bytes(header) + b"".join(chunks))
+
     if not changed:
         return data
-    return bytes(mutable)
+
+    section_start = offsets[0]
+    section_end = offsets[0]
+    for index, offset in enumerate(offsets):
+        original_count = len(player_orders[index])
+        group_length = _BESTIARY_HEADER_SIZE + original_count * _BESTIARY_ENTRY_SIZE
+        section_end = offset + group_length
+
+    new_section = b"".join(group_chunks)
+    return data[:section_start] + new_section + data[section_end:]
 
 # updateWinStreak: alterInt(data, getSectionOffsets(data)[1] + 0x4 + 0x54, 30)
 # updateGreedMachine: alterInt(data, getSectionOffsets(data)[1] + 0x4 + 0x54, 30)
