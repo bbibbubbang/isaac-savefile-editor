@@ -32,6 +32,7 @@ import localization
 DATA_DIR = Path(__file__).resolve().parent
 SETTINGS_PATH = DATA_DIR / "settings.json"
 LANGUAGE_DIR = DATA_DIR / "language"
+DEAD_GOD_REFERENCE_PATH = DATA_DIR / "rep+persistentgamedata1_deadgod.dat"
 DEFAULT_SETTINGS: Dict[str, object] = {
     "remember_path": False,
     "last_path": "",
@@ -4320,8 +4321,17 @@ class IsaacSaveEditor(tk.Tk):
         if not self._ensure_data_loaded():
             return
 
+        reference_data: Optional[bytes] = None
+        if DEAD_GOD_REFERENCE_PATH.exists():
+            try:
+                reference_data = DEAD_GOD_REFERENCE_PATH.read_bytes()
+            except OSError:
+                reference_data = None
+
         def updater(data: bytes) -> bytes:
-            return script.ensureBestiaryEncounterMinimum(data, minimum=1)
+            return script.ensureBestiaryEncounterMinimum(
+                data, minimum=1, reference_data=reference_data
+            )
 
         if self._apply_update(
             updater,
