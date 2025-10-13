@@ -958,7 +958,7 @@ class IsaacSaveEditor(tk.Tk):
                 "signed": False,
             },
             "greed": {
-                "offset": 0x1B0,
+                "offset": 0x1B8,
                 "title": ("그리드 기계", "Greed Machine"),
                 "description": ("그리드 기계", "Greed Machine"),
                 "num_bytes": 4,
