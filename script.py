@@ -795,7 +795,7 @@ def ensureBestiaryEncounterMinimum(data, minimum=1, reference_data=None):
     return data[:section_start] + new_section + data[section_end:]
 
 # updateWinStreak: alterInt(data, getSectionOffsets(data)[1] + 0x4 + 0x54, 30)
-# updateGreedMachine: alterInt(data, getSectionOffsets(data)[1] + 0x4 + 0x54, 30)
+# updateGreedMachine: alterInt(data, getSectionOffsets(data)[1] + 0x4 + 0x1C8, 30)
 # updateDonationMachine: alterInt(data, getSectionOffsets(data)[1] + 0x4 + 0x1B0, 30)
 
 if __name__ == "__main__":
