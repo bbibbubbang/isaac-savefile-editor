@@ -33,6 +33,92 @@ DATA_DIR = Path(__file__).resolve().parent
 SETTINGS_PATH = DATA_DIR / "settings.json"
 LANGUAGE_DIR = DATA_DIR / "language"
 DEAD_GOD_REFERENCE_PATH = DATA_DIR / "rep+persistentgamedata1_deadgod.dat"
+_MULTI_EDEN_EXPECTED_LENGTH = 4068
+_MULTI_EDEN_STACK_OFFSET = 0x478
+_MULTI_EDEN_PATCH_VALUES: Dict[int, tuple[int, int]] = {
+    0x0010: (0x64, 0x92),
+    0x0011: (0x40, 0xA5),
+    0x0012: (0xBE, 0xAF),
+    0x0013: (0x0E, 0xFC),
+    0x0476: (0x00, 0x02),
+    0x0A7A: (0x40, 0x01),
+    0x0A96: (0x06, 0x00),
+    0x0B3C: (0x00, 0x01),
+    0x0B3D: (0x01, 0x00),
+    0x0B41: (0x01, 0x00),
+    0x0B45: (0x01, 0x00),
+    0x0B4A: (0x01, 0x00),
+    0x0B70: (0x01, 0x00),
+    0x0B85: (0x01, 0x00),
+    0x0B86: (0x01, 0x00),
+    0x0B96: (0x01, 0x00),
+    0x0B9A: (0x00, 0x01),
+    0x0BA0: (0x01, 0x00),
+    0x0BA4: (0x01, 0x00),
+    0x0BBA: (0x01, 0x00),
+    0x0BC5: (0x00, 0x01),
+    0x0BD7: (0x01, 0x00),
+    0x0BE2: (0x00, 0x01),
+    0x0BF1: (0x00, 0x01),
+    0x0BF2: (0x01, 0x00),
+    0x0BF7: (0x00, 0x01),
+    0x0BFA: (0x00, 0x01),
+    0x0BFC: (0x01, 0x00),
+    0x0BFE: (0x00, 0x01),
+    0x0BFF: (0x01, 0x00),
+    0x0C01: (0x01, 0x00),
+    0x0C04: (0x01, 0x00),
+    0x0C0C: (0x01, 0x00),
+    0x0C0E: (0x01, 0x00),
+    0x0C0F: (0x01, 0x00),
+    0x0C16: (0x01, 0x00),
+    0x0C1D: (0x01, 0x00),
+    0x0C21: (0x01, 0x00),
+    0x0C22: (0x01, 0x00),
+    0x0C32: (0x01, 0x00),
+    0x0C42: (0x01, 0x00),
+    0x0C43: (0x01, 0x00),
+    0x0C5C: (0x01, 0x00),
+    0x0C63: (0x01, 0x00),
+    0x0C73: (0x01, 0x00),
+    0x0C74: (0x00, 0x01),
+    0x0C75: (0x01, 0x00),
+    0x0C7A: (0x01, 0x00),
+    0x0C88: (0x01, 0x00),
+    0x0C8E: (0x00, 0x01),
+    0x0C95: (0x00, 0x01),
+    0x0C9A: (0x00, 0x01),
+    0x0CA0: (0x00, 0x01),
+    0x0CA3: (0x01, 0x00),
+    0x0CB0: (0x00, 0x01),
+    0x0CB3: (0x01, 0x00),
+    0x0CB4: (0x01, 0x00),
+    0x0CBA: (0x00, 0x01),
+    0x0CC3: (0x01, 0x00),
+    0x0CCE: (0x01, 0x00),
+    0x0CDB: (0x01, 0x00),
+    0x0CE5: (0x01, 0x00),
+    0x0CFC: (0x01, 0x00),
+    0x0D17: (0x00, 0x01),
+    0x0D19: (0x01, 0x00),
+    0x0D1B: (0x01, 0x00),
+    0x0D23: (0x00, 0x01),
+    0x0D27: (0x01, 0x00),
+    0x0D54: (0x01, 0x00),
+    0x0D5C: (0x01, 0x00),
+    0x0D60: (0x01, 0x00),
+    0x0D64: (0x00, 0x01),
+    0x0D6A: (0x01, 0x00),
+    0x0D7B: (0x01, 0x00),
+    0x0D89: (0x01, 0x00),
+    0x0D92: (0x01, 0x00),
+    0x0D93: (0x00, 0x01),
+    0x0D9A: (0x00, 0x01),
+    0x0DB5: (0x00, 0x01),
+    0x0DBB: (0x01, 0x00),
+    0x0DD0: (0x01, 0x00),
+    0x0F4C: (0x00, 0x01),
+}
 DEFAULT_SETTINGS: Dict[str, object] = {
     "remember_path": False,
     "last_path": "",
@@ -4147,10 +4233,105 @@ class IsaacSaveEditor(tk.Tk):
             )
             return False
 
+        multi_success = True
+        if key == "eden_blessing_multi":
+            multi_success = self._apply_multi_eden_mirror(new_value)
+
         self._propagate_numeric_update(key, new_value, num_bytes)
         self.refresh_current_values(update_entry=not preserve_entry)
         self._apply_auto_overwrite_if_enabled(prefer_loaded_file=True)
+        if key == "eden_blessing_multi" and not multi_success:
+            messagebox.showwarning(
+                self._text("멀티 에덴 업데이트 실패", "Multi Eden Update Failed"),
+                self._text(
+                    "eden0.dat 파일을 찾거나 업데이트하지 못했습니다. 수동으로 수정해주세요.",
+                    "Could not locate or update eden0.dat. Please adjust the file manually.",
+                ),
+            )
         return True
+
+    def _determine_save_slot_index(self) -> Optional[int]:
+        if not self.filename:
+            return None
+        base_name = Path(self.filename).name
+        match = re.search(r"(\d+)(?=\.dat$)", base_name)
+        if not match:
+            return None
+        try:
+            return int(match.group(1))
+        except ValueError:
+            return None
+
+    def _multi_eden_candidate_paths(self) -> list[Path]:
+        if not self.filename:
+            return []
+        base_path = Path(self.filename)
+        indices: Set[int] = {0}
+        slot_index = self._determine_save_slot_index()
+        if slot_index is not None:
+            indices.add(slot_index)
+            if slot_index > 0:
+                indices.add(slot_index - 1)
+
+        search_dirs = {base_path.parent, base_path.parent / "players"}
+        candidates: Set[Path] = set()
+        for directory in search_dirs:
+            if not directory.exists():
+                continue
+            for index in indices:
+                candidate = directory / f"eden{index}.dat"
+                if candidate.exists():
+                    candidates.add(candidate)
+        return sorted(candidates)
+
+    def _apply_multi_eden_mirror(self, value: int) -> bool:
+        target_paths = self._multi_eden_candidate_paths()
+        if not target_paths:
+            return False
+
+        any_success = False
+        script_offset = 0x10
+        for path in target_paths:
+            try:
+                original = path.read_bytes()
+            except OSError:
+                continue
+            if len(original) != _MULTI_EDEN_EXPECTED_LENGTH:
+                continue
+
+            patched = bytearray(original)
+            for offset, (zero_byte, patched_byte) in _MULTI_EDEN_PATCH_VALUES.items():
+                if offset >= len(patched):
+                    continue
+                patched[offset] = patched_byte if value > 0 else zero_byte
+            if _MULTI_EDEN_STACK_OFFSET < len(patched):
+                patched[_MULTI_EDEN_STACK_OFFSET] = value & 0xFF
+
+            length = len(patched) - script_offset - 4
+            if length > 0:
+                checksum = script.calcAfterbirthChecksum(patched, script_offset, length)
+                tail = checksum.to_bytes(5, "little", signed=True)[:4]
+                patched[-4:] = tail
+
+            tmp_path = path.with_suffix(path.suffix + ".tmp")
+            backup_path = path.with_suffix(path.suffix + ".bak")
+            try:
+                if not backup_path.exists():
+                    backup_path.write_bytes(original)
+                if tmp_path.exists():
+                    tmp_path.unlink()
+                tmp_path.write_bytes(patched)
+                tmp_path.replace(path)
+            except OSError:
+                try:
+                    if tmp_path.exists():
+                        tmp_path.unlink()
+                except OSError:
+                    pass
+                continue
+            any_success = True
+
+        return any_success
 
     def _propagate_numeric_update(
         self, key: str, value: int, num_bytes: int
