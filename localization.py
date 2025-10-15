@@ -3,24 +3,11 @@ from __future__ import annotations
 import json
 from functools import lru_cache
 from pathlib import Path
-from typing import Dict, Iterable, Sequence, Tuple
+from typing import Dict, Iterable
 
 _DATA_DIR = Path(__file__).resolve().parent
 _I18N_DIR = _DATA_DIR / "i18n"
 _UI_TRANSLATIONS_PATH = _I18N_DIR / "ui_translations.json"
-_AUTO_OVERWRITE_STEPS_PATH = _I18N_DIR / "auto_overwrite_steps.json"
-
-_ENGLISH_STEPS: Tuple[str, ...] = (
-    "1. Click 'Select Source Save File' to choose the reference save file.",
-    "2. Click 'Select Target Save File' to choose the in-game save to overwrite.",
-    "3. Check 'Overwrite Automatically' to save the paths and copy the source file automatically on startup.",
-)
-_KOREAN_STEPS: Tuple[str, ...] = (
-    "1. '원본 세이브파일 열기' 버튼을 눌러 기준이 되는 세이브파일을 선택하세요.",
-    "2. '덮어쓰기할 세이브파일 열기' 버튼을 눌러 실제 게임 세이브파일을 선택하세요.",
-    "3. '세이브파일 자동 덮어쓰기'를 체크하면 경로가 저장되고, 프로그램 실행 시 원본 세이브파일이 자동으로 덮어쓰기 경로에 복사됩니다.",
-)
-
 _LANGUAGE_CANONICAL_MAP: Dict[str, str] = {
     "": "",
     "bg": "bul",
@@ -151,25 +138,6 @@ def _load_ui_translations() -> Dict[str, Dict[str, str]]:
     return translations
 
 
-@lru_cache(maxsize=1)
-def _load_auto_overwrite_steps() -> Dict[str, Tuple[str, ...]]:
-    steps: Dict[str, Tuple[str, ...]] = {
-        "en_us": _ENGLISH_STEPS,
-        "ko_kr": _KOREAN_STEPS,
-    }
-    try:
-        raw = json.loads(_AUTO_OVERWRITE_STEPS_PATH.read_text(encoding="utf-8"))
-    except (OSError, json.JSONDecodeError):
-        return steps
-    for code, value in raw.items():
-        if not isinstance(value, (list, tuple)):
-            continue
-        normalized = tuple(str(item) for item in value if isinstance(item, str) and item.strip())
-        if normalized:
-            steps[_canonicalize_language_code(code)] = normalized
-    return steps
-
-
 def translate_ui_string(language_code: str, english: str, korean: str) -> str:
     english = english or ""
     if not english:
@@ -192,14 +160,6 @@ def get_language_display_name(code: str, default: str) -> str:
     if base in _LANGUAGE_DISPLAY_NAMES:
         return _LANGUAGE_DISPLAY_NAMES[base]
     return default
-
-
-def get_auto_overwrite_steps(language_code: str) -> Sequence[str]:
-    steps = _load_auto_overwrite_steps()
-    for candidate in _iter_language_candidates(language_code):
-        if candidate in steps:
-            return steps[candidate]
-    return steps["en_us"]
 
 
 def is_english(code: str) -> bool:
