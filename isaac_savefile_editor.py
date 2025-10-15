@@ -962,6 +962,17 @@ class IsaacSaveEditor(tk.Tk):
                 "description": ("기부 기계", "Donation Machine"),
                 "num_bytes": 4,
                 "signed": False,
+                "grid_column": 0,
+                "grid_row": 0,
+            },
+            "eden_blessing_single": {
+                "offset": 0x1C4,
+                "title": ("싱글 에덴의 축복", "Single Eden's Blessing"),
+                "description": ("싱글 에덴의 축복", "Single Eden's Blessing"),
+                "num_bytes": 1,
+                "signed": False,
+                "grid_column": 1,
+                "grid_row": 0,
             },
             "greed": {
                 "offset": 0x1C8,
@@ -985,7 +996,13 @@ class IsaacSaveEditor(tk.Tk):
                 "signed": False,
             },
         }
-        self._numeric_order: List[str] = ["donation", "greed", "streak", "eden"]
+        self._numeric_order: List[str] = [
+            "donation",
+            "eden_blessing_single",
+            "greed",
+            "streak",
+            "eden",
+        ]
         self._stat_order: List[str] = []
 
         self._numeric_vars: Dict[str, Dict[str, tk.StringVar]] = {}
@@ -1420,8 +1437,10 @@ class IsaacSaveEditor(tk.Tk):
         numeric_frame = ttk.Frame(container)
         numeric_frame.grid(column=0, row=2, sticky="ew", pady=(15, 0))
         numeric_frame.columnconfigure(0, weight=1)
+        numeric_frame.columnconfigure(1, weight=1)
 
-        for index, key in enumerate(self._numeric_order):
+        next_row = 0
+        for key in self._numeric_order:
             config = self._numeric_config[key]
             current_var = tk.StringVar(value="0")
             entry_var = tk.StringVar(value="0")
@@ -1429,14 +1448,24 @@ class IsaacSaveEditor(tk.Tk):
                 "current": current_var,
                 "entry": entry_var,
             }
+            column_value = config.get("grid_column")
+            column = int(column_value) if isinstance(column_value, int) else 0
+            row_value = config.get("grid_row")
+            if isinstance(row_value, int):
+                row = row_value
+                next_row = max(next_row, row + 1)
+            else:
+                row = next_row
+                next_row += 1
             self._build_numeric_section(
                 container=numeric_frame,
-                row=index,
+                row=row,
+                column=column,
                 title=config.get("title"),
                 current_var=current_var,
                 entry_var=entry_var,
                 command=lambda field_key=key: self.apply_field(field_key, preserve_entry=True),
-                is_first=index == 0,
+                is_first=row == 0,
             )
 
         auto_999_frame = ttk.Frame(container)
@@ -1505,6 +1534,7 @@ class IsaacSaveEditor(tk.Tk):
                 command=lambda field_key=key: self.apply_field(
                     field_key, preserve_entry=True
                 ),
+                column=0,
                 is_first=index == 0,
             )
 
@@ -3465,11 +3495,14 @@ class IsaacSaveEditor(tk.Tk):
         current_var: tk.StringVar,
         entry_var: tk.StringVar,
         command: Callable[[], None],
+        *,
+        column: int = 0,
         is_first: bool = False,
     ) -> None:
         section = ttk.LabelFrame(container, text=title, padding=(12, 10))
         pady = (15, 0) if is_first else (10, 0)
-        section.grid(column=0, row=row, sticky="ew", pady=pady)
+        padx = (0, 0) if column == 0 else (12, 0)
+        section.grid(column=column, row=row, sticky="ew", pady=pady, padx=padx)
         section.columnconfigure(1, weight=1)
         title_ko, title_en = ("", "")
         if isinstance(title, tuple):
