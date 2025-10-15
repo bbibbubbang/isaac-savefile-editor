@@ -4612,7 +4612,7 @@ class IsaacSaveEditor(tk.Tk):
 
         try:
             section_offsets = script.getSectionOffsets(self.data)
-            base_offset = section_offsets[1] + 0x4
+            section_base = section_offsets[1] + 0x4
         except Exception as exc:  # pragma: no cover - defensive UI feedback
             messagebox.showerror(
                 self._text("읽기 실패", "Read Failed"),
@@ -4629,10 +4629,18 @@ class IsaacSaveEditor(tk.Tk):
             except (TypeError, ValueError):
                 num_bytes = 2
             signed = bool(config.get("signed", False))
+            offset_value = config.get("offset")
+            try:
+                base_offset = int(offset_value)
+            except (TypeError, ValueError):
+                base_offset = 0
+            is_absolute = bool(config.get("offset_is_absolute", False))
+            if not is_absolute:
+                base_offset += section_base
             try:
                 value = script.getInt(
                     self.data,
-                    base_offset + int(config["offset"]),
+                    base_offset,
                     num_bytes=num_bytes,
                     signed=signed,
                 )
