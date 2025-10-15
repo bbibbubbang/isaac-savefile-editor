@@ -33,13 +33,92 @@ DATA_DIR = Path(__file__).resolve().parent
 SETTINGS_PATH = DATA_DIR / "settings.json"
 LANGUAGE_DIR = DATA_DIR / "language"
 DEAD_GOD_REFERENCE_PATH = DATA_DIR / "rep+persistentgamedata1_deadgod.dat"
-_MULTI_EDEN_REFERENCE_FILES: Dict[int, Path] = {
-    0: DATA_DIR / "savefile" / "eden0.dat",
-    1: DATA_DIR / "savefile" / "eden0_multi_mirror_set1_0x0478.dat",
-    2: DATA_DIR / "savefile" / "eden0_multi_mirror_set2_0x0478.dat",
+_MULTI_EDEN_EXPECTED_LENGTH = 4068
+_MULTI_EDEN_STACK_OFFSET = 0x478
+_MULTI_EDEN_PATCH_VALUES: Dict[int, tuple[int, int]] = {
+    0x0010: (0x64, 0x92),
+    0x0011: (0x40, 0xA5),
+    0x0012: (0xBE, 0xAF),
+    0x0013: (0x0E, 0xFC),
+    0x0476: (0x00, 0x02),
+    0x0A7A: (0x40, 0x01),
+    0x0A96: (0x06, 0x00),
+    0x0B3C: (0x00, 0x01),
+    0x0B3D: (0x01, 0x00),
+    0x0B41: (0x01, 0x00),
+    0x0B45: (0x01, 0x00),
+    0x0B4A: (0x01, 0x00),
+    0x0B70: (0x01, 0x00),
+    0x0B85: (0x01, 0x00),
+    0x0B86: (0x01, 0x00),
+    0x0B96: (0x01, 0x00),
+    0x0B9A: (0x00, 0x01),
+    0x0BA0: (0x01, 0x00),
+    0x0BA4: (0x01, 0x00),
+    0x0BBA: (0x01, 0x00),
+    0x0BC5: (0x00, 0x01),
+    0x0BD7: (0x01, 0x00),
+    0x0BE2: (0x00, 0x01),
+    0x0BF1: (0x00, 0x01),
+    0x0BF2: (0x01, 0x00),
+    0x0BF7: (0x00, 0x01),
+    0x0BFA: (0x00, 0x01),
+    0x0BFC: (0x01, 0x00),
+    0x0BFE: (0x00, 0x01),
+    0x0BFF: (0x01, 0x00),
+    0x0C01: (0x01, 0x00),
+    0x0C04: (0x01, 0x00),
+    0x0C0C: (0x01, 0x00),
+    0x0C0E: (0x01, 0x00),
+    0x0C0F: (0x01, 0x00),
+    0x0C16: (0x01, 0x00),
+    0x0C1D: (0x01, 0x00),
+    0x0C21: (0x01, 0x00),
+    0x0C22: (0x01, 0x00),
+    0x0C32: (0x01, 0x00),
+    0x0C42: (0x01, 0x00),
+    0x0C43: (0x01, 0x00),
+    0x0C5C: (0x01, 0x00),
+    0x0C63: (0x01, 0x00),
+    0x0C73: (0x01, 0x00),
+    0x0C74: (0x00, 0x01),
+    0x0C75: (0x01, 0x00),
+    0x0C7A: (0x01, 0x00),
+    0x0C88: (0x01, 0x00),
+    0x0C8E: (0x00, 0x01),
+    0x0C95: (0x00, 0x01),
+    0x0C9A: (0x00, 0x01),
+    0x0CA0: (0x00, 0x01),
+    0x0CA3: (0x01, 0x00),
+    0x0CB0: (0x00, 0x01),
+    0x0CB3: (0x01, 0x00),
+    0x0CB4: (0x01, 0x00),
+    0x0CBA: (0x00, 0x01),
+    0x0CC3: (0x01, 0x00),
+    0x0CCE: (0x01, 0x00),
+    0x0CDB: (0x01, 0x00),
+    0x0CE5: (0x01, 0x00),
+    0x0CFC: (0x01, 0x00),
+    0x0D17: (0x00, 0x01),
+    0x0D19: (0x01, 0x00),
+    0x0D1B: (0x01, 0x00),
+    0x0D23: (0x00, 0x01),
+    0x0D27: (0x01, 0x00),
+    0x0D54: (0x01, 0x00),
+    0x0D5C: (0x01, 0x00),
+    0x0D60: (0x01, 0x00),
+    0x0D64: (0x00, 0x01),
+    0x0D6A: (0x01, 0x00),
+    0x0D7B: (0x01, 0x00),
+    0x0D89: (0x01, 0x00),
+    0x0D92: (0x01, 0x00),
+    0x0D93: (0x00, 0x01),
+    0x0D9A: (0x00, 0x01),
+    0x0DB5: (0x00, 0x01),
+    0x0DBB: (0x01, 0x00),
+    0x0DD0: (0x01, 0x00),
+    0x0F4C: (0x00, 0x01),
 }
-_MULTI_EDEN_PATCH_CACHE: Optional[tuple[Dict[int, tuple[int, int]], int, int]] = None
-_MULTI_EDEN_PATCH_FAILED: bool = False
 DEFAULT_SETTINGS: Dict[str, object] = {
     "remember_path": False,
     "last_path": "",
@@ -244,65 +323,6 @@ def _suppress_focus_indicators(root: tk.Misc) -> None:
         except tk.TclError:
             continue
         _normalize_focus_color(style_name)
-
-
-def _load_multi_eden_patch_data() -> Optional[tuple[Dict[int, tuple[int, int]], int, int]]:
-    global _MULTI_EDEN_PATCH_CACHE, _MULTI_EDEN_PATCH_FAILED
-    if _MULTI_EDEN_PATCH_CACHE is not None:
-        return _MULTI_EDEN_PATCH_CACHE
-    if _MULTI_EDEN_PATCH_FAILED:
-        return None
-
-    base_path = _MULTI_EDEN_REFERENCE_FILES.get(0)
-    variant_path = _MULTI_EDEN_REFERENCE_FILES.get(1)
-    variant_path_two = _MULTI_EDEN_REFERENCE_FILES.get(2)
-    if base_path is None or variant_path is None or variant_path_two is None:
-        _MULTI_EDEN_PATCH_FAILED = True
-        return None
-
-    try:
-        base_data = base_path.read_bytes()
-        variant_data = variant_path.read_bytes()
-        variant_two_data = variant_path_two.read_bytes()
-    except OSError:
-        _MULTI_EDEN_PATCH_FAILED = True
-        return None
-
-    if not base_data or len(base_data) != len(variant_data) or len(base_data) != len(variant_two_data):
-        _MULTI_EDEN_PATCH_FAILED = True
-        return None
-
-    length = len(base_data)
-    diff_one: Dict[int, int] = {}
-    diff_two: Dict[int, int] = {}
-    for index in range(length):
-        base_byte = base_data[index]
-        if base_byte != variant_data[index]:
-            diff_one[index] = variant_data[index]
-        if base_byte != variant_two_data[index]:
-            diff_two[index] = variant_two_data[index]
-
-    if not diff_one or not diff_two:
-        _MULTI_EDEN_PATCH_FAILED = True
-        return None
-
-    stack_offsets = {
-        index
-        for index, value in diff_one.items()
-        if diff_two.get(index) is not None and value != diff_two[index]
-    }
-    if len(stack_offsets) != 1:
-        _MULTI_EDEN_PATCH_FAILED = True
-        return None
-
-    stack_offset = stack_offsets.pop()
-    patch_map: Dict[int, tuple[int, int]] = {
-        index: (base_data[index], value)
-        for index, value in diff_one.items()
-        if index != stack_offset and index < length - 4
-    }
-    _MULTI_EDEN_PATCH_CACHE = (patch_map, stack_offset, length)
-    return _MULTI_EDEN_PATCH_CACHE
 
 
 def _variable_to_bool(var: Optional[tk.Variable]) -> bool:
@@ -4265,10 +4285,6 @@ class IsaacSaveEditor(tk.Tk):
         return sorted(candidates)
 
     def _apply_multi_eden_mirror(self, value: int) -> bool:
-        patch_data = _load_multi_eden_patch_data()
-        if patch_data is None:
-            return False
-        patch_map, stack_offset, expected_length = patch_data
         target_paths = self._multi_eden_candidate_paths()
         if not target_paths:
             return False
@@ -4280,16 +4296,16 @@ class IsaacSaveEditor(tk.Tk):
                 original = path.read_bytes()
             except OSError:
                 continue
-            if len(original) != expected_length:
+            if len(original) != _MULTI_EDEN_EXPECTED_LENGTH:
                 continue
 
             patched = bytearray(original)
-            for offset, (base_byte, variant_byte) in patch_map.items():
+            for offset, (zero_byte, patched_byte) in _MULTI_EDEN_PATCH_VALUES.items():
                 if offset >= len(patched):
                     continue
-                patched[offset] = variant_byte if value > 0 else base_byte
-            if stack_offset < len(patched):
-                patched[stack_offset] = value & 0xFF
+                patched[offset] = patched_byte if value > 0 else zero_byte
+            if _MULTI_EDEN_STACK_OFFSET < len(patched):
+                patched[_MULTI_EDEN_STACK_OFFSET] = value & 0xFF
 
             length = len(patched) - script_offset - 4
             if length > 0:
