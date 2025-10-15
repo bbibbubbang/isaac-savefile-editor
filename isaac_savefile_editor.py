@@ -38,8 +38,6 @@ _MULTI_EDEN_OFFSETS_ARE_ABSOLUTE = True
 DEFAULT_SETTINGS: Dict[str, object] = {
     "remember_path": False,
     "last_path": "",
-    "auto_set_999": False,
-    "auto_overwrite": False,
     "source_save_path": "",
     "target_save_path": "",
     "english_ui": False,
@@ -1033,9 +1031,6 @@ class IsaacSaveEditor(tk.Tk):
         self.settings["language"] = self._language_code
         self.settings["english_ui"] = self._english_ui_enabled
 
-        self._auto_set_999_default = bool(self.settings.get("auto_set_999", False))
-        self._auto_overwrite_default = bool(self.settings.get("auto_overwrite", False))
-        self._auto_overwrite_executed = False
         self.source_save_path = self._normalize_save_path(self.settings.get("source_save_path"))
         self.target_save_path = self._normalize_save_path(self.settings.get("target_save_path"))
         self.settings["source_save_path"] = self.source_save_path
@@ -1476,8 +1471,6 @@ class IsaacSaveEditor(tk.Tk):
             "Auto Load Save File",
         )
 
-        self.auto_set_999_var = tk.BooleanVar(value=self._auto_set_999_default)
-        self.auto_overwrite_var = tk.BooleanVar(value=self._auto_overwrite_default)
         self.source_save_display_var = tk.StringVar(
             value=self._format_selected_path(self.source_save_path)
         )
@@ -1496,30 +1489,11 @@ class IsaacSaveEditor(tk.Tk):
             "Overwrite Save File",
         )
 
-        auto_overwrite_check = ttk.Checkbutton(
-            overwrite_frame,
-            variable=self.auto_overwrite_var,
-            command=self._on_auto_overwrite_toggle,
-        )
-        auto_overwrite_check.grid(column=0, row=0, sticky="w")
-        self._register_text(
-            auto_overwrite_check,
-            "세이브파일 자동 덮어쓰기",
-            "Overwrite Automatically",
-        )
-
-        help_button = ttk.Button(
-            overwrite_frame,
-            command=self._show_auto_overwrite_help,
-        )
-        help_button.grid(column=1, row=0, sticky="e")
-        self._register_text(help_button, "도움말", "Help")
-
         source_button = ttk.Button(
             overwrite_frame,
             command=self._select_source_save_file,
         )
-        source_button.grid(column=0, row=1, sticky="w", pady=(8, 0))
+        source_button.grid(column=0, row=0, sticky="w")
         self._register_text(
             source_button,
             "원본 세이브파일 열기",
@@ -1531,14 +1505,14 @@ class IsaacSaveEditor(tk.Tk):
             textvariable=self.source_save_display_var,
             justify="left",
         )
-        source_label.grid(column=1, row=1, sticky="ew", padx=(10, 0), pady=(8, 0))
+        source_label.grid(column=1, row=0, sticky="ew", padx=(10, 0))
         self._register_dynamic_wrap_widget(source_label, self.source_save_display_var)
 
         target_button = ttk.Button(
             overwrite_frame,
             command=self._select_target_save_file,
         )
-        target_button.grid(column=0, row=2, sticky="w", pady=(8, 0))
+        target_button.grid(column=0, row=1, sticky="w", pady=(8, 0))
         self._register_text(
             target_button,
             "덮어쓰기할 세이브파일 열기",
@@ -1550,14 +1524,14 @@ class IsaacSaveEditor(tk.Tk):
             textvariable=self.target_save_display_var,
             justify="left",
         )
-        target_label.grid(column=1, row=2, sticky="ew", padx=(10, 0), pady=(8, 0))
+        target_label.grid(column=1, row=1, sticky="ew", padx=(10, 0), pady=(8, 0))
         self._register_dynamic_wrap_widget(target_label, self.target_save_display_var)
 
         overwrite_button = ttk.Button(
             overwrite_frame,
             command=self._overwrite_target_save_from_button,
         )
-        overwrite_button.grid(column=0, row=3, sticky="w", pady=(8, 0))
+        overwrite_button.grid(column=0, row=2, sticky="w", pady=(8, 0))
         self._register_text(
             overwrite_button,
             "세이브파일 덮어쓰기",
@@ -1598,46 +1572,33 @@ class IsaacSaveEditor(tk.Tk):
                 is_first=row == 0,
             )
 
-        auto_999_frame = ttk.Frame(container)
-        auto_999_frame.grid(column=0, row=3, sticky="ew", pady=(12, 0))
-        auto_999_frame.columnconfigure(0, weight=1)
-        auto_999_frame.columnconfigure(1, weight=0)
-        auto_999_frame.columnconfigure(2, weight=0)
-        auto_999_frame.columnconfigure(3, weight=0)
-
-        auto_999_check = ttk.Checkbutton(
-            auto_999_frame,
-            variable=self.auto_set_999_var,
-            command=self._on_auto_set_999_toggle,
-        )
-        auto_999_check.grid(column=0, row=0, sticky="w")
-        self._register_text(
-            auto_999_check,
-            "프로그램 시작 시 999로 설정",
-            "Set to 999 on Startup",
-        )
+        control_frame = ttk.Frame(container)
+        control_frame.grid(column=0, row=3, sticky="ew", pady=(12, 0))
+        control_frame.columnconfigure(0, weight=1)
+        control_frame.columnconfigure(1, weight=0)
+        control_frame.columnconfigure(2, weight=0)
 
         set_999_button = ttk.Button(
-            auto_999_frame,
+            control_frame,
             command=self.set_donation_greed_eden_to_max,
         )
-        set_999_button.grid(column=1, row=0, sticky="e", padx=(10, 0))
+        set_999_button.grid(column=0, row=0, sticky="w")
         self._register_text(
             set_999_button,
             "기부/그리드 기계/에덴 토큰 999로 설정",
             "Set Donation/Greed/Eden Tokens to 999",
         )
 
-        language_label = ttk.Label(auto_999_frame, text="Language")
-        language_label.grid(column=2, row=0, sticky="e", padx=(10, 0))
+        language_label = ttk.Label(control_frame, text="Language")
+        language_label.grid(column=1, row=0, sticky="e", padx=(10, 0))
         self._adjust_widget_width(language_label, "Language")
 
         language_box = ttk.Combobox(
-            auto_999_frame,
+            control_frame,
             state="readonly",
             textvariable=self._language_display_var,
         )
-        language_box.grid(column=3, row=0, sticky="e", padx=(6, 0))
+        language_box.grid(column=2, row=0, sticky="e", padx=(6, 0))
         language_box.bind("<<ComboboxSelected>>", self._on_language_selection)
         self._language_selector = language_box
         self._update_language_selector()
@@ -3498,7 +3459,6 @@ class IsaacSaveEditor(tk.Tk):
             return False
         self.data = updated_with_checksum
         self.refresh_current_values()
-        self._apply_auto_overwrite_if_enabled(prefer_loaded_file=True)
         return True
     # ------------------------------------------------------------------
     # Tree refresh helpers
@@ -3708,7 +3668,6 @@ class IsaacSaveEditor(tk.Tk):
         self.settings["source_save_path"] = normalized
         self._update_source_display()
         self._save_settings()
-        self._apply_auto_overwrite_if_enabled(show_message=True)
 
     def _select_target_save_file(self) -> None:
         filename = filedialog.askopenfilename(
@@ -3744,105 +3703,6 @@ class IsaacSaveEditor(tk.Tk):
         self.settings["target_save_path"] = normalized
         self._update_target_display()
         self._save_settings()
-        self._apply_auto_overwrite_if_enabled(show_message=True)
-
-    def _on_auto_set_999_toggle(self) -> None:
-        enabled = _variable_to_bool(self.auto_set_999_var)
-        self.settings["auto_set_999"] = enabled
-        self._save_settings()
-        if enabled:
-            self._apply_auto_999_if_needed()
-
-    def _on_auto_overwrite_toggle(self) -> None:
-        enabled = _variable_to_bool(self.auto_overwrite_var)
-        self.settings["auto_overwrite"] = enabled
-        self._save_settings()
-        if enabled:
-            self._apply_auto_overwrite_if_enabled(show_message=True)
-
-    def _show_auto_overwrite_help(self) -> None:
-        help_window = tk.Toplevel(self)
-        help_window.title(self._text("세이브파일 자동 덮어쓰기 안내", "Auto Overwrite Guide"))
-        help_window.transient(self)
-        help_window.resizable(False, False)
-
-        container = ttk.Frame(help_window, padding=(20, 16, 20, 16))
-        container.grid(sticky="nsew")
-        help_window.columnconfigure(0, weight=1)
-        help_window.rowconfigure(0, weight=1)
-        container.columnconfigure(0, weight=1)
-
-        base_font = tkfont.nametofont("TkDefaultFont")
-        base_size = abs(int(base_font.cget("size")))
-        title_font = base_font.copy()
-        title_font.configure(size=max(base_size + 2, 12), weight="bold")
-        body_font = base_font.copy()
-        body_font.configure(size=max(base_size + 1, 11))
-
-        title_label = ttk.Label(
-            container,
-            font=title_font,
-            justify="left",
-            text=self._text("자동 덮어쓰기 사용 방법", "How to Use Auto Overwrite"),
-        )
-        title_label.grid(column=0, row=0, sticky="w")
-
-        steps = localization.get_auto_overwrite_steps(self._language_code)
-        body_label = ttk.Label(
-            container,
-            text="\n\n".join(steps),
-            font=body_font,
-            justify="left",
-            wraplength=460,
-        )
-        body_label.grid(column=0, row=1, sticky="w", pady=(12, 18))
-
-        close_button = ttk.Button(
-            container,
-            command=help_window.destroy,
-            text=self._text("확인", "OK"),
-        )
-        close_button.grid(column=0, row=2, sticky="e")
-        close_button.focus_set()
-
-        help_window.bind("<Escape>", lambda event: help_window.destroy())
-
-        help_window.update_idletasks()
-        root_x = self.winfo_rootx()
-        root_y = self.winfo_rooty()
-        root_width = self.winfo_width()
-        root_height = self.winfo_height()
-        window_width = help_window.winfo_width()
-        window_height = help_window.winfo_height()
-
-        pos_x = root_x + (root_width - window_width) // 2
-        pos_y = root_y + (root_height - window_height) // 2
-        help_window.geometry(f"+{pos_x}+{pos_y}")
-
-    def _apply_auto_999_if_needed(self) -> None:
-        if not _variable_to_bool(self.auto_set_999_var):
-            return
-        if self.data is None or not self.filename:
-            return
-        self.set_donation_greed_eden_to_max(auto_trigger=True)
-
-    def _apply_auto_overwrite_if_enabled(
-        self, *, show_message: bool = False, prefer_loaded_file: bool = False
-    ) -> None:
-        if not _variable_to_bool(self.auto_overwrite_var):
-            return
-        if getattr(self, "_auto_overwrite_executed", False):
-            return
-        has_source = bool(self.source_save_path)
-        if prefer_loaded_file and self.filename:
-            has_source = has_source or os.path.exists(self.filename)
-        if not has_source or not self.target_save_path:
-            return
-        success = self._overwrite_target_save(
-            show_message=show_message, prefer_loaded_file=prefer_loaded_file
-        )
-        if success:
-            self._auto_overwrite_executed = True
 
     def _overwrite_target_save_from_button(self) -> None:
         self._overwrite_target_save(show_message=True, prefer_loaded_file=False)
@@ -3997,7 +3857,6 @@ class IsaacSaveEditor(tk.Tk):
         self.settings["last_path"] = normalized
         self._save_settings()
         self.refresh_current_values()
-        self._apply_auto_999_if_needed()
         return True
 
     def _on_remember_path_toggle(self) -> None:
@@ -4081,7 +3940,6 @@ class IsaacSaveEditor(tk.Tk):
 
     def _perform_startup_tasks(self) -> None:
         self._open_remembered_file_if_available()
-        self._apply_auto_overwrite_if_enabled()
 
     def _load_settings(self) -> Dict[str, object]:
         settings = DEFAULT_SETTINGS.copy()
@@ -4097,12 +3955,6 @@ class IsaacSaveEditor(tk.Tk):
             last_path = loaded.get("last_path")
             if isinstance(last_path, str):
                 settings["last_path"] = last_path
-            auto_999 = loaded.get("auto_set_999")
-            if isinstance(auto_999, bool):
-                settings["auto_set_999"] = auto_999
-            auto_overwrite = loaded.get("auto_overwrite")
-            if isinstance(auto_overwrite, bool):
-                settings["auto_overwrite"] = auto_overwrite
             source_path = loaded.get("source_save_path")
             if isinstance(source_path, str):
                 settings["source_save_path"] = source_path
@@ -4145,10 +3997,6 @@ class IsaacSaveEditor(tk.Tk):
         last_path_setting = self.settings.get("last_path")
         if isinstance(last_path_setting, str):
             settings_to_save["last_path"] = last_path_setting
-        auto_set_var = getattr(self, "auto_set_999_var", None)
-        auto_overwrite_var = getattr(self, "auto_overwrite_var", None)
-        settings_to_save["auto_set_999"] = _variable_to_bool(auto_set_var)
-        settings_to_save["auto_overwrite"] = _variable_to_bool(auto_overwrite_var)
         settings_to_save["source_save_path"] = self.source_save_path
         settings_to_save["target_save_path"] = self.target_save_path
         language_code = getattr(self, "_language_code", "ko_kr")
@@ -4337,7 +4185,6 @@ class IsaacSaveEditor(tk.Tk):
 
         self._propagate_numeric_update(key, new_value, num_bytes)
         self.refresh_current_values(update_entry=not preserve_entry)
-        self._apply_auto_overwrite_if_enabled(prefer_loaded_file=True)
         if key == "eden_blessing_multi" and not multi_success:
             messagebox.showwarning(
                 self._text("멀티 에덴 업데이트 실패", "Multi Eden Update Failed"),
