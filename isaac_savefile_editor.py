@@ -791,8 +791,8 @@ class IsaacSaveEditor(tk.Tk):
 
     def _update_default_loaded_text(self) -> None:
         self._default_loaded_text = self._text(
-            "불러온 파일: 없음",
-            "Loaded File: None",
+            "선택된 파일: 없음",
+            "Selected File: None",
         )
         if hasattr(self, "loaded_file_var") and self.loaded_file_var.get() in {
             "",
@@ -901,12 +901,10 @@ class IsaacSaveEditor(tk.Tk):
         if not hasattr(self, "loaded_file_var"):
             return
         if self.filename:
-            basename = os.path.basename(self.filename)
-            path_label = self._text("경로", "Path")
-            loaded_label = self._text("불러온 파일", "Loaded File")
+            loaded_label = self._text("선택된 파일", "Selected File")
             formatted_path = os.path.normpath(self.filename)
             self.loaded_file_var.set(
-                f"{loaded_label}: {basename}\n{path_label}: {formatted_path}"
+                f"{loaded_label}: {formatted_path}"
             )
         else:
             self.loaded_file_var.set(self._default_loaded_text)
