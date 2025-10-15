@@ -17,7 +17,8 @@
     "tr_tr": "Başarı eşyaları",
     "uk_ua": "Предмети досягнень",
     "vi": "Vật phẩm thành tựu",
-    "zh_cn": "成就道具"
+    "zh_cn": "成就道具",
+    "ko_kr": "업적 아이템"
   },
   "Active": {
     "bul": "Активни",
@@ -37,7 +38,8 @@
     "tr_tr": "Aktif",
     "uk_ua": "Активні",
     "vi": "Chủ động",
-    "zh_cn": "主动"
+    "zh_cn": "主动",
+    "ko_kr": "액티브"
   },
   "All character checklists are complete.": {
     "bul": "Всички контролни списъци с герои са завършени.",
@@ -57,7 +59,8 @@
     "tr_tr": "Tüm karakter kontrol listeleri tamamlandı.",
     "uk_ua": "Усі контрольні списки персонажів завершені.",
     "vi": "Tất cả danh sách kiểm tra nhân vật đã hoàn tất.",
-    "zh_cn": "所有角色清单均已完成。"
+    "zh_cn": "所有角色清单均已完成。",
+    "ko_kr": "모든 캐릭터 체크리스트가 완료되었습니다."
   },
   "Apply": {
     "bul": "Кандидатствайте",
@@ -77,7 +80,8 @@
     "tr_tr": "Uygula",
     "uk_ua": "Застосовувати",
     "vi": "Áp dụng",
-    "zh_cn": "申请"
+    "zh_cn": "申请",
+    "ko_kr": "적용"
   },
   "Auto Open Failed": {
     "bul": "Auto Open не успя",
@@ -97,7 +101,8 @@
     "tr_tr": "Auto Open başarısız oldu",
     "uk_ua": "Автоматичне відкриття не вдалося",
     "vi": "Auto Open thất bại",
-    "zh_cn": "自动打开失败"
+    "zh_cn": "自动打开失败",
+    "ko_kr": "자동 열기에 실패했습니다"
   },
   "Auto Overwrite Guide": {
     "bul": "Автоматично ръководство за презаписване",
@@ -117,7 +122,8 @@
     "tr_tr": "Otomatik Üzerine Yazma Kılavuzu",
     "uk_ua": "Автоматичне перезапис",
     "vi": "Hướng dẫn ghi đè tự động",
-    "zh_cn": "自动覆盖指南"
+    "zh_cn": "自动覆盖指南",
+    "ko_kr": "자동 덮어쓰기 안내"
   },
   "Bosses": {
     "bul": "Босове",
@@ -137,7 +143,8 @@
     "tr_tr": "Patronlar",
     "uk_ua": "Боси",
     "vi": "Trùm",
-    "zh_cn": "首领"
+    "zh_cn": "首领",
+    "ko_kr": "보스"
   },
   "Changes are saved immediately when you click the checkboxes.": {
     "bul": "Промените се запазват незабавно, когато щракнете върху квадратчетата.",
@@ -157,7 +164,8 @@
     "tr_tr": "Onay kutularını tıkladığınızda derhal değişiklikler kaydedilir.",
     "uk_ua": "Зміни зберігаються негайно, коли ви натискаєте прапорці.",
     "vi": "Thay đổi được lưu ngay lập tức khi bạn nhấp vào hộp kiểm.",
-    "zh_cn": "单击复选框时，立即保存更改。"
+    "zh_cn": "单击复选框时，立即保存更改。",
+    "ko_kr": "체크박스를 클릭하면 변경 사항이 즉시 저장됩니다."
   },
   "Checklist": {
     "bul": "Контролен списък",
@@ -177,7 +185,8 @@
     "tr_tr": "Kontrol listesi",
     "uk_ua": "Контрольний список",
     "vi": "Danh sách kiểm tra",
-    "zh_cn": "清单"
+    "zh_cn": "清单",
+    "ko_kr": "체크리스트"
   },
   "Cards": {
     "bul": "Карти",
@@ -197,7 +206,8 @@
     "tr_tr": "Kartlar",
     "uk_ua": "Карти",
     "vi": "Thẻ",
-    "zh_cn": "卡牌"
+    "zh_cn": "卡牌",
+    "ko_kr": "카드"
   },
   "Character:": {
     "bul": "Характер:",
@@ -217,7 +227,8 @@
     "tr_tr": "Karakter:",
     "uk_ua": "Персонаж:",
     "vi": "Tính cách:",
-    "zh_cn": "特点："
+    "zh_cn": "特点：",
+    "ko_kr": "캐릭터:"
   },
   "Characters": {
     "bul": "Персонажи",
@@ -237,7 +248,8 @@
     "tr_tr": "Karakterler",
     "uk_ua": "Персонажі",
     "vi": "Nhân vật",
-    "zh_cn": "角色"
+    "zh_cn": "角色",
+    "ko_kr": "캐릭터"
   },
   "Complete All Character Checklists": {
     "bul": "Попълнете всички контролни списъци с символи",
@@ -257,7 +269,8 @@
     "tr_tr": "Tüm karakter kontrol listelerini tamamlayın",
     "uk_ua": "Заповніть всі контрольні списки персонажів",
     "vi": "Hoàn thành tất cả các danh sách kiểm tra nhân vật",
-    "zh_cn": "完成所有角色清单"
+    "zh_cn": "完成所有角色清单",
+    "ko_kr": "모든 캐릭터 체크리스트 완료"
   },
   "Complete Checklists": {
     "bul": "Пълни контролни списъци",
@@ -277,7 +290,8 @@
     "tr_tr": "Komple kontrol listeleri",
     "uk_ua": "Повні контрольні списки",
     "vi": "Danh sách kiểm tra hoàn chỉnh",
-    "zh_cn": "完整的清单"
+    "zh_cn": "完整的清单",
+    "ko_kr": "체크리스트 완료"
   },
   "Complete every character checklist?": {
     "bul": "Попълнете всеки контролен списък на героите?",
@@ -297,7 +311,8 @@
     "tr_tr": "Her karakter kontrol listesini tamamlayın?",
     "uk_ua": "Заповнити кожен контрольний список персонажів?",
     "vi": "Hoàn thành mọi danh sách kiểm tra nhân vật?",
-    "zh_cn": "完成每个角色清单？"
+    "zh_cn": "完成每个角色清单？",
+    "ko_kr": "모든 캐릭터 체크리스트를 완료하시겠습니까?"
   },
   "Confirm Path": {
     "bul": "Потвърдете пътя",
@@ -317,7 +332,8 @@
     "tr_tr": "Yolu onaylayın",
     "uk_ua": "Підтвердити шлях",
     "vi": "Xác nhận đường dẫn",
-    "zh_cn": "确认路径"
+    "zh_cn": "确认路径",
+    "ko_kr": "경로 확인"
   },
   "Could not open the stored save file. Please ensure it is not in use.": {
     "bul": "Не може да отвори запачения файл за запазване. ",
@@ -337,7 +353,8 @@
     "tr_tr": "Saklanan kaydetme dosyasını açamadı. ",
     "uk_ua": "Не вдалося відкрити збережений файл збереження. ",
     "vi": "Không thể mở tệp lưu được lưu trữ. ",
-    "zh_cn": "无法打开存储的保存文件。"
+    "zh_cn": "无法打开存储的保存文件。",
+    "ko_kr": "저장된 세이브 파일을 열 수 없습니다. 사용 중이 아닌지 확인해 주세요."
   },
   "Could not overwrite the save file.": {
     "bul": "Не може да презапише файла за запазване.",
@@ -357,7 +374,8 @@
     "tr_tr": "Kaydet dosyasının üzerine yazılamadı.",
     "uk_ua": "Не вдалося перезаписати файл збереження.",
     "vi": "Không thể ghi đè lên tệp lưu.",
-    "zh_cn": "无法覆盖保存文件。"
+    "zh_cn": "无法覆盖保存文件。",
+    "ko_kr": "세이브 파일을 덮어쓸 수 없습니다."
   },
   "Could not read the requested values.": {
     "bul": "Не можах да прочета исканите стойности.",
@@ -377,7 +395,8 @@
     "tr_tr": "İstenen değerleri okuyamadı.",
     "uk_ua": "Не вдалося прочитати запитувані значення.",
     "vi": "Không thể đọc các giá trị được yêu cầu.",
-    "zh_cn": "无法读取请求的值。"
+    "zh_cn": "无法读取请求的值。",
+    "ko_kr": "요청한 값을 읽을 수 없습니다."
   },
   "Could not save the file.": {
     "bul": "Не можа да запази файла.",
@@ -397,7 +416,8 @@
     "tr_tr": "Dosyayı kaydedemedi.",
     "uk_ua": "Не вдалося зберегти файл.",
     "vi": "Không thể lưu tệp.",
-    "zh_cn": "无法保存文件。"
+    "zh_cn": "无法保存文件。",
+    "ko_kr": "파일을 저장할 수 없습니다."
   },
   "Current:": {
     "bul": "Ток:",
@@ -417,7 +437,8 @@
     "tr_tr": "Akım:",
     "uk_ua": "Поточний:",
     "vi": "Hiện hành:",
-    "zh_cn": "当前的："
+    "zh_cn": "当前的：",
+    "ko_kr": "현재:"
   },
   "Done": {
     "bul": "Готово",
@@ -437,7 +458,8 @@
     "tr_tr": "Tamamlamak",
     "uk_ua": "Зроблений",
     "vi": "Xong",
-    "zh_cn": "完毕"
+    "zh_cn": "完毕",
+    "ko_kr": "완료"
   },
   "Failed to complete all character checklists.": {
     "bul": "Неуспешно изпълнете всички контролни списъци на характера.",
@@ -457,7 +479,8 @@
     "tr_tr": "Tüm karakter kontrol listelerini tamamlayamadı.",
     "uk_ua": "Не вдалося завершити всі контрольні списки персонажів.",
     "vi": "Không hoàn thành tất cả các danh sách kiểm tra nhân vật.",
-    "zh_cn": "未能完成所有角色清单。"
+    "zh_cn": "未能完成所有角色清单。",
+    "ko_kr": "모든 캐릭터 체크리스트를 완료하지 못했습니다."
   },
   "Failed to update challenges.": {
     "bul": "Неуспешно актуализиране на предизвикателствата.",
@@ -477,7 +500,8 @@
     "tr_tr": "Zorlukları güncelleyemedi.",
     "uk_ua": "Не вдалося оновити виклики.",
     "vi": "Không cập nhật các thách thức.",
-    "zh_cn": "未能更新挑战。"
+    "zh_cn": "未能更新挑战。",
+    "ko_kr": "도전 과제를 업데이트하지 못했습니다."
   },
   "Failed to update checklists.": {
     "bul": "Неуспешно актуализиране на контролни списъци.",
@@ -497,7 +521,8 @@
     "tr_tr": "Kontrol listelerini güncelleyemedi.",
     "uk_ua": "Не вдалося оновити контрольні списки.",
     "vi": "Không cập nhật danh sách kiểm tra.",
-    "zh_cn": "无法更新清单。"
+    "zh_cn": "无法更新清单。",
+    "ko_kr": "체크리스트를 업데이트하지 못했습니다."
   },
   "Failed to update items.": {
     "bul": "Неуспешно актуализиране на елементи.",
@@ -517,7 +542,8 @@
     "tr_tr": "Öğeleri güncelleyemedi.",
     "uk_ua": "Не вдалося оновити елементи.",
     "vi": "Không cập nhật các mục.",
-    "zh_cn": "无法更新项目。"
+    "zh_cn": "无法更新项目。",
+    "ko_kr": "아이템을 업데이트하지 못했습니다."
   },
   "Failed to update secrets.": {
     "bul": "Неуспешно актуализиране на тайни.",
@@ -537,7 +563,8 @@
     "tr_tr": "Sırları güncelleyemedi.",
     "uk_ua": "Не вдалося оновити секрети.",
     "vi": "Không cập nhật bí mật.",
-    "zh_cn": "无法更新秘密。"
+    "zh_cn": "无法更新秘密。",
+    "ko_kr": "비밀 항목을 업데이트하지 못했습니다."
   },
   "File Error": {
     "bul": "Грешка в файла",
@@ -557,7 +584,8 @@
     "tr_tr": "Dosya hatası",
     "uk_ua": "Помилка файлу",
     "vi": "Lỗi tệp",
-    "zh_cn": "文件错误"
+    "zh_cn": "文件错误",
+    "ko_kr": "파일 오류"
   },
   "Help": {
     "bul": "Помощ",
@@ -577,7 +605,8 @@
     "tr_tr": "Yardım",
     "uk_ua": "Допомога",
     "vi": "Giúp đỡ",
-    "zh_cn": "帮助"
+    "zh_cn": "帮助",
+    "ko_kr": "도움말"
   },
   "Highlight Locked Items in Red": {
     "bul": "Маркирайте заключени предмети в червено",
@@ -597,7 +626,8 @@
     "tr_tr": "Kilitli öğeleri kırmızı vurgulayın",
     "uk_ua": "Виділіть заблоковані елементи червоним",
     "vi": "Làm nổi bật các mặt hàng bị khóa màu đỏ",
-    "zh_cn": "突出显示红色的锁定物品"
+    "zh_cn": "突出显示红色的锁定物品",
+    "ko_kr": "잠긴 아이템을 빨간색으로 강조"
   },
   "Highlight Locked Secrets in Red": {
     "bul": "Маркирайте заключените тайни в червено",
@@ -617,7 +647,8 @@
     "tr_tr": "Kilitli sırları kırmızı vurgulayın",
     "uk_ua": "Виділіть заблоковані секрети червоним",
     "vi": "Làm nổi bật các bí mật bị khóa bằng màu đỏ",
-    "zh_cn": "突出显示红色的锁定秘密"
+    "zh_cn": "突出显示红色的锁定秘密",
+    "ko_kr": "잠긴 비밀을 빨간색으로 강조"
   },
   "Highlight Unlock Status": {
     "bul": "Маркирайте състоянието на отключване",
@@ -637,7 +668,8 @@
     "tr_tr": "Kilit açma durumunu vurgulayın",
     "uk_ua": "Виділіть статус розблокування",
     "vi": "Làm nổi bật trạng thái mở khóa",
-    "zh_cn": "突出显示解锁状态"
+    "zh_cn": "突出显示解锁状态",
+    "ko_kr": "잠금 해제 상태 강조 표시"
   },
   "How to Use Auto Overwrite": {
     "bul": "Как да използвате автоматично презаписване",
@@ -657,7 +689,8 @@
     "tr_tr": "Otomatik Üzerine Yazma Nasıl Kullanılır",
     "uk_ua": "Як використовувати автоматичне переписування",
     "vi": "Cách sử dụng tự động ghi đè",
-    "zh_cn": "如何使用自动覆盖"
+    "zh_cn": "如何使用自动覆盖",
+    "ko_kr": "자동 덮어쓰기 사용 방법"
   },
   "Invalid Value": {
     "bul": "Невалидна стойност",
@@ -677,7 +710,8 @@
     "tr_tr": "Geçersiz değer",
     "uk_ua": "Недійсне значення",
     "vi": "Giá trị không hợp lệ",
-    "zh_cn": "无效的值"
+    "zh_cn": "无效的值",
+    "ko_kr": "잘못된 값"
   },
   "Language": {
     "bul": "Език",
@@ -697,7 +731,8 @@
     "tr_tr": "Dil",
     "uk_ua": "Мова",
     "vi": "Ngôn ngữ",
-    "zh_cn": "语言"
+    "zh_cn": "语言",
+    "ko_kr": "언어"
   },
   "Selected File": {
     "bul": "Избран файл",
@@ -717,427 +752,8 @@
     "tr_tr": "Seçilen dosya",
     "uk_ua": "Вибраний файл",
     "vi": "Tệp được chọn",
-    "zh_cn": "所选文件"
-  },
-  "Selected File: None": {
-    "bul": "Избран файл: няма",
-    "cs_cz": "Vybraný soubor: žádný",
-    "de": "Ausgewählte Datei: Keine",
-    "el_gr": "Επιλεγμένο αρχείο: κανένα",
-    "fr": "Fichier sélectionné : aucun",
-    "it": "File selezionato: nessuno",
-    "ja_jp": "選択したファイル：なし",
-    "nl_nl": "Geselecteerd bestand: geen",
-    "pl": "Wybrany plik: Brak",
-    "pt": "Arquivo selecionado: nenhum",
-    "pt_br": "Arquivo selecionado: nenhum",
-    "ro_ro": "Fișier selectat: Niciuna",
-    "ru": "Выбранный файл: нет",
-    "spa": "Archivo seleccionado: ninguno",
-    "tr_tr": "Seçilen dosya: yok",
-    "uk_ua": "Вибраний файл: Ні",
-    "vi": "Tệp đã chọn: Không có",
-    "zh_cn": "所选文件：无"
-  },
-  "Missing Paths": {
-    "bul": "Липсващи пътеки",
-    "cs_cz": "Chybějící cesty",
-    "de": "Fehlende Pfade",
-    "el_gr": "Λείπουν διαδρομές",
-    "fr": "Chemins manquants",
-    "it": "Percorsi mancanti",
-    "ja_jp": "パスがありません",
-    "nl_nl": "Ontbrekende paden",
-    "pl": "Brakujące ścieżki",
-    "pt": "Caminhos ausentes",
-    "pt_br": "Caminhos ausentes",
-    "ro_ro": "Căi lipsă",
-    "ru": "Пропавшие пути",
-    "spa": "Caminos faltantes",
-    "tr_tr": "Eksik Yollar",
-    "uk_ua": "Відсутні шляхи",
-    "vi": "Mất đường",
-    "zh_cn": "缺少路径"
-  },
-  "New Value:": {
-    "bul": "Нова стойност:",
-    "cs_cz": "Nová hodnota:",
-    "de": "Neuer Wert:",
-    "el_gr": "Νέα τιμή:",
-    "fr": "Nouvelle valeur:",
-    "it": "Nuovo valore:",
-    "ja_jp": "新しい価値：",
-    "nl_nl": "Nieuwe waarde:",
-    "pl": "Nowa wartość:",
-    "pt": "Novo valor:",
-    "pt_br": "Novo valor:",
-    "ro_ro": "Noua valoare:",
-    "ru": "Новое значение:",
-    "spa": "Nuevo valor:",
-    "tr_tr": "Yeni değer:",
-    "uk_ua": "Нове значення:",
-    "vi": "Giá trị mới:",
-    "zh_cn": "新值："
-  },
-  "No File": {
-    "bul": "Без файл",
-    "cs_cz": "Žádný soubor",
-    "de": "Keine Datei",
-    "el_gr": "Χωρίς αρχείο",
-    "fr": "Pas de fichier",
-    "it": "Nessun file",
-    "ja_jp": "ファイルなし",
-    "nl_nl": "Geen bestand",
-    "pl": "Brak pliku",
-    "pt": "Nenhum arquivo",
-    "pt_br": "Nenhum arquivo",
-    "ro_ro": "Niciun fișier",
-    "ru": "Нет файла",
-    "spa": "Sin archivo",
-    "tr_tr": "Dosya Yok",
-    "uk_ua": "Без файлу",
-    "vi": "Không có tệp",
-    "zh_cn": "没有文件"
-  },
-  "No Selection": {
-    "bul": "Без избор",
-    "cs_cz": "Žádný výběr",
-    "de": "Keine Auswahl",
-    "el_gr": "Χωρίς επιλογή",
-    "fr": "Pas de sélection",
-    "it": "Nessuna selezione",
-    "ja_jp": "選択なし",
-    "nl_nl": "Geen selectie",
-    "pl": "Brak selekcji",
-    "pt": "Sem seleção",
-    "pt_br": "Sem seleção",
-    "ro_ro": "Fără selecție",
-    "ru": "Нет выбора",
-    "spa": "Sin selección",
-    "tr_tr": "Seçim yok",
-    "uk_ua": "Немає вибору",
-    "vi": "Không có lựa chọn",
-    "zh_cn": "没有选择"
-  },
-  "No character data available to complete.": {
-    "bul": "Няма налични данни за символи.",
-    "cs_cz": "Doplňují žádná data znaků.",
-    "de": "Keine Charakterdaten zur Vervollständigung verfügbar.",
-    "el_gr": "Δεν υπάρχουν διαθέσιμα δεδομένα χαρακτήρων για ολοκλήρωση.",
-    "fr": "Aucune donnée de caractère disponible à compléter.",
-    "it": "Nessun dati sui caratteri disponibile per il completamento.",
-    "ja_jp": "完了することができる文字データはありません。",
-    "nl_nl": "Geen tekengegevens beschikbaar om te voltooien.",
-    "pl": "Brak danych znakowych do ukończenia.",
-    "pt": "Nenhum dado de caractere disponível para concluir.",
-    "pt_br": "Nenhum dado de caractere disponível para concluir.",
-    "ro_ro": "Nu există date de caractere disponibile pentru a fi completate.",
-    "ru": "Нет данных символов, доступных для завершения.",
-    "spa": "No hay datos de caracteres disponibles para completar.",
-    "tr_tr": "Tamamlanabilecek karakter verileri yok.",
-    "uk_ua": "Немає даних символів для заповнення.",
-    "vi": "Không có dữ liệu nhân vật có sẵn để hoàn thành.",
-    "zh_cn": "没有字符数据可以完成。"
-  },
-  "OK": {
-    "bul": "Добре",
-    "cs_cz": "Dobře",
-    "de": "OK",
-    "el_gr": "ΕΝΤΑΞΕΙ",
-    "fr": "D'ACCORD",
-    "it": "OK",
-    "ja_jp": "わかりました",
-    "nl_nl": "OK",
-    "pl": "OK",
-    "pt": "OK",
-    "pt_br": "OK",
-    "ro_ro": "Bine",
-    "ru": "ХОРОШО",
-    "spa": "DE ACUERDO",
-    "tr_tr": "TAMAM",
-    "uk_ua": "Добре",
-    "vi": "ĐƯỢC RỒI",
-    "zh_cn": "好的"
-  },
-  "Open Isaac Save File": {
-    "bul": "Отворете файла за запазване на ISAAC",
-    "cs_cz": "Otevřete soubor ISAAC Uložit",
-    "de": "Öffnen Sie die Isaac -Datei Speicherndatei speichern",
-    "el_gr": "Ανοίξτε το αρχείο αποθήκευσης Isaac",
-    "fr": "Ouvrez le fichier de sauvegarde Isaac",
-    "it": "Apri Isaac Save File",
-    "ja_jp": "ISAACを開くファイルを開きます",
-    "nl_nl": "Open Isaac Save -bestand opslaan",
-    "pl": "Otwórz plik zapisz Isaac",
-    "pt": "Abra o arquivo de salvamento Isaac",
-    "pt_br": "Abra o arquivo de salvamento Isaac",
-    "ro_ro": "Deschideți fișierul de salvare ISAAC",
-    "ru": "Откройте файл сохранения Исаака",
-    "spa": "Abra el archivo de guardar Isaac",
-    "tr_tr": "Isaac Kaydet dosyasını açın",
-    "uk_ua": "Відкрийте файл збереження Ісаака",
-    "vi": "Mở tệp lưu isaac",
-    "zh_cn": "打开以撒保存文件"
-  },
-  "Overwrite Automatically": {
-    "bul": "Презапишете автоматично",
-    "cs_cz": "Přepsat automaticky",
-    "de": "Überschreiben automatisch",
-    "el_gr": "Αντικαθιστώ αυτόματα",
-    "fr": "Écraser automatiquement",
-    "it": "Sovrascrivi automaticamente",
-    "ja_jp": "自動的に上書きします",
-    "nl_nl": "Overschrijf automatisch",
-    "pl": "Nadpisz automatycznie",
-    "pt": "Substituir automaticamente",
-    "pt_br": "Substituir automaticamente",
-    "ro_ro": "Suprascrieți automat",
-    "ru": "Перезаписать автоматически",
-    "spa": "Sobrescribir automáticamente",
-    "tr_tr": "Otomatik olarak üzerine yazın",
-    "uk_ua": "Переписати автоматично",
-    "vi": "Ghi đè tự động",
-    "zh_cn": "自动覆盖"
-  },
-  "Overwrite Complete": {
-    "bul": "Презапишете пълна",
-    "cs_cz": "Přepsat dokončení",
-    "de": "Überschreiben",
-    "el_gr": "Αντικατάσταση πλήρους",
-    "fr": "Écraser complet",
-    "it": "Sovrascrivi completo",
-    "ja_jp": "完全に上書きします",
-    "nl_nl": "Overschrijf compleet",
-    "pl": "Nadpisz kompletne",
-    "pt": "Substitua completa",
-    "pt_br": "Substitua completa",
-    "ro_ro": "Suprascrieți complet",
-    "ru": "Перезаписать",
-    "spa": "Sobrescribir completo",
-    "tr_tr": "Üzerine yazın tamamlandı",
-    "uk_ua": "Переписати завершено",
-    "vi": "Ghi đè hoàn chỉnh",
-    "zh_cn": "覆盖完成"
-  },
-  "Overwrite Failed": {
-    "bul": "Презаписването не успя",
-    "cs_cz": "Overpter selhal",
-    "de": "Überschreiber fehlgeschlagen",
-    "el_gr": "Η αντικατάσταση απέτυχε",
-    "fr": "Échec de l'échec",
-    "it": "Overwrite non è riuscito",
-    "ja_jp": "上書きは失敗しました",
-    "nl_nl": "Overschrijf mislukt",
-    "pl": "Nadpisanie nie powiodło się",
-    "pt": "Substime falhou",
-    "pt_br": "Substime falhou",
-    "ro_ro": "Suprascrierea a eșuat",
-    "ru": "Перезапись не удался",
-    "spa": "Sobrescribir falló",
-    "tr_tr": "Üzerine yazma başarısız oldu",
-    "uk_ua": "Переоцінка не вдалося",
-    "vi": "Ghi đè không thành công",
-    "zh_cn": "覆盖失败"
-  },
-  "Overwrite Save File": {
-    "bul": "Презапишете файла за запазване",
-    "cs_cz": "Přepsat soubor uložit",
-    "de": "Überschreiben Sie die Datei speichern",
-    "el_gr": "Αντικατάσταση αρχείου αποθήκευσης",
-    "fr": "Écraser le fichier de sauvegarde",
-    "it": "Sovrascrivi il file di salvataggio",
-    "ja_jp": "ファイルを上書きします",
-    "nl_nl": "Overschrijf opslaan bestand",
-    "pl": "Nadpisz plik zapisz",
-    "pt": "Substituir o arquivo salvar",
-    "pt_br": "Substituir o arquivo salvar",
-    "ro_ro": "Suprascrieți fișierul de salvare",
-    "ru": "Перезаписать файл сохранения",
-    "spa": "Sobrescribir el archivo Guardar",
-    "tr_tr": "Kaydet dosyasını üzerine yaz",
-    "uk_ua": "Переписати файл збереження",
-    "vi": "Ghi đè tệp lưu",
-    "zh_cn": "覆盖保存文件"
-  },
-  "Please open a save file first.": {
-    "bul": "Моля, първо отворете файл за запазване.",
-    "cs_cz": "Nejprve prosím otevřete soubor uložit.",
-    "de": "Bitte öffnen Sie zuerst eine Speicherdatei.",
-    "el_gr": "Ανοίξτε πρώτα ένα αρχείο αποθήκευσης.",
-    "fr": "Veuillez d'abord ouvrir un fichier de sauvegarde.",
-    "it": "Si prega di aprire prima un file di salvataggio.",
-    "ja_jp": "最初に保存ファイルを開いてください。",
-    "nl_nl": "Open eerst een opslagbestand.",
-    "pl": "Najpierw otwórz plik zapisz.",
-    "pt": "Por favor, abra um arquivo de salvamento primeiro.",
-    "pt_br": "Por favor, abra um arquivo de salvamento primeiro.",
-    "ro_ro": "Vă rugăm să deschideți mai întâi un fișier de salvare.",
-    "ru": "Пожалуйста, сначала откройте файл сохранения.",
-    "spa": "Abra primero un archivo Guardar.",
-    "tr_tr": "Lütfen önce bir kaydetme dosyasını açın.",
-    "uk_ua": "Спочатку відкрийте файл збереження.",
-    "vi": "Vui lòng mở một tập tin lưu trước.",
-    "zh_cn": "请先打开保存文件。"
-  },
-  "Please select at least one entry.": {
-    "bul": "Моля, изберете поне един запис.",
-    "cs_cz": "Vyberte alespoň jednu položku.",
-    "de": "Bitte wählen Sie mindestens einen Eintrag aus.",
-    "el_gr": "Επιλέξτε τουλάχιστον μία καταχώρηση.",
-    "fr": "Veuillez sélectionner au moins une entrée.",
-    "it": "Seleziona almeno una voce.",
-    "ja_jp": "少なくとも1つのエントリを選択してください。",
-    "nl_nl": "Selecteer ten minste één item.",
-    "pl": "Wybierz co najmniej jeden wpis.",
-    "pt": "Selecione pelo menos uma entrada.",
-    "pt_br": "Selecione pelo menos uma entrada.",
-    "ro_ro": "Vă rugăm să selectați cel puțin o intrare.",
-    "ru": "Пожалуйста, выберите хотя бы одну запись.",
-    "spa": "Seleccione al menos una entrada.",
-    "tr_tr": "Lütfen en az bir giriş seçin.",
-    "uk_ua": "Виберіть принаймні один запис.",
-    "vi": "Vui lòng chọn ít nhất một mục.",
-    "zh_cn": "请选择至少一个条目。"
-  },
-  "Please select both the source and target save files.": {
-    "bul": "Моля, изберете както файловете на източника, така и целевите запаси.",
-    "cs_cz": "Vyberte prosím soubory zdroje i cíle.",
-    "de": "Bitte wählen Sie sowohl die Quell- als auch die Zielspeichendateien aus.",
-    "el_gr": "Επιλέξτε τόσο την προέλευση όσο και την αποθήκευση αρχείων.",
-    "fr": "Veuillez sélectionner les fichiers Source et Target Save.",
-    "it": "Selezionare sia i file di salvataggio di origine che target.",
-    "ja_jp": "ソースとターゲットの保存ファイルの両方を選択してください。",
-    "nl_nl": "Selecteer zowel de bron- als de doelwitbestanden.",
-    "pl": "Wybierz zarówno pliki zapisu źródłowego, jak i docelowego.",
-    "pt": "Selecione os arquivos de origem e de destino.",
-    "pt_br": "Selecione os arquivos de origem e de destino.",
-    "ro_ro": "Vă rugăm să selectați atât fișierele de salvare sursă, cât și țintă.",
-    "ru": "Пожалуйста, выберите как исходные, так и целевые файлы сохранения.",
-    "spa": "Seleccione tanto los archivos Guardar de origen y destino.",
-    "tr_tr": "Lütfen hem kaynağı hem de kaydetme dosyalarını seçin.",
-    "uk_ua": "Виберіть як джерело, так і цільові збереження файлів.",
-    "vi": "Vui lòng chọn cả nguồn lưu nguồn và mục tiêu.",
-    "zh_cn": "请选择源和目标保存文件。"
-  },
-  "Read Failed": {
-    "bul": "Прочетете неуспешно",
-    "cs_cz": "Čtení selhalo",
-    "de": "Read fehlgeschlagen",
-    "el_gr": "Η ανάγνωση απέτυχε",
-    "fr": "La lecture a échoué",
-    "it": "Leggi non riuscito",
-    "ja_jp": "読み取り失敗",
-    "nl_nl": "Lezen mislukt",
-    "pl": "Przeczytaj nie powiodła się",
-    "pt": "Leia falhou",
-    "pt_br": "Leia falhou",
-    "ro_ro": "Citiți eșuat",
-    "ru": "Читать не удалось",
-    "spa": "Leer fallado",
-    "tr_tr": "Okuma başarısız oldu",
-    "uk_ua": "Прочитати не вдалося",
-    "vi": "Đọc không thành công",
-    "zh_cn": "阅读失败"
-  },
-  "Auto Load Save File": {
-    "bul": "Автоматично зареждане на файл със запис",
-    "cs_cz": "Automaticky načíst uložený soubor",
-    "de": "Speicherdatei automatisch laden",
-    "el_gr": "Αυτόματη φόρτωση αρχείου αποθήκευσης",
-    "fr": "Charger automatiquement le fichier de sauvegarde",
-    "it": "Carica automaticamente il file di salvataggio",
-    "ja_jp": "セーブファイルを自動で読み込む",
-    "nl_nl": "Opslagbestand automatisch laden",
-    "pl": "Automatycznie wczytaj plik zapisu",
-    "pt": "Carregar automaticamente o ficheiro de gravação",
-    "pt_br": "Carregar automaticamente o arquivo de salvamento",
-    "ro_ro": "Încarcă automat fișierul de salvare",
-    "ru": "Автоматически загружать файл сохранения",
-    "spa": "Cargar automáticamente el archivo de guardado",
-    "tr_tr": "Kayıt dosyasını otomatik yükle",
-    "uk_ua": "Автоматично завантажувати файл збереження",
-    "vi": "Tự động tải tệp lưu",
-    "zh_cn": "自动加载存档文件"
-  },
-  "Save Failed": {
-    "bul": "Запазване не успя",
-    "cs_cz": "Uložit selhal",
-    "de": "Save fehlgeschlagen",
-    "el_gr": "Αποθήκευση αποτυχία",
-    "fr": "Échec de l'échec",
-    "it": "Salva fallito",
-    "ja_jp": "保存が失敗しました",
-    "nl_nl": "Opslaan mislukt",
-    "pl": "Zapisz nieudany",
-    "pt": "Salvar falhou",
-    "pt_br": "Salvar falhou",
-    "ro_ro": "Salvare a eșuat",
-    "ru": "Сохранить не удалось",
-    "spa": "Salvar fallado",
-    "tr_tr": "Tasarruf başarısız oldu",
-    "uk_ua": "Зберегти не вдалося",
-    "vi": "Lưu không thành công",
-    "zh_cn": "保存失败"
-  },
-  "Select Isaac Save File": {
-    "bul": "Изберете файл ISAAC SAVE",
-    "cs_cz": "Vyberte soubor ISAAC Uložit",
-    "de": "Wählen Sie die Datei speichern isaac speichern",
-    "el_gr": "Επιλέξτε το αρχείο αποθήκευσης Isaac",
-    "fr": "Sélectionnez le fichier de sauvegarde Isaac",
-    "it": "Seleziona Isaac Salva file",
-    "ja_jp": "ISAAC保存ファイルを選択します",
-    "nl_nl": "Selecteer Isaac Save -bestand",
-    "pl": "Wybierz plik zapisz ISAAC",
-    "pt": "Selecione Isaac Salvar arquivo",
-    "pt_br": "Selecione Isaac Salvar arquivo",
-    "ro_ro": "Selectați fișierul de salvare ISAAC",
-    "ru": "Выберите файл сохранения Исаака",
-    "spa": "Seleccione el archivo de guardar Isaac",
-    "tr_tr": "Isaac Kaydet dosyasını seçin",
-    "uk_ua": "Виберіть файл збереження ISAAC",
-    "vi": "Chọn tệp lưu isaac",
-    "zh_cn": "选择艾萨克保存文件"
-  },
-  "Select Source Save File": {
-    "bul": "Изберете Източник Запиши файл",
-    "cs_cz": "Vyberte soubor Source Uložit",
-    "de": "Wählen Sie die Quelle Speicherndatei auswählen",
-    "el_gr": "Επιλέξτε αρχείο αποθήκευσης προέλευσης",
-    "fr": "Sélectionnez le fichier de sauvegarde source",
-    "it": "Seleziona il file di salvataggio della sorgente",
-    "ja_jp": "ソース保存ファイルを選択します",
-    "nl_nl": "Selecteer Bron opslaan",
-    "pl": "Wybierz plik zapisz źródło",
-    "pt": "Selecione Origem Salvar Arquivo",
-    "pt_br": "Selecione Origem Salvar Arquivo",
-    "ro_ro": "Selectați sursa de salvare fișier",
-    "ru": "Выберите исходный файл сохранения",
-    "spa": "Seleccione el archivo Guardar de origen",
-    "tr_tr": "Kaynak Kaydet dosyasını seçin",
-    "uk_ua": "Виберіть файл збереження джерела",
-    "vi": "Chọn nguồn lưu tệp",
-    "zh_cn": "选择源保存文件"
-  },
-  "Select Target Save File": {
-    "bul": "Изберете Target Save File",
-    "cs_cz": "Vyberte soubor cílového uložit",
-    "de": "Wählen Sie Zielspeichendatei aus",
-    "el_gr": "Επιλέξτε Αρχείο αποθήκευσης στόχου",
-    "fr": "Sélectionnez le fichier de sauvegarde cible",
-    "it": "Seleziona il file di salvataggio target",
-    "ja_jp": "ターゲット保存ファイルを選択します",
-    "nl_nl": "Selecteer het doel opslaan bestand",
-    "pl": "Wybierz Plik zapisz docelowy",
-    "pt": "Selecione Target Salvar Arquivo",
-    "pt_br": "Selecione Target Salvar Arquivo",
-    "ro_ro": "Selectați Target Salvați fișierul",
-    "ru": "Выберите Target Save File",
-    "spa": "Seleccione el archivo Guardar de destino",
-    "tr_tr": "Hedef Kaydet dosyasını seçin",
-    "uk_ua": "Виберіть цільовий файл збереження",
-    "vi": "Chọn Tệp Lưu Target",
-    "zh_cn": "选择目标保存文件"
+    "zh_cn": "所选文件",
+    "ko_kr": "선택한 파일"
   },
   "Selected File: None": {
     "bul": "Избран файл: Няма",
@@ -1157,7 +773,428 @@
     "tr_tr": "Seçilen dosya: yok",
     "uk_ua": "Вибраний файл: Ні",
     "vi": "Tệp đã chọn: Không có",
-    "zh_cn": "选定文件：无"
+    "zh_cn": "选定文件：无",
+    "ko_kr": "선택한 파일: 없음"
+  },
+  "Missing Paths": {
+    "bul": "Липсващи пътеки",
+    "cs_cz": "Chybějící cesty",
+    "de": "Fehlende Pfade",
+    "el_gr": "Λείπουν διαδρομές",
+    "fr": "Chemins manquants",
+    "it": "Percorsi mancanti",
+    "ja_jp": "パスがありません",
+    "nl_nl": "Ontbrekende paden",
+    "pl": "Brakujące ścieżki",
+    "pt": "Caminhos ausentes",
+    "pt_br": "Caminhos ausentes",
+    "ro_ro": "Căi lipsă",
+    "ru": "Пропавшие пути",
+    "spa": "Caminos faltantes",
+    "tr_tr": "Eksik Yollar",
+    "uk_ua": "Відсутні шляхи",
+    "vi": "Mất đường",
+    "zh_cn": "缺少路径",
+    "ko_kr": "경로 누락"
+  },
+  "New Value:": {
+    "bul": "Нова стойност:",
+    "cs_cz": "Nová hodnota:",
+    "de": "Neuer Wert:",
+    "el_gr": "Νέα τιμή:",
+    "fr": "Nouvelle valeur:",
+    "it": "Nuovo valore:",
+    "ja_jp": "新しい価値：",
+    "nl_nl": "Nieuwe waarde:",
+    "pl": "Nowa wartość:",
+    "pt": "Novo valor:",
+    "pt_br": "Novo valor:",
+    "ro_ro": "Noua valoare:",
+    "ru": "Новое значение:",
+    "spa": "Nuevo valor:",
+    "tr_tr": "Yeni değer:",
+    "uk_ua": "Нове значення:",
+    "vi": "Giá trị mới:",
+    "zh_cn": "新值：",
+    "ko_kr": "새 값:"
+  },
+  "No File": {
+    "bul": "Без файл",
+    "cs_cz": "Žádný soubor",
+    "de": "Keine Datei",
+    "el_gr": "Χωρίς αρχείο",
+    "fr": "Pas de fichier",
+    "it": "Nessun file",
+    "ja_jp": "ファイルなし",
+    "nl_nl": "Geen bestand",
+    "pl": "Brak pliku",
+    "pt": "Nenhum arquivo",
+    "pt_br": "Nenhum arquivo",
+    "ro_ro": "Niciun fișier",
+    "ru": "Нет файла",
+    "spa": "Sin archivo",
+    "tr_tr": "Dosya Yok",
+    "uk_ua": "Без файлу",
+    "vi": "Không có tệp",
+    "zh_cn": "没有文件",
+    "ko_kr": "파일 없음"
+  },
+  "No Selection": {
+    "bul": "Без избор",
+    "cs_cz": "Žádný výběr",
+    "de": "Keine Auswahl",
+    "el_gr": "Χωρίς επιλογή",
+    "fr": "Pas de sélection",
+    "it": "Nessuna selezione",
+    "ja_jp": "選択なし",
+    "nl_nl": "Geen selectie",
+    "pl": "Brak selekcji",
+    "pt": "Sem seleção",
+    "pt_br": "Sem seleção",
+    "ro_ro": "Fără selecție",
+    "ru": "Нет выбора",
+    "spa": "Sin selección",
+    "tr_tr": "Seçim yok",
+    "uk_ua": "Немає вибору",
+    "vi": "Không có lựa chọn",
+    "zh_cn": "没有选择",
+    "ko_kr": "선택 없음"
+  },
+  "No character data available to complete.": {
+    "bul": "Няма налични данни за символи.",
+    "cs_cz": "Doplňují žádná data znaků.",
+    "de": "Keine Charakterdaten zur Vervollständigung verfügbar.",
+    "el_gr": "Δεν υπάρχουν διαθέσιμα δεδομένα χαρακτήρων για ολοκλήρωση.",
+    "fr": "Aucune donnée de caractère disponible à compléter.",
+    "it": "Nessun dati sui caratteri disponibile per il completamento.",
+    "ja_jp": "完了することができる文字データはありません。",
+    "nl_nl": "Geen tekengegevens beschikbaar om te voltooien.",
+    "pl": "Brak danych znakowych do ukończenia.",
+    "pt": "Nenhum dado de caractere disponível para concluir.",
+    "pt_br": "Nenhum dado de caractere disponível para concluir.",
+    "ro_ro": "Nu există date de caractere disponibile pentru a fi completate.",
+    "ru": "Нет данных символов, доступных для завершения.",
+    "spa": "No hay datos de caracteres disponibles para completar.",
+    "tr_tr": "Tamamlanabilecek karakter verileri yok.",
+    "uk_ua": "Немає даних символів для заповнення.",
+    "vi": "Không có dữ liệu nhân vật có sẵn để hoàn thành.",
+    "zh_cn": "没有字符数据可以完成。",
+    "ko_kr": "완료할 수 있는 캐릭터 데이터가 없습니다."
+  },
+  "OK": {
+    "bul": "Добре",
+    "cs_cz": "Dobře",
+    "de": "OK",
+    "el_gr": "ΕΝΤΑΞΕΙ",
+    "fr": "D'ACCORD",
+    "it": "OK",
+    "ja_jp": "わかりました",
+    "nl_nl": "OK",
+    "pl": "OK",
+    "pt": "OK",
+    "pt_br": "OK",
+    "ro_ro": "Bine",
+    "ru": "ХОРОШО",
+    "spa": "DE ACUERDO",
+    "tr_tr": "TAMAM",
+    "uk_ua": "Добре",
+    "vi": "ĐƯỢC RỒI",
+    "zh_cn": "好的",
+    "ko_kr": "확인"
+  },
+  "Open Isaac Save File": {
+    "bul": "Отворете файла за запазване на ISAAC",
+    "cs_cz": "Otevřete soubor ISAAC Uložit",
+    "de": "Öffnen Sie die Isaac -Datei Speicherndatei speichern",
+    "el_gr": "Ανοίξτε το αρχείο αποθήκευσης Isaac",
+    "fr": "Ouvrez le fichier de sauvegarde Isaac",
+    "it": "Apri Isaac Save File",
+    "ja_jp": "ISAACを開くファイルを開きます",
+    "nl_nl": "Open Isaac Save -bestand opslaan",
+    "pl": "Otwórz plik zapisz Isaac",
+    "pt": "Abra o arquivo de salvamento Isaac",
+    "pt_br": "Abra o arquivo de salvamento Isaac",
+    "ro_ro": "Deschideți fișierul de salvare ISAAC",
+    "ru": "Откройте файл сохранения Исаака",
+    "spa": "Abra el archivo de guardar Isaac",
+    "tr_tr": "Isaac Kaydet dosyasını açın",
+    "uk_ua": "Відкрийте файл збереження Ісаака",
+    "vi": "Mở tệp lưu isaac",
+    "zh_cn": "打开以撒保存文件",
+    "ko_kr": "아이작 세이브 파일 열기"
+  },
+  "Overwrite Automatically": {
+    "bul": "Презапишете автоматично",
+    "cs_cz": "Přepsat automaticky",
+    "de": "Überschreiben automatisch",
+    "el_gr": "Αντικαθιστώ αυτόματα",
+    "fr": "Écraser automatiquement",
+    "it": "Sovrascrivi automaticamente",
+    "ja_jp": "自動的に上書きします",
+    "nl_nl": "Overschrijf automatisch",
+    "pl": "Nadpisz automatycznie",
+    "pt": "Substituir automaticamente",
+    "pt_br": "Substituir automaticamente",
+    "ro_ro": "Suprascrieți automat",
+    "ru": "Перезаписать автоматически",
+    "spa": "Sobrescribir automáticamente",
+    "tr_tr": "Otomatik olarak üzerine yazın",
+    "uk_ua": "Переписати автоматично",
+    "vi": "Ghi đè tự động",
+    "zh_cn": "自动覆盖",
+    "ko_kr": "자동으로 덮어쓰기"
+  },
+  "Overwrite Complete": {
+    "bul": "Презапишете пълна",
+    "cs_cz": "Přepsat dokončení",
+    "de": "Überschreiben",
+    "el_gr": "Αντικατάσταση πλήρους",
+    "fr": "Écraser complet",
+    "it": "Sovrascrivi completo",
+    "ja_jp": "完全に上書きします",
+    "nl_nl": "Overschrijf compleet",
+    "pl": "Nadpisz kompletne",
+    "pt": "Substitua completa",
+    "pt_br": "Substitua completa",
+    "ro_ro": "Suprascrieți complet",
+    "ru": "Перезаписать",
+    "spa": "Sobrescribir completo",
+    "tr_tr": "Üzerine yazın tamamlandı",
+    "uk_ua": "Переписати завершено",
+    "vi": "Ghi đè hoàn chỉnh",
+    "zh_cn": "覆盖完成",
+    "ko_kr": "덮어쓰기 완료"
+  },
+  "Overwrite Failed": {
+    "bul": "Презаписването не успя",
+    "cs_cz": "Overpter selhal",
+    "de": "Überschreiber fehlgeschlagen",
+    "el_gr": "Η αντικατάσταση απέτυχε",
+    "fr": "Échec de l'échec",
+    "it": "Overwrite non è riuscito",
+    "ja_jp": "上書きは失敗しました",
+    "nl_nl": "Overschrijf mislukt",
+    "pl": "Nadpisanie nie powiodło się",
+    "pt": "Substime falhou",
+    "pt_br": "Substime falhou",
+    "ro_ro": "Suprascrierea a eșuat",
+    "ru": "Перезапись не удался",
+    "spa": "Sobrescribir falló",
+    "tr_tr": "Üzerine yazma başarısız oldu",
+    "uk_ua": "Переоцінка не вдалося",
+    "vi": "Ghi đè không thành công",
+    "zh_cn": "覆盖失败",
+    "ko_kr": "덮어쓰기에 실패했습니다"
+  },
+  "Overwrite Save File": {
+    "bul": "Презапишете файла за запазване",
+    "cs_cz": "Přepsat soubor uložit",
+    "de": "Überschreiben Sie die Datei speichern",
+    "el_gr": "Αντικατάσταση αρχείου αποθήκευσης",
+    "fr": "Écraser le fichier de sauvegarde",
+    "it": "Sovrascrivi il file di salvataggio",
+    "ja_jp": "ファイルを上書きします",
+    "nl_nl": "Overschrijf opslaan bestand",
+    "pl": "Nadpisz plik zapisz",
+    "pt": "Substituir o arquivo salvar",
+    "pt_br": "Substituir o arquivo salvar",
+    "ro_ro": "Suprascrieți fișierul de salvare",
+    "ru": "Перезаписать файл сохранения",
+    "spa": "Sobrescribir el archivo Guardar",
+    "tr_tr": "Kaydet dosyasını üzerine yaz",
+    "uk_ua": "Переписати файл збереження",
+    "vi": "Ghi đè tệp lưu",
+    "zh_cn": "覆盖保存文件",
+    "ko_kr": "세이브 파일 덮어쓰기"
+  },
+  "Please open a save file first.": {
+    "bul": "Моля, първо отворете файл за запазване.",
+    "cs_cz": "Nejprve prosím otevřete soubor uložit.",
+    "de": "Bitte öffnen Sie zuerst eine Speicherdatei.",
+    "el_gr": "Ανοίξτε πρώτα ένα αρχείο αποθήκευσης.",
+    "fr": "Veuillez d'abord ouvrir un fichier de sauvegarde.",
+    "it": "Si prega di aprire prima un file di salvataggio.",
+    "ja_jp": "最初に保存ファイルを開いてください。",
+    "nl_nl": "Open eerst een opslagbestand.",
+    "pl": "Najpierw otwórz plik zapisz.",
+    "pt": "Por favor, abra um arquivo de salvamento primeiro.",
+    "pt_br": "Por favor, abra um arquivo de salvamento primeiro.",
+    "ro_ro": "Vă rugăm să deschideți mai întâi un fișier de salvare.",
+    "ru": "Пожалуйста, сначала откройте файл сохранения.",
+    "spa": "Abra primero un archivo Guardar.",
+    "tr_tr": "Lütfen önce bir kaydetme dosyasını açın.",
+    "uk_ua": "Спочатку відкрийте файл збереження.",
+    "vi": "Vui lòng mở một tập tin lưu trước.",
+    "zh_cn": "请先打开保存文件。",
+    "ko_kr": "먼저 세이브 파일을 열어 주세요."
+  },
+  "Please select at least one entry.": {
+    "bul": "Моля, изберете поне един запис.",
+    "cs_cz": "Vyberte alespoň jednu položku.",
+    "de": "Bitte wählen Sie mindestens einen Eintrag aus.",
+    "el_gr": "Επιλέξτε τουλάχιστον μία καταχώρηση.",
+    "fr": "Veuillez sélectionner au moins une entrée.",
+    "it": "Seleziona almeno una voce.",
+    "ja_jp": "少なくとも1つのエントリを選択してください。",
+    "nl_nl": "Selecteer ten minste één item.",
+    "pl": "Wybierz co najmniej jeden wpis.",
+    "pt": "Selecione pelo menos uma entrada.",
+    "pt_br": "Selecione pelo menos uma entrada.",
+    "ro_ro": "Vă rugăm să selectați cel puțin o intrare.",
+    "ru": "Пожалуйста, выберите хотя бы одну запись.",
+    "spa": "Seleccione al menos una entrada.",
+    "tr_tr": "Lütfen en az bir giriş seçin.",
+    "uk_ua": "Виберіть принаймні один запис.",
+    "vi": "Vui lòng chọn ít nhất một mục.",
+    "zh_cn": "请选择至少一个条目。",
+    "ko_kr": "항목을 하나 이상 선택해 주세요."
+  },
+  "Please select both the source and target save files.": {
+    "bul": "Моля, изберете както файловете на източника, така и целевите запаси.",
+    "cs_cz": "Vyberte prosím soubory zdroje i cíle.",
+    "de": "Bitte wählen Sie sowohl die Quell- als auch die Zielspeichendateien aus.",
+    "el_gr": "Επιλέξτε τόσο την προέλευση όσο και την αποθήκευση αρχείων.",
+    "fr": "Veuillez sélectionner les fichiers Source et Target Save.",
+    "it": "Selezionare sia i file di salvataggio di origine che target.",
+    "ja_jp": "ソースとターゲットの保存ファイルの両方を選択してください。",
+    "nl_nl": "Selecteer zowel de bron- als de doelwitbestanden.",
+    "pl": "Wybierz zarówno pliki zapisu źródłowego, jak i docelowego.",
+    "pt": "Selecione os arquivos de origem e de destino.",
+    "pt_br": "Selecione os arquivos de origem e de destino.",
+    "ro_ro": "Vă rugăm să selectați atât fișierele de salvare sursă, cât și țintă.",
+    "ru": "Пожалуйста, выберите как исходные, так и целевые файлы сохранения.",
+    "spa": "Seleccione tanto los archivos Guardar de origen y destino.",
+    "tr_tr": "Lütfen hem kaynağı hem de kaydetme dosyalarını seçin.",
+    "uk_ua": "Виберіть як джерело, так і цільові збереження файлів.",
+    "vi": "Vui lòng chọn cả nguồn lưu nguồn và mục tiêu.",
+    "zh_cn": "请选择源和目标保存文件。",
+    "ko_kr": "원본과 대상 세이브 파일을 모두 선택해 주세요."
+  },
+  "Read Failed": {
+    "bul": "Прочетете неуспешно",
+    "cs_cz": "Čtení selhalo",
+    "de": "Read fehlgeschlagen",
+    "el_gr": "Η ανάγνωση απέτυχε",
+    "fr": "La lecture a échoué",
+    "it": "Leggi non riuscito",
+    "ja_jp": "読み取り失敗",
+    "nl_nl": "Lezen mislukt",
+    "pl": "Przeczytaj nie powiodła się",
+    "pt": "Leia falhou",
+    "pt_br": "Leia falhou",
+    "ro_ro": "Citiți eșuat",
+    "ru": "Читать не удалось",
+    "spa": "Leer fallado",
+    "tr_tr": "Okuma başarısız oldu",
+    "uk_ua": "Прочитати не вдалося",
+    "vi": "Đọc không thành công",
+    "zh_cn": "阅读失败",
+    "ko_kr": "읽기에 실패했습니다"
+  },
+  "Auto Load Save File": {
+    "bul": "Автоматично зареждане на файл със запис",
+    "cs_cz": "Automaticky načíst uložený soubor",
+    "de": "Speicherdatei automatisch laden",
+    "el_gr": "Αυτόματη φόρτωση αρχείου αποθήκευσης",
+    "fr": "Charger automatiquement le fichier de sauvegarde",
+    "it": "Carica automaticamente il file di salvataggio",
+    "ja_jp": "セーブファイルを自動で読み込む",
+    "nl_nl": "Opslagbestand automatisch laden",
+    "pl": "Automatycznie wczytaj plik zapisu",
+    "pt": "Carregar automaticamente o ficheiro de gravação",
+    "pt_br": "Carregar automaticamente o arquivo de salvamento",
+    "ro_ro": "Încarcă automat fișierul de salvare",
+    "ru": "Автоматически загружать файл сохранения",
+    "spa": "Cargar automáticamente el archivo de guardado",
+    "tr_tr": "Kayıt dosyasını otomatik yükle",
+    "uk_ua": "Автоматично завантажувати файл збереження",
+    "vi": "Tự động tải tệp lưu",
+    "zh_cn": "自动加载存档文件",
+    "ko_kr": "세이브 파일 자동 불러오기"
+  },
+  "Save Failed": {
+    "bul": "Запазване не успя",
+    "cs_cz": "Uložit selhal",
+    "de": "Save fehlgeschlagen",
+    "el_gr": "Αποθήκευση αποτυχία",
+    "fr": "Échec de l'échec",
+    "it": "Salva fallito",
+    "ja_jp": "保存が失敗しました",
+    "nl_nl": "Opslaan mislukt",
+    "pl": "Zapisz nieudany",
+    "pt": "Salvar falhou",
+    "pt_br": "Salvar falhou",
+    "ro_ro": "Salvare a eșuat",
+    "ru": "Сохранить не удалось",
+    "spa": "Salvar fallado",
+    "tr_tr": "Tasarruf başarısız oldu",
+    "uk_ua": "Зберегти не вдалося",
+    "vi": "Lưu không thành công",
+    "zh_cn": "保存失败",
+    "ko_kr": "저장에 실패했습니다"
+  },
+  "Select Isaac Save File": {
+    "bul": "Изберете файл ISAAC SAVE",
+    "cs_cz": "Vyberte soubor ISAAC Uložit",
+    "de": "Wählen Sie die Datei speichern isaac speichern",
+    "el_gr": "Επιλέξτε το αρχείο αποθήκευσης Isaac",
+    "fr": "Sélectionnez le fichier de sauvegarde Isaac",
+    "it": "Seleziona Isaac Salva file",
+    "ja_jp": "ISAAC保存ファイルを選択します",
+    "nl_nl": "Selecteer Isaac Save -bestand",
+    "pl": "Wybierz plik zapisz ISAAC",
+    "pt": "Selecione Isaac Salvar arquivo",
+    "pt_br": "Selecione Isaac Salvar arquivo",
+    "ro_ro": "Selectați fișierul de salvare ISAAC",
+    "ru": "Выберите файл сохранения Исаака",
+    "spa": "Seleccione el archivo de guardar Isaac",
+    "tr_tr": "Isaac Kaydet dosyasını seçin",
+    "uk_ua": "Виберіть файл збереження ISAAC",
+    "vi": "Chọn tệp lưu isaac",
+    "zh_cn": "选择艾萨克保存文件",
+    "ko_kr": "아이작 세이브 파일 선택"
+  },
+  "Select Source Save File": {
+    "bul": "Изберете Източник Запиши файл",
+    "cs_cz": "Vyberte soubor Source Uložit",
+    "de": "Wählen Sie die Quelle Speicherndatei auswählen",
+    "el_gr": "Επιλέξτε αρχείο αποθήκευσης προέλευσης",
+    "fr": "Sélectionnez le fichier de sauvegarde source",
+    "it": "Seleziona il file di salvataggio della sorgente",
+    "ja_jp": "ソース保存ファイルを選択します",
+    "nl_nl": "Selecteer Bron opslaan",
+    "pl": "Wybierz plik zapisz źródło",
+    "pt": "Selecione Origem Salvar Arquivo",
+    "pt_br": "Selecione Origem Salvar Arquivo",
+    "ro_ro": "Selectați sursa de salvare fișier",
+    "ru": "Выберите исходный файл сохранения",
+    "spa": "Seleccione el archivo Guardar de origen",
+    "tr_tr": "Kaynak Kaydet dosyasını seçin",
+    "uk_ua": "Виберіть файл збереження джерела",
+    "vi": "Chọn nguồn lưu tệp",
+    "zh_cn": "选择源保存文件",
+    "ko_kr": "원본 세이브 파일 선택"
+  },
+  "Select Target Save File": {
+    "bul": "Изберете Target Save File",
+    "cs_cz": "Vyberte soubor cílového uložit",
+    "de": "Wählen Sie Zielspeichendatei aus",
+    "el_gr": "Επιλέξτε Αρχείο αποθήκευσης στόχου",
+    "fr": "Sélectionnez le fichier de sauvegarde cible",
+    "it": "Seleziona il file di salvataggio target",
+    "ja_jp": "ターゲット保存ファイルを選択します",
+    "nl_nl": "Selecteer het doel opslaan bestand",
+    "pl": "Wybierz Plik zapisz docelowy",
+    "pt": "Selecione Target Salvar Arquivo",
+    "pt_br": "Selecione Target Salvar Arquivo",
+    "ro_ro": "Selectați Target Salvați fișierul",
+    "ru": "Выберите Target Save File",
+    "spa": "Seleccione el archivo Guardar de destino",
+    "tr_tr": "Hedef Kaydet dosyasını seçin",
+    "uk_ua": "Виберіть цільовий файл збереження",
+    "vi": "Chọn Tệp Lưu Target",
+    "zh_cn": "选择目标保存文件",
+    "ko_kr": "대상 세이브 파일 선택"
   },
   "Set Donation/Greed/Eden Tokens to 999": {
     "bul": "Задайте дарение/алчност/Eden Tokens на 999",
@@ -1177,7 +1214,8 @@
     "tr_tr": "Bağış/Açgözlülük/Eden Tokenleri 999'a ayarlayın",
     "uk_ua": "Встановіть пожертви/жваві/Едемські жетони на 999",
     "vi": "Đặt mã thông báo quyên góp/Greed/Eden thành 999",
-    "zh_cn": "将捐赠/贪婪/伊甸代币设置为999"
+    "zh_cn": "将捐赠/贪婪/伊甸代币设置为999",
+    "ko_kr": "기부/그리드/에덴 토큰을 999로 설정"
   },
   "Set to 999 on Startup": {
     "bul": "Зададено на 999 при стартиране",
@@ -1197,7 +1235,8 @@
     "tr_tr": "Başlangıçta 999'a ayarlayın",
     "uk_ua": "Встановити 999 при запуску",
     "vi": "Đặt thành 999 khi khởi động",
-    "zh_cn": "在启动时设置为999"
+    "zh_cn": "在启动时设置为999",
+    "ko_kr": "시작 시 999로 설정"
   },
   "The file names do not match.": {
     "bul": "Имената на файловете не съвпадат.",
@@ -1217,7 +1256,8 @@
     "tr_tr": "Dosya adları eşleşmiyor.",
     "uk_ua": "Імена файлів не відповідають.",
     "vi": "Tên tệp không khớp.",
-    "zh_cn": "文件名不匹配。"
+    "zh_cn": "文件名不匹配。",
+    "ko_kr": "파일 이름이 일치하지 않습니다."
   },
   "The source save file could not be found.": {
     "bul": "Файлът за запазване на източника не може да бъде намерен.",
@@ -1237,7 +1277,8 @@
     "tr_tr": "Kaynak kaydetme dosyası bulunamadı.",
     "uk_ua": "Файл збереження джерела не вдалося знайти.",
     "vi": "Không thể tìm thấy tệp lưu nguồn.",
-    "zh_cn": "源保存文件找不到。"
+    "zh_cn": "源保存文件找不到。",
+    "ko_kr": "원본 세이브 파일을 찾을 수 없습니다."
   },
   "The source save file has been copied.": {
     "bul": "Файлът за запазване на източника е копиран.",
@@ -1257,7 +1298,8 @@
     "tr_tr": "Kaynak kaydetme dosyası kopyalandı.",
     "uk_ua": "Файл збереження джерела копіюється.",
     "vi": "Tệp lưu nguồn đã được sao chép.",
-    "zh_cn": "源保存文件已复制。"
+    "zh_cn": "源保存文件已复制。",
+    "ko_kr": "원본 세이브 파일이 복사되었습니다."
   },
   "The stored save file path could not be found. Please choose a new file.": {
     "bul": "Съхраненият път за запазване на файлове не може да бъде намерен. ",
@@ -1277,7 +1319,8 @@
     "tr_tr": "Depolanan dosya yolu bulunamadı. ",
     "uk_ua": "Збережений шлях збереження файлу не вдалося знайти. ",
     "vi": "Không thể tìm thấy đường dẫn tệp lưu được lưu trữ. ",
-    "zh_cn": "无法找到存储的保存文件路径。"
+    "zh_cn": "无法找到存储的保存文件路径。",
+    "ko_kr": "저장된 세이브 파일 경로를 찾을 수 없습니다. 새 파일을 선택해 주세요."
   },
   "The target save path could not be found.": {
     "bul": "Пътят за запазване на целта не може да бъде намерен.",
@@ -1297,7 +1340,8 @@
     "tr_tr": "Hedef tasarruf yolu bulunamadı.",
     "uk_ua": "Цільовий шлях збереження не вдалося знайти.",
     "vi": "Đường dẫn lưu mục tiêu không thể được tìm thấy.",
-    "zh_cn": "找不到目标保存路径。"
+    "zh_cn": "找不到目标保存路径。",
+    "ko_kr": "대상 세이브 경로를 찾을 수 없습니다."
   },
   "This does not look like an Isaac save path. Continue anyway?": {
     "bul": "Това не изглежда като път на запазване на Исаак. ",
@@ -1317,7 +1361,8 @@
     "tr_tr": "Bu bir Isaac kurtarma yolu gibi görünmüyor. ",
     "uk_ua": "Це не схоже на шлях збереження Ісаака. ",
     "vi": "Điều này không giống như một đường dẫn lưu isaac. ",
-    "zh_cn": "这看起来不像以撒的保存路径。"
+    "zh_cn": "这看起来不像以撒的保存路径。",
+    "ko_kr": "아이작 세이브 경로로 보이지 않습니다. 계속하시겠습니까?"
   },
   "Unable to open the save file.": {
     "bul": "Не може да се отвори файла за запазване.",
@@ -1337,7 +1382,8 @@
     "tr_tr": "Kaydet dosyasını açılamıyor.",
     "uk_ua": "Неможливо відкрити файл збереження.",
     "vi": "Không thể mở tệp lưu.",
-    "zh_cn": "无法打开保存文件。"
+    "zh_cn": "无法打开保存文件。",
+    "ko_kr": "세이브 파일을 열 수 없습니다."
   },
   "Update Failed": {
     "bul": "Актуализацията не успя",
@@ -1357,7 +1403,8 @@
     "tr_tr": "Güncelleme başarısız oldu",
     "uk_ua": "Не вдалося оновлення",
     "vi": "Cập nhật không thành công",
-    "zh_cn": "更新失败"
+    "zh_cn": "更新失败",
+    "ko_kr": "업데이트에 실패했습니다"
   },
   "Warning": {
     "bul": "Предупреждение",
@@ -1377,7 +1424,8 @@
     "tr_tr": "Uyarı",
     "uk_ua": "УВАГА",
     "vi": "Cảnh báo",
-    "zh_cn": "警告"
+    "zh_cn": "警告",
+    "ko_kr": "경고"
   },
   "Select All": {
     "bul": "Изберете всички",
@@ -1397,7 +1445,8 @@
     "tr_tr": "Hepsini seç",
     "uk_ua": "Виберіть все",
     "vi": "Chọn tất cả",
-    "zh_cn": "选择全部"
+    "zh_cn": "选择全部",
+    "ko_kr": "전체 선택"
   },
   "Select None": {
     "bul": "Премахнете избора на всички",
@@ -1417,7 +1466,8 @@
     "tr_tr": "Tümünün seçimini kaldır",
     "uk_ua": "Скасувати вибір усіх",
     "vi": "Bỏ chọn tất cả",
-    "zh_cn": "取消全选"
+    "zh_cn": "取消全选",
+    "ko_kr": "전체 선택 해제"
   },
   "Unlock Selected": {
     "bul": "Отключете избрани елементи",
@@ -1437,7 +1487,8 @@
     "tr_tr": "Seçilen öğelerin kilidini aç",
     "uk_ua": "Розблокувати вибрані предмети",
     "vi": "Mở khóa các mục đã chọn",
-    "zh_cn": "解锁所选项目"
+    "zh_cn": "解锁所选项目",
+    "ko_kr": "선택 항목 잠금 해제"
   },
   "Lock Selected": {
     "bul": "Заключете избрани елементи",
@@ -1457,7 +1508,8 @@
     "tr_tr": "Seçilen öğeleri kilitle",
     "uk_ua": "Замкніть вибрані елементи",
     "vi": "Khóa các mục được chọn",
-    "zh_cn": "锁定所选项目"
+    "zh_cn": "锁定所选项目",
+    "ko_kr": "선택 항목 잠그기"
   },
   "Main": {
     "bul": "Главна",
@@ -1477,7 +1529,8 @@
     "tr_tr": "Ana",
     "uk_ua": "Головна",
     "vi": "Chính",
-    "zh_cn": "主页"
+    "zh_cn": "主页",
+    "ko_kr": "메인"
   },
   "Maps": {
     "bul": "Карти",
@@ -1497,7 +1550,8 @@
     "tr_tr": "Haritalar",
     "uk_ua": "Карти",
     "vi": "Bản đồ",
-    "zh_cn": "地图"
+    "zh_cn": "地图",
+    "ko_kr": "지도"
   },
   "No Effect": {
     "bul": "Без ефект",
@@ -1517,7 +1571,8 @@
     "tr_tr": "Etkisiz",
     "uk_ua": "Без ефекту",
     "vi": "Không hiệu ứng",
-    "zh_cn": "无效果"
+    "zh_cn": "无效果",
+    "ko_kr": "효과 없음"
   },
   "Other": {
     "bul": "Други",
@@ -1537,7 +1592,8 @@
     "tr_tr": "Diğer",
     "uk_ua": "Інше",
     "vi": "Khác",
-    "zh_cn": "其他"
+    "zh_cn": "其他",
+    "ko_kr": "기타"
   },
   "Passive": {
     "bul": "Пасивни",
@@ -1557,7 +1613,8 @@
     "tr_tr": "Pasif",
     "uk_ua": "Пасивні",
     "vi": "Bị động",
-    "zh_cn": "被动"
+    "zh_cn": "被动",
+    "ko_kr": "패시브"
   },
   "Pickups": {
     "bul": "Подбираеми",
@@ -1577,7 +1634,8 @@
     "tr_tr": "Toplanabilirler",
     "uk_ua": "Підіймальні",
     "vi": "Nhặt được",
-    "zh_cn": "掉落物"
+    "zh_cn": "掉落物",
+    "ko_kr": "픽업"
   },
   "Pills": {
     "bul": "Хапчета",
@@ -1597,7 +1655,8 @@
     "tr_tr": "Haplar",
     "uk_ua": "Пігулки",
     "vi": "Viên thuốc",
-    "zh_cn": "药丸"
+    "zh_cn": "药丸",
+    "ko_kr": "알약"
   },
   "Runes": {
     "bul": "Руни",
@@ -1617,7 +1676,8 @@
     "tr_tr": "Rünler",
     "uk_ua": "Руни",
     "vi": "Rune",
-    "zh_cn": "符文"
+    "zh_cn": "符文",
+    "ko_kr": "룬"
   },
   "Trinkets": {
     "bul": "Талисмани",
@@ -1637,7 +1697,8 @@
     "tr_tr": "Takılar",
     "uk_ua": "Трінкети",
     "vi": "Bùa nhỏ",
-    "zh_cn": "饰品"
+    "zh_cn": "饰品",
+    "ko_kr": "장신구"
   },
   "Sort Alphabetically": {
     "bul": "Сортирайте по азбучен ред",
@@ -1657,6 +1718,7 @@
     "tr_tr": "Alfabetik olarak sıralayın",
     "uk_ua": "Сортувати за алфавітом",
     "vi": "Sắp xếp theo thứ tự bảng chữ cái",
-    "zh_cn": "按字母顺序排序"
+    "zh_cn": "按字母顺序排序",
+    "ko_kr": "가나다순으로 정렬"
   }
 }
