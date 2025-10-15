@@ -974,6 +974,15 @@ class IsaacSaveEditor(tk.Tk):
                 "grid_column": 1,
                 "grid_row": 0,
             },
+            "eden_blessing_multi": {
+                "offset": 0x478,
+                "title": ("멀티 에덴의 축복", "Multi Eden's Blessing"),
+                "description": ("멀티 에덴의 축복", "Multi Eden's Blessing"),
+                "num_bytes": 1,
+                "signed": False,
+                "grid_column": 1,
+                "grid_row": 1,
+            },
             "greed": {
                 "offset": 0x1C8,
                 "title": ("그리드 기계", "Greed Machine"),
@@ -999,6 +1008,7 @@ class IsaacSaveEditor(tk.Tk):
         self._numeric_order: List[str] = [
             "donation",
             "eden_blessing_single",
+            "eden_blessing_multi",
             "greed",
             "streak",
             "eden",
