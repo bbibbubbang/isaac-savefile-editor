@@ -4287,7 +4287,9 @@ class IsaacSaveEditor(tk.Tk):
     def _apply_multi_eden_mirror(self, value: int) -> bool:
         target_paths = self._multi_eden_candidate_paths()
         if not target_paths:
-            return False
+            # 멀티 에덴 미러 파일이 없는 경우라도 주요 세이브 값은 이미 갱신되므로
+            # 추가 경고 없이 성공으로 처리한다.
+            return True
 
         any_success = False
         script_offset = 0x10
