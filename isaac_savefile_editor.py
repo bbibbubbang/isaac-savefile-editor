@@ -44,6 +44,8 @@ DEFAULT_SETTINGS: Dict[str, object] = {
     "language": "ko_kr",
     "highlight_locked_items": False,
     "highlight_locked_secrets": False,
+    "window_width": 0,
+    "window_height": 0,
 }
 
 SAVE_FILENAME_VARIANTS: tuple[str, ...] = (
@@ -915,6 +917,10 @@ class IsaacSaveEditor(tk.Tk):
 
         self.settings_path = SETTINGS_PATH
         self.settings = self._load_settings()
+        self._geometry_ready = False
+        self._geometry_dirty = False
+        self.bind("<Configure>", self._on_window_configure)
+        self.protocol("WM_DELETE_WINDOW", self._on_close_requested)
         self._available_languages = self._load_available_languages()
         self._language_code = self._determine_initial_language()
         self._english_ui_enabled = localization.is_english(self._language_code)
@@ -978,42 +984,9 @@ class IsaacSaveEditor(tk.Tk):
                 "num_bytes": 2,
                 "signed": False,
             },
-            "mom_kills": {
-                "offset": 0x0,
-                "title": ("맘 처치", "Mom Kills"),
-                "description": ("맘 처치", "Mom Kills"),
-                "num_bytes": 4,
-                "signed": False,
-            },
-            "deaths": {
-                "offset": 0x24,
-                "title": ("죽은 횟수", "Deaths"),
-                "description": ("죽은 횟수", "Deaths"),
-                "num_bytes": 4,
-                "signed": False,
-            },
-            "best_streak": {
-                "offset": 0x58,
-                "title": ("최고 연승", "Best Streak"),
-                "description": ("최고 연승", "Best Streak"),
-                "num_bytes": 4,
-                "signed": False,
-            },
-            "best_online_streak": {
-                "offset": 0xA0,
-                "title": ("온라인 최고 연승", "Best Online Streak"),
-                "description": ("온라인 최고 연승", "Best Online Streak"),
-                "num_bytes": 4,
-                "signed": False,
-            },
         }
         self._numeric_order: List[str] = ["donation", "greed", "streak", "eden"]
-        self._stat_order: List[str] = [
-            "mom_kills",
-            "deaths",
-            "best_streak",
-            "best_online_streak",
-        ]
+        self._stat_order: List[str] = []
 
         self._numeric_vars: Dict[str, Dict[str, tk.StringVar]] = {}
         self._bestiary_entries: List[Dict[str, object]] = [
@@ -1102,6 +1075,7 @@ class IsaacSaveEditor(tk.Tk):
         _remove_focus_highlight(self)
         self.refresh_current_values()
         self._set_initial_window_size()
+        self.after(200, self._enable_geometry_tracking)
         self.after(0, self._perform_startup_tasks)
 
     @staticmethod
@@ -1190,18 +1164,6 @@ class IsaacSaveEditor(tk.Tk):
         self._register_tab_text(notebook, main_tab, "메인", "Main")
         self._build_main_tab(main_tab)
 
-        stats_tab = ttk.Frame(notebook, padding=12)
-        stats_tab.columnconfigure(0, weight=1)
-        notebook.add(stats_tab)
-        self._register_tab_text(notebook, stats_tab, "통계", "Stats")
-        self._build_stats_tab(stats_tab)
-
-        bestiary_tab = ttk.Frame(notebook, padding=12)
-        bestiary_tab.columnconfigure(0, weight=1)
-        notebook.add(bestiary_tab)
-        self._register_tab_text(notebook, bestiary_tab, "베스티어리", "Bestiary")
-        self._build_bestiary_tab(bestiary_tab)
-
         completion_tab = ttk.Frame(notebook, padding=12)
         completion_tab.columnconfigure(0, weight=1)
         completion_tab.rowconfigure(2, weight=1)
@@ -1242,10 +1204,82 @@ class IsaacSaveEditor(tk.Tk):
         if none_tab_type:
             add_secret_tab(none_tab_type)
 
+    def _record_window_geometry(
+        self, width: int, height: int, *, mark_dirty: bool = True
+    ) -> None:
+        if not hasattr(self, "settings"):
+            return
+        if width <= 1 or height <= 1:
+            return
+        try:
+            width_value = int(width)
+            height_value = int(height)
+        except (TypeError, ValueError):
+            return
+        previous_width = self.settings.get("window_width")
+        previous_height = self.settings.get("window_height")
+        if (
+            isinstance(previous_width, int)
+            and isinstance(previous_height, int)
+            and previous_width == width_value
+            and previous_height == height_value
+        ):
+            return
+        self.settings["window_width"] = width_value
+        self.settings["window_height"] = height_value
+        if mark_dirty:
+            self._geometry_dirty = True
+
+    def _enable_geometry_tracking(self) -> None:
+        self._geometry_ready = True
+        try:
+            current_width = int(self.winfo_width())
+            current_height = int(self.winfo_height())
+        except tk.TclError:
+            return
+        self._record_window_geometry(current_width, current_height, mark_dirty=False)
+
+    def _on_window_configure(self, event: tk.Event) -> None:
+        if not getattr(self, "_geometry_ready", False):
+            return
+        if event.widget is not self:
+            return
+        try:
+            width = int(event.width)
+            height = int(event.height)
+        except (TypeError, ValueError):
+            return
+        self._record_window_geometry(width, height)
+
+    def _on_close_requested(self) -> None:
+        try:
+            self.update_idletasks()
+        except tk.TclError:
+            pass
+        try:
+            width = int(self.winfo_width())
+            height = int(self.winfo_height())
+        except tk.TclError:
+            width = height = 0
+        self._record_window_geometry(width, height)
+        self._save_settings()
+        self.destroy()
+
     def _set_initial_window_size(self) -> None:
         notebook = getattr(self, "notebook", None)
         completion_tab = getattr(self, "_completion_tab_frame", None)
         if notebook is None or completion_tab is None:
+            return
+        saved_width = self.settings.get("window_width")
+        saved_height = self.settings.get("window_height")
+        if (
+            isinstance(saved_width, int)
+            and saved_width > 0
+            and isinstance(saved_height, int)
+            and saved_height > 0
+        ):
+            self.geometry(f"{saved_width}x{saved_height}")
+            self._record_window_geometry(saved_width, saved_height, mark_dirty=False)
             return
         current_tab = notebook.select()
         try:
@@ -1260,9 +1294,14 @@ class IsaacSaveEditor(tk.Tk):
                 notebook.select(current_tab)
             except tk.TclError:
                 pass
-        width = notebook_width + 24
+        base_width = notebook_width + 24
+        minimum_width = 900
+        width = max(base_width - 120, minimum_width)
+        if width > base_width:
+            width = base_width
         height = notebook_height + 24
         self.geometry(f"{width}x{height}")
+        self._record_window_geometry(width, height, mark_dirty=False)
 
     def _build_main_tab(self, container: ttk.Frame) -> None:
         top_frame = ttk.Frame(container)
@@ -1378,14 +1417,9 @@ class IsaacSaveEditor(tk.Tk):
             "Overwrite Save File",
         )
 
-        numeric_and_tools_frame = ttk.Frame(container)
-        numeric_and_tools_frame.grid(column=0, row=2, sticky="ew", pady=(15, 0))
-        numeric_and_tools_frame.columnconfigure(0, weight=0)
-        numeric_and_tools_frame.columnconfigure(1, weight=1)
-
-        numeric_column = ttk.Frame(numeric_and_tools_frame)
-        numeric_column.grid(column=0, row=0, sticky="nw")
-        numeric_column.columnconfigure(0, weight=1)
+        numeric_frame = ttk.Frame(container)
+        numeric_frame.grid(column=0, row=2, sticky="ew", pady=(15, 0))
+        numeric_frame.columnconfigure(0, weight=1)
 
         for index, key in enumerate(self._numeric_order):
             config = self._numeric_config[key]
@@ -1396,7 +1430,7 @@ class IsaacSaveEditor(tk.Tk):
                 "entry": entry_var,
             }
             self._build_numeric_section(
-                container=numeric_column,
+                container=numeric_frame,
                 row=index,
                 title=config.get("title"),
                 current_var=current_var,
@@ -1404,40 +1438,6 @@ class IsaacSaveEditor(tk.Tk):
                 command=lambda field_key=key: self.apply_field(field_key, preserve_entry=True),
                 is_first=index == 0,
             )
-
-        bestiary_tools_frame = ttk.LabelFrame(
-            numeric_and_tools_frame, padding=(12, 10)
-        )
-        bestiary_tools_frame.grid(column=1, row=0, sticky="new", padx=(12, 0))
-        bestiary_tools_frame.columnconfigure(0, weight=1)
-        self._register_text(
-            bestiary_tools_frame,
-            "베스티어리 도구",
-            "Bestiary Tools",
-        )
-
-        bestiary_description = ttk.Label(
-            bestiary_tools_frame,
-            wraplength=260,
-            justify="left",
-        )
-        bestiary_description.grid(column=0, row=0, sticky="w")
-        self._register_text(
-            bestiary_description,
-            "Dead God 세이브 데이터를 참고하여 등록된 모든 몬스터의 조우 수를 최소 1로 만듭니다.",
-            "Uses the Dead God reference save to ensure every registered monster has at least one encounter.",
-        )
-
-        bestiary_button = ttk.Button(
-            bestiary_tools_frame,
-            command=self.set_bestiary_encounters_to_one,
-        )
-        bestiary_button.grid(column=0, row=1, sticky="ew", pady=(10, 0))
-        self._register_text(
-            bestiary_button,
-            "모든 몬스터 조우 수 1로 설정",
-            "Set All Monster Encounters to 1",
-        )
 
         auto_999_frame = ttk.Frame(container)
         auto_999_frame.grid(column=0, row=3, sticky="ew", pady=(12, 0))
@@ -3914,10 +3914,26 @@ class IsaacSaveEditor(tk.Tk):
             secret_highlight_setting = loaded.get("highlight_locked_secrets")
             if isinstance(secret_highlight_setting, bool):
                 settings["highlight_locked_secrets"] = secret_highlight_setting
+            window_width = loaded.get("window_width")
+            if isinstance(window_width, int) and window_width > 0:
+                settings["window_width"] = window_width
+            window_height = loaded.get("window_height")
+            if isinstance(window_height, int) and window_height > 0:
+                settings["window_height"] = window_height
         return settings
 
     def _save_settings(self) -> None:
         settings_to_save = DEFAULT_SETTINGS.copy()
+        try:
+            current_width = int(self.winfo_width())
+            current_height = int(self.winfo_height())
+        except tk.TclError:
+            current_width = current_height = 0
+        width_setting = self.settings.get("window_width")
+        height_setting = self.settings.get("window_height")
+        if current_width > 1 and current_height > 1:
+            width_setting = current_width
+            height_setting = current_height
         settings_to_save["remember_path"] = _variable_to_bool(self.remember_path_var)
         last_path_setting = self.settings.get("last_path")
         if isinstance(last_path_setting, str):
@@ -3937,12 +3953,21 @@ class IsaacSaveEditor(tk.Tk):
         settings_to_save["highlight_locked_secrets"] = _variable_to_bool(
             highlight_secret_var
         )
+        if (
+            isinstance(width_setting, int)
+            and width_setting > 0
+            and isinstance(height_setting, int)
+            and height_setting > 0
+        ):
+            settings_to_save["window_width"] = width_setting
+            settings_to_save["window_height"] = height_setting
         self.settings = settings_to_save
         try:
             with self.settings_path.open("w", encoding="utf-8") as file:
                 json.dump(settings_to_save, file, ensure_ascii=False, indent=2)
         except OSError:
             pass
+        self._geometry_dirty = False
 
     def _read_numeric_value(self, key: str) -> Optional[int]:
         if self.data is None:
@@ -4361,7 +4386,7 @@ class IsaacSaveEditor(tk.Tk):
 
     def refresh_current_values(self, *, update_entry: bool = True) -> None:
         if self.data is None:
-            for key in self._numeric_order + self._stat_order:
+            for key in self._numeric_order:
                 vars_map = self._numeric_vars[key]
                 vars_map["current"].set("0")
                 if update_entry:
@@ -4385,7 +4410,7 @@ class IsaacSaveEditor(tk.Tk):
             )
             return
 
-        for key in self._numeric_order + self._stat_order:
+        for key in self._numeric_order:
             config = self._numeric_config[key]
             vars_map = self._numeric_vars[key]
             try:
