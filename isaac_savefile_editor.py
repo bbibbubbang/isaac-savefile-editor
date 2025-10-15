@@ -993,6 +993,7 @@ class IsaacSaveEditor(tk.Tk):
                 "description": ("그리드 기계", "Greed Machine"),
                 "num_bytes": 4,
                 "signed": False,
+                "grid_row": 1,
             },
             "streak": {
                 "offset": 0x54,
