@@ -595,6 +595,91 @@ class IsaacSaveEditor(tk.Tk):
         except tk.TclError:
             pass
 
+    def _get_widget_text(self, widget: tk.Widget) -> str:
+        try:
+            text_var_name = widget.cget("textvariable")
+        except tk.TclError:
+            text_var_name = ""
+        if text_var_name:
+            try:
+                return str(widget.getvar(text_var_name))
+            except tk.TclError:
+                pass
+        try:
+            return str(widget.cget("text"))
+        except tk.TclError:
+            return ""
+
+    def _measure_widget_text_width(self, widget: tk.Widget) -> int:
+        text = self._get_widget_text(widget)
+        if not text:
+            return 0
+        try:
+            font_name = widget.cget("font") or "TkDefaultFont"
+        except tk.TclError:
+            font_name = "TkDefaultFont"
+        try:
+            font = tkfont.nametofont(font_name)
+        except tk.TclError:
+            font = tkfont.nametofont("TkDefaultFont")
+        lines = text.splitlines() or [text]
+        return max(font.measure(line) for line in lines)
+
+    def _apply_dynamic_wrap(self, widget: tk.Widget, preferred: int, width: int) -> None:
+        if preferred <= 0 or width <= 1:
+            return
+        try:
+            current_wrap = int(widget.cget("wraplength"))
+        except (tk.TclError, TypeError, ValueError):
+            current_wrap = 0
+        if width >= preferred:
+            if current_wrap != 0:
+                widget.configure(wraplength=0)
+            return
+        new_wrap = max(int(width), 0)
+        if current_wrap != new_wrap:
+            widget.configure(wraplength=new_wrap)
+
+    def _on_dynamic_wrap_configure(self, event: tk.Event) -> None:
+        widget = event.widget
+        if not isinstance(widget, tk.Widget):
+            return
+        widget_name = str(widget)
+        preferred = self._dynamic_wrap_preferences.get(widget_name, 0)
+        if preferred <= 0:
+            preferred = self._measure_widget_text_width(widget)
+            if preferred > 0:
+                self._dynamic_wrap_preferences[widget_name] = preferred
+        if preferred > 0:
+            self._apply_dynamic_wrap(widget, preferred, event.width)
+
+    def _register_dynamic_wrap_widget(
+        self, widget: tk.Widget, variable: Optional[tk.StringVar] = None
+    ) -> None:
+        widget_name = str(widget)
+        self._dynamic_wrap_preferences[widget_name] = self._measure_widget_text_width(
+            widget
+        )
+        widget.bind("<Configure>", self._on_dynamic_wrap_configure, add="+")
+
+        def _refresh_inner(widget: tk.Widget = widget, name: str = widget_name) -> None:
+            preferred = self._measure_widget_text_width(widget)
+            if preferred > 0:
+                self._dynamic_wrap_preferences[name] = preferred
+            current = self._dynamic_wrap_preferences.get(name, preferred)
+            if current > 0:
+                width = widget.winfo_width()
+                if width > 1:
+                    self._apply_dynamic_wrap(widget, current, width)
+
+        if variable is not None:
+            def _refresh_wrapper(*_args: object) -> None:
+                self.after_idle(_refresh_inner)
+
+            variable.trace_add("write", _refresh_wrapper)
+
+        self.after_idle(_refresh_inner)
+
     def _register_text(
         self,
         widget: tk.Widget,
@@ -938,6 +1023,7 @@ class IsaacSaveEditor(tk.Tk):
         )
         self._language_display_var = tk.StringVar(value=display_value)
         self._language_bindings: List[Callable[[], None]] = []
+        self._dynamic_wrap_preferences: Dict[str, int] = {}
         self._highlight_locked_items_var = tk.BooleanVar(
             value=bool(self.settings.get("highlight_locked_items", False))
         )
@@ -1442,10 +1528,10 @@ class IsaacSaveEditor(tk.Tk):
         source_label = ttk.Label(
             overwrite_frame,
             textvariable=self.source_save_display_var,
-            wraplength=420,
             justify="left",
         )
         source_label.grid(column=1, row=1, sticky="w", padx=(10, 0), pady=(8, 0))
+        self._register_dynamic_wrap_widget(source_label, self.source_save_display_var)
 
         target_button = ttk.Button(
             overwrite_frame,
@@ -1461,10 +1547,10 @@ class IsaacSaveEditor(tk.Tk):
         target_label = ttk.Label(
             overwrite_frame,
             textvariable=self.target_save_display_var,
-            wraplength=420,
             justify="left",
         )
         target_label.grid(column=1, row=2, sticky="w", padx=(10, 0), pady=(8, 0))
+        self._register_dynamic_wrap_widget(target_label, self.target_save_display_var)
 
         overwrite_button = ttk.Button(
             overwrite_frame,
