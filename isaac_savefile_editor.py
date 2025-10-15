@@ -261,7 +261,11 @@ def _variable_to_bool(var: Optional[tk.Variable]) -> bool:
 TOTAL_COMPLETION_MARKS = 12
 
 DEFAULT_COMPLETION_UNLOCK_MASK = getattr(script, "COMPLETION_DEFAULT_UNLOCK_MASK", 0x03)
+DEFAULT_COMPLETION_HARD_FLAG = getattr(script, "COMPLETION_FLAG_HARD", 0x02)
+DEFAULT_COMPLETION_NORMAL_FLAG = getattr(script, "COMPLETION_FLAG_NORMAL", 0x01)
 GREED_COMPLETION_UNLOCK_MASK = getattr(script, "COMPLETION_GREED_UNLOCK_MASK", 0x0C)
+GREED_COMPLETION_HARD_FLAG = getattr(script, "COMPLETION_FLAG_GREEDIER", 0x08)
+GREED_COMPLETION_NORMAL_FLAG = getattr(script, "COMPLETION_FLAG_GREED", 0x04)
 COMPLETION_GREED_MARK_INDEX = 8
 
 ITEM_UNLOCK_MASK = (
@@ -2754,8 +2758,14 @@ class IsaacSaveEditor(tk.Tk):
                 target_length = max(mark_count, len(current_values), TOTAL_COMPLETION_MARKS)
                 values = list(current_values) + [0] * max(0, target_length - len(current_values))
                 for mark_index in range(target_length):
-                    mask = self._completion_mask_for_mark(mark_index)
-                    values[mark_index] = values[mark_index] | mask
+                    if mark_index == COMPLETION_GREED_MARK_INDEX:
+                        values[mark_index] |= GREED_COMPLETION_HARD_FLAG
+                        if GREED_COMPLETION_NORMAL_FLAG:
+                            values[mark_index] &= ~GREED_COMPLETION_NORMAL_FLAG
+                    else:
+                        values[mark_index] |= DEFAULT_COMPLETION_HARD_FLAG
+                        if DEFAULT_COMPLETION_NORMAL_FLAG:
+                            values[mark_index] &= ~DEFAULT_COMPLETION_NORMAL_FLAG
                 result = script.updateCheckListUnlocks(result, index, values)
             return result
 
