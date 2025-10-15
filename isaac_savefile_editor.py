@@ -1152,7 +1152,30 @@ class IsaacSaveEditor(tk.Tk):
             keys.update(candidate for candidate in candidates if candidate)
         return keys
 
-    def _completion_mask_for_mark(self, mark_index: int) -> int:
+    def _completion_mask_for_mark(
+        self, mark_index: int, char_index: Optional[int] = None
+    ) -> int:
+        if char_index is not None:
+            marks = self._completion_marks_by_character.get(char_index, [])
+            for mark in marks:
+                try:
+                    if int(mark.get("mark_index", -1)) != mark_index:
+                        continue
+                except (TypeError, ValueError):
+                    continue
+                value = mark.get("unlock_value")
+                if isinstance(value, int):
+                    return value
+                if isinstance(value, str):
+                    value_str = value.strip()
+                    if value_str:
+                        try:
+                            parsed = int(value_str)
+                        except ValueError:
+                            pass
+                        else:
+                            mark["unlock_value"] = parsed
+                            return parsed
         if mark_index == COMPLETION_GREED_MARK_INDEX:
             return GREED_COMPLETION_UNLOCK_MASK
         return DEFAULT_COMPLETION_UNLOCK_MASK
@@ -2188,7 +2211,11 @@ class IsaacSaveEditor(tk.Tk):
             for index, name in enumerate(getattr(script, "characters", []))
         }
         default_marks_template = [
-            {"mark_index": idx, "mark_name": mark_name, "display": mark_name}
+            {
+                "mark_index": idx,
+                "mark_name": mark_name,
+                "display": mark_name,
+            }
             for idx, mark_name in enumerate(getattr(script, "checklist_order", []))
         ]
         marks_by_character: Dict[int, List[Dict[str, object]]] = {
@@ -2226,11 +2253,28 @@ class IsaacSaveEditor(tk.Tk):
                             char_index,
                             [entry.copy() for entry in default_marks_template],
                         )
+                        unlock_value: Optional[int] = None
+                        for value_key in ("Value(0/2)", "Value"):
+                            value_text = row.get(value_key)
+                            if value_text is None:
+                                continue
+                            value_str = str(value_text).strip()
+                            if not value_str:
+                                continue
+                            try:
+                                unlock_value = int(value_str)
+                            except (TypeError, ValueError):
+                                unlock_value = None
+                            else:
+                                break
+
                         mark_record = {
                             "mark_index": mark_index,
                             "mark_name": mark_name or f"Mark {mark_index}",
                             "display": mark_name or f"Mark {mark_index}",
                         }
+                        if unlock_value is not None:
+                            mark_record["unlock_value"] = unlock_value
                         replaced = False
                         for existing in marks:
                             if int(existing.get("mark_index", -1)) == mark_index:
@@ -2694,7 +2738,9 @@ class IsaacSaveEditor(tk.Tk):
             if index >= len(new_values):
                 new_values.extend([0] * (index + 1 - len(new_values)))
             checked = tree.tag_has("checked", mark_id)
-            mask = self._completion_mask_for_mark(index)
+            mask = self._completion_mask_for_mark(
+                index, self._current_completion_char_index
+            )
             current = new_values[index]
             if checked:
                 updated = current | mask
@@ -2754,7 +2800,7 @@ class IsaacSaveEditor(tk.Tk):
                 target_length = max(mark_count, len(current_values), TOTAL_COMPLETION_MARKS)
                 values = list(current_values) + [0] * max(0, target_length - len(current_values))
                 for mark_index in range(target_length):
-                    mask = self._completion_mask_for_mark(mark_index)
+                    mask = self._completion_mask_for_mark(mark_index, index)
                     values[mark_index] = values[mark_index] | mask
                 result = script.updateCheckListUnlocks(result, index, values)
             return result
@@ -3397,13 +3443,14 @@ class IsaacSaveEditor(tk.Tk):
                 self._unlock_tree(tree)
             return
         tree.state(("!disabled",))
+        char_index = self._current_completion_char_index
         try:
-            values = script.getChecklistUnlocks(self.data, self._current_completion_char_index)
+            values = script.getChecklistUnlocks(self.data, char_index)
         except Exception:
             values = []
         unlocked_ids = {}
         for index, value in enumerate(values):
-            mask = self._completion_mask_for_mark(index)
+            mask = self._completion_mask_for_mark(index, char_index)
             if value & mask:
                 unlocked_ids[str(index)] = True
         self._lock_tree(tree)
