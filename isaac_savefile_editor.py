@@ -902,8 +902,11 @@ class IsaacSaveEditor(tk.Tk):
             return
         if self.filename:
             basename = os.path.basename(self.filename)
+            path_label = self._text("경로", "Path")
+            loaded_label = self._text("불러온 파일", "Loaded File")
+            formatted_path = os.path.normpath(self.filename)
             self.loaded_file_var.set(
-                self._text("불러온 파일", "Loaded File") + f": {basename}"
+                f"{loaded_label}: {basename}\n{path_label}: {formatted_path}"
             )
         else:
             self.loaded_file_var.set(self._default_loaded_text)
@@ -3784,7 +3787,28 @@ class IsaacSaveEditor(tk.Tk):
                 self._text("덮어쓰기 완료", "Overwrite Complete"),
                 self._text("원본 세이브파일을 덮어썼습니다.", "The source save file has been copied."),
             )
+        self._reload_overwritten_save_if_needed(target)
         return True
+
+    def _reload_overwritten_save_if_needed(self, target_path: str) -> None:
+        if not target_path:
+            return
+        current_file = getattr(self, "filename", "")
+        if not current_file:
+            return
+        if not self._paths_equal(current_file, target_path):
+            return
+        if not os.path.exists(current_file):
+            return
+        if self._load_file(current_file, show_errors=False):
+            return
+        messagebox.showwarning(
+            self._text("다시 불러오기 실패", "Reload Failed"),
+            self._text(
+                "덮어쓴 후 세이브파일을 다시 불러오지 못했습니다. 파일이 사용 중인지 확인해주세요.",
+                "Could not reload the save file after overwriting. Please ensure it is not in use.",
+            ),
+        )
 
     def open_save_file(self) -> None:
         filename = filedialog.askopenfilename(
