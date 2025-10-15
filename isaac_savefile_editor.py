@@ -1461,7 +1461,8 @@ class IsaacSaveEditor(tk.Tk):
         self.loaded_file_var = tk.StringVar()
         self._update_default_loaded_text()
         loaded_file_label = ttk.Label(top_frame, textvariable=self.loaded_file_var)
-        loaded_file_label.grid(column=1, row=0, sticky="w", padx=(10, 0))
+        loaded_file_label.grid(column=1, row=0, sticky="ew", padx=(10, 0))
+        self._register_dynamic_wrap_widget(loaded_file_label, self.loaded_file_var)
 
         remember_check = ttk.Checkbutton(
             top_frame,
