@@ -33,7 +33,8 @@ DATA_DIR = Path(__file__).resolve().parent
 SETTINGS_PATH = DATA_DIR / "settings.json"
 LANGUAGE_DIR = DATA_DIR / "language"
 DEAD_GOD_REFERENCE_PATH = DATA_DIR / "rep+persistentgamedata1_deadgod.dat"
-_MULTI_EDEN_STACK_OFFSETS: tuple[int, ...] = (0x470, 0x474, 0x478, 0x47C)
+_MULTI_EDEN_STACK_OFFSETS: tuple[int, ...] = (0x478,)
+_MULTI_EDEN_OFFSETS_ARE_ABSOLUTE = True
 DEFAULT_SETTINGS: Dict[str, object] = {
     "remember_path": False,
     "last_path": "",
@@ -986,6 +987,7 @@ class IsaacSaveEditor(tk.Tk):
                 "signed": False,
                 "min_value": 0,
                 "max_value": 2,
+                "offset_is_absolute": _MULTI_EDEN_OFFSETS_ARE_ABSOLUTE,
                 "grid_column": 1,
                 "grid_row": 1,
             },
@@ -4034,8 +4036,11 @@ class IsaacSaveEditor(tk.Tk):
         except (TypeError, ValueError):
             num_bytes = 2
         signed = bool(config.get("signed", False))
+        is_absolute = bool(config.get("offset_is_absolute", False))
         try:
-            base_offset = section_offsets[1] + 0x4 + int(config["offset"])
+            base_offset = int(config["offset"])
+            if not is_absolute:
+                base_offset += section_offsets[1] + 0x4
             return int(
                 script.getInt(
                     self.data, base_offset, num_bytes=num_bytes, signed=signed
@@ -4115,9 +4120,12 @@ class IsaacSaveEditor(tk.Tk):
         except (TypeError, ValueError):
             num_bytes = 2
         signed = bool(config.get("signed", False))
+        is_absolute = bool(config.get("offset_is_absolute", False))
         try:
             section_offsets = script.getSectionOffsets(self.data)
-            base_offset = section_offsets[1] + 0x4 + int(config["offset"])
+            base_offset = int(config["offset"])
+            if not is_absolute:
+                base_offset += section_offsets[1] + 0x4
             updated = script.alterInt(
                 self.data,
                 base_offset,
@@ -4134,7 +4142,9 @@ class IsaacSaveEditor(tk.Tk):
                         mirror_offset = int(extra_offset)
                     except (TypeError, ValueError):
                         continue
-                    extra_base = section_offsets[1] + 0x4 + mirror_offset
+                    extra_base = mirror_offset
+                    if not is_absolute:
+                        extra_base += section_offsets[1] + 0x4
                     updated = script.alterInt(
                         updated,
                         extra_base,
@@ -4225,11 +4235,14 @@ class IsaacSaveEditor(tk.Tk):
                 return False
             try:
                 section_offsets = script.getSectionOffsets(self.data)
-                base_offset = section_offsets[1] + 0x4
                 for offset in _MULTI_EDEN_STACK_OFFSETS:
+                    if _MULTI_EDEN_OFFSETS_ARE_ABSOLUTE:
+                        target_offset = offset
+                    else:
+                        target_offset = section_offsets[1] + 0x4 + offset
                     current_value = script.getInt(
                         self.data,
-                        base_offset + offset,
+                        target_offset,
                         num_bytes=1,
                         signed=False,
                     )
