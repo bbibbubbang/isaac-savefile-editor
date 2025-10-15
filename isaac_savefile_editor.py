@@ -1531,7 +1531,7 @@ class IsaacSaveEditor(tk.Tk):
             textvariable=self.source_save_display_var,
             justify="left",
         )
-        source_label.grid(column=1, row=1, sticky="w", padx=(10, 0), pady=(8, 0))
+        source_label.grid(column=1, row=1, sticky="ew", padx=(10, 0), pady=(8, 0))
         self._register_dynamic_wrap_widget(source_label, self.source_save_display_var)
 
         target_button = ttk.Button(
@@ -1550,7 +1550,7 @@ class IsaacSaveEditor(tk.Tk):
             textvariable=self.target_save_display_var,
             justify="left",
         )
-        target_label.grid(column=1, row=2, sticky="w", padx=(10, 0), pady=(8, 0))
+        target_label.grid(column=1, row=2, sticky="ew", padx=(10, 0), pady=(8, 0))
         self._register_dynamic_wrap_widget(target_label, self.target_save_display_var)
 
         overwrite_button = ttk.Button(
