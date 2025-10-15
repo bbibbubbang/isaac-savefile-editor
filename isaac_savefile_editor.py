@@ -971,6 +971,8 @@ class IsaacSaveEditor(tk.Tk):
                 "description": ("싱글 에덴의 축복", "Single Eden's Blessing"),
                 "num_bytes": 1,
                 "signed": False,
+                "min_value": 0,
+                "max_value": 2,
                 "grid_column": 1,
                 "grid_row": 0,
             },
@@ -980,6 +982,8 @@ class IsaacSaveEditor(tk.Tk):
                 "description": ("멀티 에덴의 축복", "Multi Eden's Blessing"),
                 "num_bytes": 1,
                 "signed": False,
+                "min_value": 0,
+                "max_value": 2,
                 "grid_column": 1,
                 "grid_row": 1,
             },
@@ -4092,6 +4096,16 @@ class IsaacSaveEditor(tk.Tk):
                 ),
             )
             return False
+
+        min_value = config.get("min_value")
+        if isinstance(min_value, int) and new_value < min_value:
+            new_value = min_value
+
+        max_value = config.get("max_value")
+        if isinstance(max_value, int) and new_value > max_value:
+            new_value = max_value
+
+        entry_var.set(str(new_value))
 
         try:
             num_bytes = int(config.get("num_bytes", 2))
