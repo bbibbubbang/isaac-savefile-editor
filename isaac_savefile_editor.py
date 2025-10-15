@@ -4287,7 +4287,18 @@ class IsaacSaveEditor(tk.Tk):
     def _apply_multi_eden_mirror(self, value: int) -> bool:
         target_paths = self._multi_eden_candidate_paths()
         if not target_paths:
-            return False
+            if self.data is None:
+                return False
+            try:
+                section_offsets = script.getSectionOffsets(self.data)
+                base_offset = section_offsets[1] + 0x4 + _MULTI_EDEN_STACK_OFFSET
+                current_value = script.getInt(
+                    self.data, base_offset, num_bytes=1, signed=False
+                )
+            except Exception:
+                return False
+            # 미러 파일이 없더라도 기본 세이브의 값이 정상적으로 갱신되었는지 확인한다.
+            return current_value == (value & 0xFF)
 
         any_success = False
         script_offset = 0x10
