@@ -19,7 +19,7 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 import tkinter.font as tkfont
-from typing import Any, Callable, Dict, List, Optional, Set
+from typing import Any, Callable, Dict, Iterable, List, Optional, Set
 
 from PIL import Image, ImageTk
 from ttkwidgets import CheckboxTreeview
@@ -33,7 +33,7 @@ DATA_DIR = Path(__file__).resolve().parent
 SETTINGS_PATH = DATA_DIR / "settings.json"
 LANGUAGE_DIR = DATA_DIR / "language"
 DEAD_GOD_REFERENCE_PATH = DATA_DIR / "rep+persistentgamedata1_deadgod.dat"
-_MULTI_EDEN_STACK_OFFSET = 0x478
+_MULTI_EDEN_STACK_OFFSETS: tuple[int, ...] = (0x470, 0x474, 0x478, 0x47C)
 DEFAULT_SETTINGS: Dict[str, object] = {
     "remember_path": False,
     "last_path": "",
@@ -978,7 +978,8 @@ class IsaacSaveEditor(tk.Tk):
                 "grid_row": 0,
             },
             "eden_blessing_multi": {
-                "offset": 0x478,
+                "offset": _MULTI_EDEN_STACK_OFFSETS[0],
+                "mirror_offsets": _MULTI_EDEN_STACK_OFFSETS[1:],
                 "title": ("멀티 에덴의 축복", "Multi Eden's Blessing"),
                 "description": ("멀티 에덴의 축복", "Multi Eden's Blessing"),
                 "num_bytes": 1,
@@ -4124,6 +4125,23 @@ class IsaacSaveEditor(tk.Tk):
                 num_bytes=num_bytes,
                 signed=signed,
             )
+            mirror_offsets = config.get("mirror_offsets")
+            if isinstance(mirror_offsets, Iterable) and not isinstance(
+                mirror_offsets, (str, bytes)
+            ):
+                for extra_offset in mirror_offsets:
+                    try:
+                        mirror_offset = int(extra_offset)
+                    except (TypeError, ValueError):
+                        continue
+                    extra_base = section_offsets[1] + 0x4 + mirror_offset
+                    updated = script.alterInt(
+                        updated,
+                        extra_base,
+                        new_value,
+                        num_bytes=num_bytes,
+                        signed=signed,
+                    )
             updated_with_checksum = script.updateChecksum(updated)
         except Exception as exc:  # pragma: no cover - defensive UI feedback
             messagebox.showerror(
@@ -4200,34 +4218,49 @@ class IsaacSaveEditor(tk.Tk):
         return sorted(candidates)
 
     def _apply_multi_eden_mirror(self, value: int) -> bool:
+        desired_value = value & 0xFF
         target_paths = self._multi_eden_candidate_paths()
         if not target_paths:
             if self.data is None:
                 return False
             try:
                 section_offsets = script.getSectionOffsets(self.data)
-                base_offset = section_offsets[1] + 0x4 + _MULTI_EDEN_STACK_OFFSET
-                current_value = script.getInt(
-                    self.data, base_offset, num_bytes=1, signed=False
-                )
+                base_offset = section_offsets[1] + 0x4
+                for offset in _MULTI_EDEN_STACK_OFFSETS:
+                    current_value = script.getInt(
+                        self.data,
+                        base_offset + offset,
+                        num_bytes=1,
+                        signed=False,
+                    )
+                    if current_value != desired_value:
+                        return False
             except Exception:
                 return False
             # 미러 파일이 없더라도 기본 세이브의 값이 정상적으로 갱신되었는지 확인한다.
-            return current_value == (value & 0xFF)
+            return True
 
         any_success = False
         script_offset = 0x10
-        desired_value = value & 0xFF
+        max_required_offset = max(_MULTI_EDEN_STACK_OFFSETS, default=-1)
         for path in target_paths:
             try:
                 original = path.read_bytes()
             except OSError:
                 continue
-            if len(original) <= _MULTI_EDEN_STACK_OFFSET:
+            if len(original) <= max_required_offset:
                 continue
 
             patched = bytearray(original)
-            patched[_MULTI_EDEN_STACK_OFFSET] = desired_value
+            updated_any = False
+            for offset in _MULTI_EDEN_STACK_OFFSETS:
+                if offset >= len(patched):
+                    continue
+                patched[offset] = desired_value
+                updated_any = True
+
+            if not updated_any:
+                continue
 
             length = len(patched) - script_offset - 4
             if length <= 0:
