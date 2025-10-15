@@ -1,7 +1,8 @@
-<img width="764" height="750" alt="1" src="https://github.com/user-attachments/assets/cc77fe7e-d096-4eec-99fd-75e5c2677694" />
-![](./image/2.png)
-![](./image/3.png)
-![](./image/4.png)
+<img width="764" height="750" alt="1" src="https://github.com/user-attachments/assets/5648fceb-75a8-4cb6-8825-5ca97334429f" />
+<img width="764" height="727" alt="2" src="https://github.com/user-attachments/assets/eaed0e75-95e0-4d88-b3bb-f7a0e6a09591" />
+<img width="764" height="727" alt="3" src="https://github.com/user-attachments/assets/de20d3a6-c536-4ad0-868a-ab289e1e919a" />
+<img width="962" height="727" alt="4" src="https://github.com/user-attachments/assets/97476ade-8ddc-403e-9b76-ad9880b83fcc" />
+
 # Isaac Savefile Editor
 
 ## 소개
