@@ -2800,8 +2800,7 @@ class IsaacSaveEditor(tk.Tk):
                 target_length = max(mark_count, len(current_values), TOTAL_COMPLETION_MARKS)
                 values = list(current_values) + [0] * max(0, target_length - len(current_values))
                 for mark_index in range(target_length):
-                    mask = self._completion_mask_for_mark(mark_index, index)
-                    values[mark_index] = values[mark_index] | mask
+                    values[mark_index] = 15
                 result = script.updateCheckListUnlocks(result, index, values)
             return result
 
