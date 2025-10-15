@@ -33,6 +33,13 @@ DATA_DIR = Path(__file__).resolve().parent
 SETTINGS_PATH = DATA_DIR / "settings.json"
 LANGUAGE_DIR = DATA_DIR / "language"
 DEAD_GOD_REFERENCE_PATH = DATA_DIR / "rep+persistentgamedata1_deadgod.dat"
+_MULTI_EDEN_REFERENCE_FILES: Dict[int, Path] = {
+    0: DATA_DIR / "savefile" / "eden0.dat",
+    1: DATA_DIR / "savefile" / "eden0_multi_mirror_set1_0x0478.dat",
+    2: DATA_DIR / "savefile" / "eden0_multi_mirror_set2_0x0478.dat",
+}
+_MULTI_EDEN_PATCH_CACHE: Optional[tuple[Dict[int, tuple[int, int]], int, int]] = None
+_MULTI_EDEN_PATCH_FAILED: bool = False
 DEFAULT_SETTINGS: Dict[str, object] = {
     "remember_path": False,
     "last_path": "",
@@ -237,6 +244,65 @@ def _suppress_focus_indicators(root: tk.Misc) -> None:
         except tk.TclError:
             continue
         _normalize_focus_color(style_name)
+
+
+def _load_multi_eden_patch_data() -> Optional[tuple[Dict[int, tuple[int, int]], int, int]]:
+    global _MULTI_EDEN_PATCH_CACHE, _MULTI_EDEN_PATCH_FAILED
+    if _MULTI_EDEN_PATCH_CACHE is not None:
+        return _MULTI_EDEN_PATCH_CACHE
+    if _MULTI_EDEN_PATCH_FAILED:
+        return None
+
+    base_path = _MULTI_EDEN_REFERENCE_FILES.get(0)
+    variant_path = _MULTI_EDEN_REFERENCE_FILES.get(1)
+    variant_path_two = _MULTI_EDEN_REFERENCE_FILES.get(2)
+    if base_path is None or variant_path is None or variant_path_two is None:
+        _MULTI_EDEN_PATCH_FAILED = True
+        return None
+
+    try:
+        base_data = base_path.read_bytes()
+        variant_data = variant_path.read_bytes()
+        variant_two_data = variant_path_two.read_bytes()
+    except OSError:
+        _MULTI_EDEN_PATCH_FAILED = True
+        return None
+
+    if not base_data or len(base_data) != len(variant_data) or len(base_data) != len(variant_two_data):
+        _MULTI_EDEN_PATCH_FAILED = True
+        return None
+
+    length = len(base_data)
+    diff_one: Dict[int, int] = {}
+    diff_two: Dict[int, int] = {}
+    for index in range(length):
+        base_byte = base_data[index]
+        if base_byte != variant_data[index]:
+            diff_one[index] = variant_data[index]
+        if base_byte != variant_two_data[index]:
+            diff_two[index] = variant_two_data[index]
+
+    if not diff_one or not diff_two:
+        _MULTI_EDEN_PATCH_FAILED = True
+        return None
+
+    stack_offsets = {
+        index
+        for index, value in diff_one.items()
+        if diff_two.get(index) is not None and value != diff_two[index]
+    }
+    if len(stack_offsets) != 1:
+        _MULTI_EDEN_PATCH_FAILED = True
+        return None
+
+    stack_offset = stack_offsets.pop()
+    patch_map: Dict[int, tuple[int, int]] = {
+        index: (base_data[index], value)
+        for index, value in diff_one.items()
+        if index != stack_offset and index < length - 4
+    }
+    _MULTI_EDEN_PATCH_CACHE = (patch_map, stack_offset, length)
+    return _MULTI_EDEN_PATCH_CACHE
 
 
 def _variable_to_bool(var: Optional[tk.Variable]) -> bool:
@@ -972,7 +1038,7 @@ class IsaacSaveEditor(tk.Tk):
                 "num_bytes": 1,
                 "signed": False,
                 "min_value": 0,
-                "max_value": 0xFF,
+                "max_value": 2,
                 "grid_column": 1,
                 "grid_row": 0,
             },
@@ -983,7 +1049,7 @@ class IsaacSaveEditor(tk.Tk):
                 "num_bytes": 1,
                 "signed": False,
                 "min_value": 0,
-                "max_value": 0xFF,
+                "max_value": 2,
                 "grid_column": 1,
                 "grid_row": 1,
             },
@@ -4147,10 +4213,109 @@ class IsaacSaveEditor(tk.Tk):
             )
             return False
 
+        multi_success = True
+        if key == "eden_blessing_multi":
+            multi_success = self._apply_multi_eden_mirror(new_value)
+
         self._propagate_numeric_update(key, new_value, num_bytes)
         self.refresh_current_values(update_entry=not preserve_entry)
         self._apply_auto_overwrite_if_enabled(prefer_loaded_file=True)
+        if key == "eden_blessing_multi" and not multi_success:
+            messagebox.showwarning(
+                self._text("멀티 에덴 업데이트 실패", "Multi Eden Update Failed"),
+                self._text(
+                    "eden0.dat 파일을 찾거나 업데이트하지 못했습니다. 수동으로 수정해주세요.",
+                    "Could not locate or update eden0.dat. Please adjust the file manually.",
+                ),
+            )
         return True
+
+    def _determine_save_slot_index(self) -> Optional[int]:
+        if not self.filename:
+            return None
+        base_name = Path(self.filename).name
+        match = re.search(r"(\d+)(?=\.dat$)", base_name)
+        if not match:
+            return None
+        try:
+            return int(match.group(1))
+        except ValueError:
+            return None
+
+    def _multi_eden_candidate_paths(self) -> list[Path]:
+        if not self.filename:
+            return []
+        base_path = Path(self.filename)
+        indices: Set[int] = {0}
+        slot_index = self._determine_save_slot_index()
+        if slot_index is not None:
+            indices.add(slot_index)
+            if slot_index > 0:
+                indices.add(slot_index - 1)
+
+        search_dirs = {base_path.parent, base_path.parent / "players"}
+        candidates: Set[Path] = set()
+        for directory in search_dirs:
+            if not directory.exists():
+                continue
+            for index in indices:
+                candidate = directory / f"eden{index}.dat"
+                if candidate.exists():
+                    candidates.add(candidate)
+        return sorted(candidates)
+
+    def _apply_multi_eden_mirror(self, value: int) -> bool:
+        patch_data = _load_multi_eden_patch_data()
+        if patch_data is None:
+            return False
+        patch_map, stack_offset, expected_length = patch_data
+        target_paths = self._multi_eden_candidate_paths()
+        if not target_paths:
+            return False
+
+        any_success = False
+        script_offset = 0x10
+        for path in target_paths:
+            try:
+                original = path.read_bytes()
+            except OSError:
+                continue
+            if len(original) != expected_length:
+                continue
+
+            patched = bytearray(original)
+            for offset, (base_byte, variant_byte) in patch_map.items():
+                if offset >= len(patched):
+                    continue
+                patched[offset] = variant_byte if value > 0 else base_byte
+            if stack_offset < len(patched):
+                patched[stack_offset] = value & 0xFF
+
+            length = len(patched) - script_offset - 4
+            if length > 0:
+                checksum = script.calcAfterbirthChecksum(patched, script_offset, length)
+                tail = checksum.to_bytes(5, "little", signed=True)[:4]
+                patched[-4:] = tail
+
+            tmp_path = path.with_suffix(path.suffix + ".tmp")
+            backup_path = path.with_suffix(path.suffix + ".bak")
+            try:
+                if not backup_path.exists():
+                    backup_path.write_bytes(original)
+                if tmp_path.exists():
+                    tmp_path.unlink()
+                tmp_path.write_bytes(patched)
+                tmp_path.replace(path)
+            except OSError:
+                try:
+                    if tmp_path.exists():
+                        tmp_path.unlink()
+                except OSError:
+                    pass
+                continue
+            any_success = True
+
+        return any_success
 
     def _propagate_numeric_update(
         self, key: str, value: int, num_bytes: int
