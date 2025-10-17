@@ -540,7 +540,7 @@ class IsaacSaveEditor(tk.Tk):
             "offsets": (0x0FD8, 0x1008, 0x0FE0, 0x1010),
             "unlock_value": 11,
             "lock_value": 0,
-            "num_bytes": 1,
+            "num_bytes": 4,
             "absolute": True,
         }
     }
