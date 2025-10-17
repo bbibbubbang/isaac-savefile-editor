@@ -535,15 +535,7 @@ class IsaacSaveEditor(tk.Tk):
     }
     SECRET_FALLBACK_TYPE = "Other"
     SECRET_SEARCH_TYPES = frozenset({"Item.Passive", "Item.Active", "Trinket"})
-    SECRET_UNLOCK_OVERRIDES: Dict[str, Dict[str, object]] = {
-        "641": {
-            "offsets": (0x0FD8, 0x1008, 0x0FE0, 0x1010),
-            "unlock_value": 11,
-            "lock_value": 0,
-            "num_bytes": 4,
-            "absolute": True,
-        }
-    }
+    SECRET_UNLOCK_OVERRIDES: Dict[str, Dict[str, object]] = script.SECRET_UNLOCK_OVERRIDES
 
     def _text(self, korean: str, english: str | None = None) -> str:
         english = english or korean
@@ -3057,60 +3049,7 @@ class IsaacSaveEditor(tk.Tk):
         return self._apply_secret_overrides(updated, normalized_ids)
 
     def _apply_secret_overrides(self, data: bytes, unlocked_ids: Set[str]) -> bytes:
-        overrides = self.SECRET_UNLOCK_OVERRIDES
-        if not overrides:
-            return data
-        result = data
-        section_offsets: Optional[list[int]] = None
-        for secret_id, config in overrides.items():
-            normalized_id = str(secret_id).strip()
-            if not normalized_id:
-                continue
-            offsets = config.get("offsets")
-            if not offsets:
-                continue
-            value_key = "unlock_value" if normalized_id in unlocked_ids else "lock_value"
-            if value_key not in config:
-                continue
-            try:
-                desired_value = int(config[value_key])
-            except (TypeError, ValueError):
-                continue
-            try:
-                num_bytes = int(config.get("num_bytes", 1))
-            except (TypeError, ValueError):
-                num_bytes = 1
-            signed = bool(config.get("signed", False))
-            absolute = bool(config.get("absolute", True))
-            if isinstance(offsets, (list, tuple, set)):
-                offset_values = offsets
-            else:
-                offset_values = (offsets,)
-            for raw_offset in offset_values:
-                try:
-                    offset_value = int(raw_offset)
-                except (TypeError, ValueError):
-                    continue
-                target_offset = offset_value
-                if not absolute:
-                    if section_offsets is None:
-                        try:
-                            section_offsets = script.getSectionOffsets(result)
-                        except Exception:
-                            section_offsets = []
-                    if len(section_offsets) <= 1:
-                        continue
-                    target_offset = section_offsets[1] + 0x4 + offset_value
-                if target_offset < 0 or target_offset + num_bytes > len(result):
-                    continue
-                result = script.alterInt(
-                    result,
-                    target_offset,
-                    desired_value,
-                    num_bytes=num_bytes,
-                    signed=signed,
-                )
-        return result
+        return script.applySecretOverrides(data, unlocked_ids, self.SECRET_UNLOCK_OVERRIDES)
 
     def _unlock_selected_secrets(self, secret_type: str) -> None:
         if not self._ensure_data_loaded():

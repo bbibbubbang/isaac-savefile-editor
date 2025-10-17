@@ -1,4 +1,5 @@
 import base64
+from typing import Dict
 
 filename = r""
 
@@ -626,13 +627,100 @@ def getInt(data, offset, debug=False, num_bytes=2, signed=False):
         print(f"current value: {current_val}")
     return int.from_bytes(data[offset:offset+num_bytes], 'little', signed=signed)
 
+def _normalize_secret_ids(secret_list):
+    normalized = []
+    seen = set()
+    for entry in secret_list:
+        try:
+            secret_id = int(entry)
+        except (TypeError, ValueError):
+            continue
+        if secret_id <= 0:
+            continue
+        key = str(secret_id)
+        if key in seen:
+            continue
+        seen.add(key)
+        normalized.append(secret_id)
+    return normalized
+
+
+def applySecretOverrides(data, unlocked_ids, overrides=None):
+    if overrides is None:
+        overrides = SECRET_UNLOCK_OVERRIDES
+    if not overrides:
+        return data
+    result = data
+    section_offsets = None
+    unlocked_lookup = {str(value).strip() for value in unlocked_ids if str(value).strip()}
+    for secret_id, config in overrides.items():
+        normalized_id = str(secret_id).strip()
+        if not normalized_id:
+            continue
+        offsets = config.get("offsets")
+        if not offsets:
+            continue
+        value_key = "unlock_value" if normalized_id in unlocked_lookup else "lock_value"
+        if value_key not in config:
+            continue
+        try:
+            desired_value = int(config[value_key])
+        except (TypeError, ValueError):
+            continue
+        try:
+            num_bytes = int(config.get("num_bytes", 1))
+        except (TypeError, ValueError):
+            num_bytes = 1
+        signed = bool(config.get("signed", False))
+        absolute = bool(config.get("absolute", False))
+        section_index = config.get("section_index", 1)
+        try:
+            section_index = int(section_index)
+        except (TypeError, ValueError):
+            section_index = 1
+        try:
+            offset_base = int(config.get("offset_base", 0))
+        except (TypeError, ValueError):
+            offset_base = 0
+        if isinstance(offsets, (list, tuple, set)):
+            offset_values = offsets
+        else:
+            offset_values = (offsets,)
+        for raw_offset in offset_values:
+            try:
+                offset_value = int(raw_offset)
+            except (TypeError, ValueError):
+                continue
+            target_offset = offset_value
+            if not absolute:
+                if section_offsets is None:
+                    try:
+                        section_offsets = getSectionOffsets(result)
+                    except Exception:
+                        section_offsets = []
+                if section_index < 0 or section_index >= len(section_offsets):
+                    continue
+                target_offset = section_offsets[section_index] + offset_base + offset_value
+            if target_offset < 0 or target_offset + num_bytes > len(result):
+                continue
+            result = alterInt(
+                result,
+                target_offset,
+                desired_value,
+                num_bytes=num_bytes,
+                signed=signed,
+            )
+    return result
+
+
 def updateSecrets(data, secret_list):
     secret_count = getSecretCount(data)
     for i in range(1, secret_count + 1):
         data = alterSecret(data, i, False)
-    for i in secret_list:
-        data = alterSecret(data, int(i))
-    return data
+    unlocked_ids = _normalize_secret_ids(secret_list)
+    for secret_id in unlocked_ids:
+        data = alterSecret(data, secret_id)
+    return applySecretOverrides(data, unlocked_ids)
 
 def updateChallenges(data, challenge_list):
     for i in range(1, 46):
@@ -640,6 +728,23 @@ def updateChallenges(data, challenge_list):
     for i in challenge_list:
         data = alterChallenge(data, int(i), True)
     return data
+
+# Additional map unlocks require touching other stat counters in the
+# persistent data. ``SECRET_UNLOCK_OVERRIDES`` mirrors the structure used by
+# the GUI so that command line invocations of ``updateSecrets`` behave in the
+# same way.  Offsets are relative to the player stats section (index 1) unless
+# ``absolute`` is set to :data:`True`.
+SECRET_UNLOCK_OVERRIDES: Dict[str, Dict[str, object]] = {
+    "641": {
+        "offsets": (0x0D26, 0x0D56, 0x0D2E, 0x0D5E),
+        "unlock_value": 11,
+        "lock_value": 0,
+        "num_bytes": 4,
+        "section_index": 1,
+        "offset_base": 0x4,
+    }
+}
+
 
 _SKIPPED_ITEM_IDS = {43, 59, 61, 235, 587, 613, 620, 630, 648, 656, 662, 666, 718}
 _ITEM_ENTRY_STRIDE = 4
