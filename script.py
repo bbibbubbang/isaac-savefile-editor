@@ -741,6 +741,7 @@ SECRET_UNLOCK_OVERRIDES: Dict[str, Dict[str, object]] = {
         "lock_value": 0,
         "num_bytes": 4,
         "section_index": 1,
+        "offset_base": 0x4,
     }
 }
 
