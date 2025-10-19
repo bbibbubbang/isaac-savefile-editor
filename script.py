@@ -737,7 +737,7 @@ def updateChallenges(data, challenge_list):
 SECRET_UNLOCK_OVERRIDES: Dict[str, Dict[str, object]] = {
     "641": {
         "offsets": (0x0526, 0x0B0A, 0x0E65, 0x0F24, 0x0FD0),
-        "unlock_value": 1,
+        "unlock_value": 11,
         "lock_value": 0,
         "num_bytes": 4,
         "section_index": 1,
