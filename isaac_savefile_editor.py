@@ -535,7 +535,7 @@ class IsaacSaveEditor(tk.Tk):
     }
     SECRET_FALLBACK_TYPE = "Other"
     SECRET_SEARCH_TYPES = frozenset({"Item.Passive", "Item.Active", "Trinket"})
-    SECRET_UNLOCK_OVERRIDES: Dict[str, Dict[str, object]] = script.SECRET_UNLOCK_OVERRIDES
+    SECRET_UNLOCK_OVERRIDES: Dict[str, Dict[str, object]] = dict(script.SECRET_UNLOCK_OVERRIDES)
 
     def _text(self, korean: str, english: str | None = None) -> str:
         english = english or korean

@@ -736,10 +736,10 @@ def updateChallenges(data, challenge_list):
 # ``absolute`` is set to :data:`True`.
 SECRET_UNLOCK_OVERRIDES: Dict[str, Dict[str, object]] = {
     "641": {
-        "offsets": (0x0D2A, 0x0D5A, 0x0D32, 0x0D62),
-        "unlock_value": 11,
+        "offsets": (0x0526, 0x0B0A, 0x0E65, 0x0F24, 0x0FD0),
+        "unlock_value": 1,
         "lock_value": 0,
-        "num_bytes": 1,
+        "num_bytes": 4,
         "section_index": 1,
     }
 }
