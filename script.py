@@ -314,32 +314,41 @@ except Exception:
 def rshift(val, n): 
     return val>>n if val >= 0 else (val+0x100000000)>>n
 
-def getSectionOffsets(data):
+def _iter_sections(data, limit=None):
     ofs = 0x14
-    sectData = [-1, -1, -1]
-    sectionOffsets = [0] * len(_ENTRY_LENGTHS)
-    for i in range(len(_ENTRY_LENGTHS)):
-        for j in range(3):
-            sectData[j] = int.from_bytes(data[ofs:ofs+2], 'little', signed=False)
-            ofs += 4
-        if sectionOffsets[i] == 0:
-            sectionOffsets[i] = ofs
-        for j in range(sectData[2]):
-            ofs += _ENTRY_LENGTHS[i]
+    index = 0
+    total_length = len(data)
+    max_sections = len(_ENTRY_LENGTHS) if limit is None else min(limit, len(_ENTRY_LENGTHS))
+    while index < max_sections:
+        header = []
+        for _ in range(3):
+            chunk_end = ofs + 4
+            if chunk_end > total_length:
+                raise IndexError("save data does not contain the expected sections")
+            header.append(int.from_bytes(data[ofs:chunk_end], 'little', signed=False))
+            ofs = chunk_end
+        data_offset = ofs
+        yield index, data_offset, header
+        entry_count = header[2]
+        entry_size = _ENTRY_LENGTHS[index]
+        advance = entry_size * entry_count
+        if advance < 0:
+            advance = 0
+        ofs += advance
+        index += 1
+
+
+def getSectionOffsets(data):
+    sectionOffsets = []
+    for _, section_offset, _ in _iter_sections(data):
+        sectionOffsets.append(section_offset)
     return sectionOffsets
 
 
 def _get_section_entry_count(data, section_index):
-    ofs = 0x14
-    sectData = [-1, -1, -1]
-    for i in range(len(_ENTRY_LENGTHS)):
-        for j in range(3):
-            sectData[j] = int.from_bytes(data[ofs:ofs+2], 'little', signed=False)
-            ofs += 4
-        count = sectData[2]
-        if i == section_index:
-            return count
-        ofs += _ENTRY_LENGTHS[i] * count
+    for idx, _, header in _iter_sections(data, limit=section_index + 1):
+        if idx == section_index:
+            return header[2]
     raise IndexError("section_index out of range")
 
 
