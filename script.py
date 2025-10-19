@@ -660,39 +660,87 @@ def applySecretOverrides(data, unlocked_ids, overrides=None):
         offsets = config.get("offsets")
         if not offsets:
             continue
-        value_key = "unlock_value" if normalized_id in unlocked_lookup else "lock_value"
-        if value_key not in config:
-            continue
+        base_unlock_value = config.get("unlock_value")
+        base_lock_value = config.get("lock_value")
         try:
-            desired_value = int(config[value_key])
+            base_num_bytes = int(config.get("num_bytes", 1))
         except (TypeError, ValueError):
-            continue
+            base_num_bytes = 1
+        base_signed = bool(config.get("signed", False))
+        base_absolute = bool(config.get("absolute", False))
         try:
-            num_bytes = int(config.get("num_bytes", 1))
+            base_section_index = int(config.get("section_index", 1))
         except (TypeError, ValueError):
-            num_bytes = 1
-        signed = bool(config.get("signed", False))
-        absolute = bool(config.get("absolute", False))
-        section_index = config.get("section_index", 1)
+            base_section_index = 1
         try:
-            section_index = int(section_index)
+            base_offset_base = int(config.get("offset_base", 0))
         except (TypeError, ValueError):
-            section_index = 1
-        try:
-            offset_base = int(config.get("offset_base", 0))
-        except (TypeError, ValueError):
-            offset_base = 0
+            base_offset_base = 0
         if isinstance(offsets, (list, tuple, set)):
-            offset_values = offsets
+            offset_entries = list(offsets)
         else:
-            offset_values = (offsets,)
-        for raw_offset in offset_values:
+            offset_entries = [offsets]
+        for entry in offset_entries:
+            if isinstance(entry, dict):
+                raw_offset = entry.get("offset")
+                value_when_unlocked = entry.get("unlock_value", base_unlock_value)
+                value_when_locked = entry.get("lock_value", base_lock_value)
+                try:
+                    entry_num_bytes = int(entry.get("num_bytes", base_num_bytes))
+                except (TypeError, ValueError):
+                    entry_num_bytes = base_num_bytes
+                entry_signed = bool(entry.get("signed", base_signed))
+                entry_absolute = bool(entry.get("absolute", base_absolute))
+                try:
+                    entry_section_index = int(entry.get("section_index", base_section_index))
+                except (TypeError, ValueError):
+                    entry_section_index = base_section_index
+                try:
+                    entry_offset_base = int(entry.get("offset_base", base_offset_base))
+                except (TypeError, ValueError):
+                    entry_offset_base = base_offset_base
+            else:
+                raw_offset = entry
+                value_when_unlocked = base_unlock_value
+                value_when_locked = base_lock_value
+                entry_num_bytes = base_num_bytes
+                entry_signed = base_signed
+                entry_absolute = base_absolute
+                entry_section_index = base_section_index
+                entry_offset_base = base_offset_base
+            if raw_offset is None:
+                continue
+            desired_config_value = (
+                value_when_unlocked if normalized_id in unlocked_lookup else value_when_locked
+            )
+            if desired_config_value is None:
+                continue
+            try:
+                desired_value = int(desired_config_value)
+            except (TypeError, ValueError):
+                continue
+            try:
+                num_bytes = int(entry_num_bytes)
+            except (TypeError, ValueError):
+                num_bytes = base_num_bytes
+            if num_bytes <= 0:
+                continue
+            entry_signed = bool(entry_signed)
+            entry_absolute = bool(entry_absolute)
+            try:
+                section_index = int(entry_section_index)
+            except (TypeError, ValueError):
+                section_index = base_section_index
+            try:
+                offset_base = int(entry_offset_base)
+            except (TypeError, ValueError):
+                offset_base = base_offset_base
             try:
                 offset_value = int(raw_offset)
             except (TypeError, ValueError):
                 continue
             target_offset = offset_value
-            if not absolute:
+            if not entry_absolute:
                 if section_offsets is None:
                     try:
                         section_offsets = getSectionOffsets(result)
@@ -708,7 +756,7 @@ def applySecretOverrides(data, unlocked_ids, overrides=None):
                 target_offset,
                 desired_value,
                 num_bytes=num_bytes,
-                signed=signed,
+                signed=entry_signed,
             )
     return result
 
@@ -733,10 +781,19 @@ def updateChallenges(data, challenge_list):
 # persistent data. ``SECRET_UNLOCK_OVERRIDES`` mirrors the structure used by
 # the GUI so that command line invocations of ``updateSecrets`` behave in the
 # same way.  Offsets are relative to the player stats section (index 1) unless
-# ``absolute`` is set to :data:`True`.
+# ``absolute`` is set to :data:`True`.  Individual offset entries may be
+# dictionaries overriding values such as ``num_bytes`` or ``unlock_value`` on a
+# per-offset basis.
 SECRET_UNLOCK_OVERRIDES: Dict[str, Dict[str, object]] = {
     "641": {
-        "offsets": (0x0D2A, 0x0D5A, 0x0D32, 0x0D62),
+        "offsets": (
+            0x0D2A,
+            0x0D5A,
+            0x0D32,
+            0x0D62,
+            {"offset": 0x0FD8, "num_bytes": 4, "unlock_value": 1, "lock_value": 0},
+            {"offset": 0x0FE0, "num_bytes": 4, "unlock_value": 1, "lock_value": 0},
+        ),
         "unlock_value": 11,
         "lock_value": 0,
         "num_bytes": 1,
