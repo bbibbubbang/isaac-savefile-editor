@@ -14,6 +14,10 @@ import math
 import os
 import re
 import shutil
+import threading
+import urllib.error
+import urllib.request
+import webbrowser
 from dataclasses import dataclass
 from pathlib import Path
 import tkinter as tk
@@ -33,6 +37,11 @@ DATA_DIR = Path(__file__).resolve().parent
 SETTINGS_PATH = DATA_DIR / "settings.json"
 LANGUAGE_DIR = DATA_DIR / "language"
 DEAD_GOD_REFERENCE_PATH = DATA_DIR / "rep+persistentgamedata1_deadgod.dat"
+APP_VERSION = "1.0.1"
+RELEASES_PAGE_URL = "https://github.com/bbibbubbang/isaac-savefile-editor/releases"
+LATEST_RELEASE_API_URL = (
+    "https://api.github.com/repos/bbibbubbang/isaac-savefile-editor/releases/latest"
+)
 _MULTI_EDEN_STACK_OFFSETS: tuple[int, ...] = (0x478,)
 _MULTI_EDEN_OFFSETS_ARE_ABSOLUTE = True
 DEFAULT_SETTINGS: Dict[str, object] = {
@@ -558,6 +567,108 @@ class IsaacSaveEditor(tk.Tk):
         self._language_bindings.append(callback)
         callback()
 
+    def _set_version_status(self, korean: str, english: str) -> None:
+        self._version_status_source = (korean, english)
+        self._refresh_version_status_language()
+
+    def _refresh_version_status_language(self) -> None:
+        if not hasattr(self, "_version_status_var"):
+            return
+        korean, english = getattr(self, "_version_status_source", ("", ""))
+        if not (korean or english):
+            self._version_status_var.set("")
+            return
+        self._version_status_var.set(self._text(korean, english))
+
+    def _set_download_available(self, url: Optional[str]) -> None:
+        self._download_url = url or RELEASES_PAGE_URL
+        button = getattr(self, "_download_button", None)
+        if button is None:
+            return
+        if url:
+            button.grid()
+        else:
+            button.grid_remove()
+
+    def _open_download_page(self) -> None:
+        url = getattr(self, "_download_url", RELEASES_PAGE_URL)
+        try:
+            webbrowser.open(url)
+        except webbrowser.Error:
+            messagebox.showerror(
+                self._text("페이지 열기 실패", "Unable to open page"),
+                self._text(
+                    "웹 브라우저를 실행할 수 없습니다.",
+                    "Could not launch the default web browser.",
+                ),
+            )
+
+    def _start_version_check(self) -> None:
+        if getattr(self, "_update_check_started", False):
+            return
+        self._update_check_started = True
+        thread = threading.Thread(target=self._check_for_updates, daemon=True)
+        thread.start()
+
+    def _check_for_updates(self) -> None:
+        request = urllib.request.Request(
+            LATEST_RELEASE_API_URL,
+            headers={"User-Agent": f"IsaacSavefileEditor/{APP_VERSION}"},
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=5) as response:
+                raw = response.read()
+        except (urllib.error.URLError, OSError):
+            self.after(0, lambda: self._handle_update_check_result(None, None, error=True))
+            return
+        try:
+            payload = json.loads(raw.decode("utf-8"))
+        except (UnicodeDecodeError, json.JSONDecodeError):
+            self.after(0, lambda: self._handle_update_check_result(None, None, error=True))
+            return
+
+        tag_name = payload.get("tag_name") or payload.get("name") or ""
+        html_url = payload.get("html_url") or RELEASES_PAGE_URL
+        self.after(
+            0,
+            lambda: self._handle_update_check_result(str(tag_name), str(html_url)),
+        )
+
+    def _handle_update_check_result(
+        self, latest_tag: Optional[str], download_url: Optional[str], *, error: bool = False
+    ) -> None:
+        if error or not latest_tag:
+            self._latest_version_tag = ""
+            self._set_version_status(
+                "버전 정보를 확인할 수 없습니다.",
+                "Unable to check for updates.",
+            )
+            self._set_download_available(None)
+            return
+
+        self._latest_version_tag = latest_tag
+        current_version = self._normalize_version_tag(APP_VERSION)
+        latest_version = self._normalize_version_tag(latest_tag)
+        if latest_version and latest_version == current_version:
+            self._set_version_status("최신 버전입니다.", "You are on the latest version.")
+            self._set_download_available(None)
+            return
+
+        self._set_version_status(
+            "새로운 버전이 출시되었습니다.",
+            "A new version is available.",
+        )
+        self._set_download_available(download_url)
+
+    @staticmethod
+    def _normalize_version_tag(value: Optional[str]) -> str:
+        if not value:
+            return ""
+        normalized = str(value).strip()
+        if normalized.lower().startswith("v"):
+            normalized = normalized[1:]
+        return normalized
+
     def _adjust_widget_width(self, widget: tk.Widget, text: str) -> None:
         if not text:
             return
@@ -995,7 +1106,7 @@ class IsaacSaveEditor(tk.Tk):
 
     def __init__(self) -> None:
         super().__init__()
-        self.title("Isaac Savefile Editor v1.0.1")
+        self.title(f"Isaac Savefile Editor v{APP_VERSION}")
 
         _suppress_focus_indicators(self)
 
@@ -1023,6 +1134,14 @@ class IsaacSaveEditor(tk.Tk):
         self._language_display_var = tk.StringVar(value=display_value)
         self._language_bindings: List[Callable[[], None]] = []
         self._dynamic_wrap_preferences: Dict[str, int] = {}
+        self._version_status_var = tk.StringVar()
+        self._version_status_source: tuple[str, str] = ("", "")
+        self._download_button: Optional[ttk.Button] = None
+        self._download_url = RELEASES_PAGE_URL
+        self._latest_version_tag = ""
+        self._update_check_started = False
+        self._set_version_status("버전 확인 중...", "Checking for updates...")
+        self._register_language_binding(self._refresh_version_status_language)
         self._highlight_locked_items_var = tk.BooleanVar(
             value=bool(self.settings.get("highlight_locked_items", False))
         )
@@ -1603,6 +1722,35 @@ class IsaacSaveEditor(tk.Tk):
         language_box.bind("<<ComboboxSelected>>", self._on_language_selection)
         self._language_selector = language_box
         self._update_language_selector()
+
+        version_frame = ttk.Frame(container)
+        version_frame.grid(column=0, row=4, sticky="ew", pady=(12, 0))
+        version_frame.columnconfigure(1, weight=1)
+
+        version_label = ttk.Label(version_frame)
+        version_label.grid(column=0, row=0, sticky="w")
+        self._register_text(
+            version_label,
+            f"현재 버전: v{APP_VERSION}",
+            f"Current Version: v{APP_VERSION}",
+        )
+
+        status_label = ttk.Label(
+            version_frame,
+            textvariable=self._version_status_var,
+            anchor="w",
+        )
+        status_label.grid(column=1, row=0, sticky="w", padx=(10, 0))
+        self._register_dynamic_wrap_widget(status_label, self._version_status_var)
+
+        download_button = ttk.Button(
+            version_frame,
+            command=self._open_download_page,
+        )
+        download_button.grid(column=2, row=0, sticky="e", padx=(10, 0))
+        self._register_text(download_button, "다운로드", "Download")
+        download_button.grid_remove()
+        self._download_button = download_button
 
         self._update_source_display()
         self._update_target_display()
@@ -3960,6 +4108,7 @@ class IsaacSaveEditor(tk.Tk):
 
     def _perform_startup_tasks(self) -> None:
         self._open_remembered_file_if_available()
+        self._start_version_check()
 
     def _load_settings(self) -> Dict[str, object]:
         settings = DEFAULT_SETTINGS.copy()
