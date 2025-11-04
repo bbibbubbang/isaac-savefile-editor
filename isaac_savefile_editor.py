@@ -37,7 +37,7 @@ DATA_DIR = Path(__file__).resolve().parent
 SETTINGS_PATH = DATA_DIR / "settings.json"
 LANGUAGE_DIR = DATA_DIR / "language"
 DEAD_GOD_REFERENCE_PATH = DATA_DIR / "rep+persistentgamedata1_deadgod.dat"
-APP_VERSION = "1.0.1"
+APP_VERSION = "1.0.2"
 RELEASES_PAGE_URL = "https://github.com/bbibbubbang/isaac-savefile-editor/releases"
 LATEST_RELEASE_API_URL = (
     "https://api.github.com/repos/bbibbubbang/isaac-savefile-editor/releases/latest"
