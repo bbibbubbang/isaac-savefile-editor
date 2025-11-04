@@ -1740,7 +1740,7 @@ class IsaacSaveEditor(tk.Tk):
             textvariable=self._version_status_var,
             anchor="w",
         )
-        status_label.grid(column=1, row=0, sticky="w", padx=(10, 0))
+        status_label.grid(column=1, row=0, sticky="ew", padx=(10, 0))
         self._register_dynamic_wrap_widget(status_label, self._version_status_var)
 
         download_button = ttk.Button(
