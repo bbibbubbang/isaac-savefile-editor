@@ -2997,7 +2997,10 @@ class IsaacSaveEditor(tk.Tk):
                 target_length = max(mark_count, len(current_values), TOTAL_COMPLETION_MARKS)
                 values = list(current_values) + [0] * max(0, target_length - len(current_values))
                 for mark_index in range(target_length):
-                    values[mark_index] = 15
+                    unlock_value = self._completion_mask_for_mark(mark_index, index)
+                    if unlock_value <= 0:
+                        unlock_value = DEFAULT_COMPLETION_UNLOCK_MASK | GREED_COMPLETION_UNLOCK_MASK
+                    values[mark_index] = unlock_value
                 result = script.updateCheckListUnlocks(result, index, values)
             return result
 
