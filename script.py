@@ -744,6 +744,10 @@ SECRET_UNLOCK_OVERRIDES: Dict[str, Dict[str, object]] = {
         # editor patches the correct counters instead of clobbering unrelated
         # bytes near the start of the file.
         "offsets": (0x0526, 0x0B0A, 0x0E65, 0x0F24, 0x0FD0),
+        # Player statistics counters start 4 bytes after the section base.
+        # Account for this header so that relative offsets line up with the
+        # kill counters that gate the Hush Cathedral/Sheol doors.
+        "offset_base": 0x4,
         "unlock_value": 11,
         "lock_value": 0,
         "num_bytes": 4,
