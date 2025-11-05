@@ -736,12 +736,14 @@ def updateChallenges(data, challenge_list):
 # ``absolute`` is set to :data:`True`.
 SECRET_UNLOCK_OVERRIDES: Dict[str, Dict[str, object]] = {
     "641": {
+        # Mom's Heart/It Lives kill counts control Hush Cathedral/Sheol access.
+        # Repentance tracks one counter per difficulty tier; keep writing all of
+        # them so both the main menu and in-game doors react immediately.
         "offsets": (0x0526, 0x0B0A, 0x0E65, 0x0F24, 0x0FD0),
         "unlock_value": 11,
         "lock_value": 0,
         "num_bytes": 4,
-        "section_index": 1,
-        "offset_base": 0x4,
+        "absolute": True,
     }
 }
 
