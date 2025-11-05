@@ -739,11 +739,14 @@ SECRET_UNLOCK_OVERRIDES: Dict[str, Dict[str, object]] = {
         # Mom's Heart/It Lives kill counts control Hush Cathedral/Sheol access.
         # Repentance tracks one counter per difficulty tier; keep writing all of
         # them so both the main menu and in-game doors react immediately.
+        #
+        # Offsets are relative to the player statistics section so that the
+        # editor patches the correct counters instead of clobbering unrelated
+        # bytes near the start of the file.
         "offsets": (0x0526, 0x0B0A, 0x0E65, 0x0F24, 0x0FD0),
         "unlock_value": 11,
         "lock_value": 0,
         "num_bytes": 4,
-        "absolute": True,
     }
 }
 
